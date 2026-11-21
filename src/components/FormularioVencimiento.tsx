@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { cuandoToca, fechaLarga, sumarDias, textoFrecuenciaMeses } from '../lib/fechas'
+import { cuandoToca, euros, fechaLarga, sumarDias, textoFrecuenciaMeses, textoPeriodo } from '../lib/fechas'
 import { volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
@@ -13,6 +13,8 @@ type Comun = {
 }
 
 const FRECUENCIAS: (number | null)[] = [1, 3, 6, 12, null]
+// En las suscripciones, lo normal es pagar al mes o al año; el resto, en «Otra».
+const OTRAS_FRECUENCIAS: (number | null)[] = [3, 6, null]
 const AVISOS: { dias: number | null; texto: string }[] = [
   { dias: null, texto: 'Sin aviso' },
   { dias: 0, texto: 'El mismo día' },
@@ -85,7 +87,7 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
   const [fecha, setFecha] = useState(vencimiento?.fecha_renovacion ?? '')
   const [meses, setMeses] = useState<number | null>(mesesIniciales)
   const [importe, setImporte] = useState(
-    vencimiento?.importe != null ? String(vencimiento.importe).replace('.', ',') : '',
+    vencimiento?.importe != null ? Number(vencimiento.importe).toFixed(2).replace('.', ',') : '',
   )
   const [aviso, setAviso] = useState<number | null>(
     vencimiento ? vencimiento.aviso_dias : avisoHabitual(tipoInicial, mesesIniciales),
@@ -102,6 +104,12 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id ?? null
   const responsableElegido = responsable !== undefined ? responsable : miembros ? miMiembroId : undefined
   const fechaAviso = fecha && aviso !== null ? sumarDias(fecha, -aviso) : ''
+  // «Otra» se ve abierta si se ha pulsado, o si la frecuencia no es mes ni año.
+  const [otrasAbierto, setOtrasAbierto] = useState(false)
+  const verOtras = otrasAbierto || (meses !== 1 && meses !== 12)
+  // Precio escrito («12,99» o «12.99») convertido a número, si es válido.
+  const precio = importe.trim() === '' ? null : Number(importe.replace(',', '.'))
+  const precioValido = precio !== null && !Number.isNaN(precio) && precio > 0
 
   // Si aún no ha elegido aviso, proponemos el habitual.
   function cambiarTipoOFrecuencia(nuevoTipo: TipoVencimiento, nuevosMeses: number | null) {
@@ -114,7 +122,7 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
     evento.preventDefault()
     if (!supabase) return
     // Aceptamos «12,99» y «12.99».
-    const numero = importe.trim() === '' ? null : Number(importe.replace(',', '.'))
+    const numero = precio
     if (numero !== null && (Number.isNaN(numero) || numero < 0 || numero >= 1_000_000)) {
       setError('Escribe el importe como un número, por ejemplo 12,99.')
       return
@@ -218,26 +226,84 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
           </span>
         </label>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Cada cuánto se renueva?</legend>
-          <div className="flex flex-wrap gap-2">
-            {FRECUENCIAS.map((opcion) => (
+        {tipo === 'suscripcion' ? (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Cómo se paga?</legend>
+            <div className="grid grid-cols-3 gap-1 rounded-full bg-stone-200 p-1">
+              {(
+                [
+                  [1, 'Mensual'],
+                  [12, 'Anual'],
+                ] as const
+              ).map(([valor, texto]) => (
+                <button
+                  key={valor}
+                  type="button"
+                  aria-pressed={!verOtras && meses === valor}
+                  onClick={() => {
+                    setOtrasAbierto(false)
+                    cambiarTipoOFrecuencia(tipo, valor)
+                  }}
+                  className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                    !verOtras && meses === valor ? 'bg-white text-marca shadow-sm' : 'text-stone-600'
+                  }`}
+                >
+                  {texto}
+                </button>
+              ))}
               <button
-                key={String(opcion)}
                 type="button"
-                aria-pressed={meses === opcion}
-                onClick={() => cambiarTipoOFrecuencia(tipo, opcion)}
-                className={estiloChip(meses === opcion)}
+                aria-pressed={verOtras}
+                onClick={() => {
+                  setOtrasAbierto(true)
+                  if (meses === 1 || meses === 12) cambiarTipoOFrecuencia(tipo, 3)
+                }}
+                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                  verOtras ? 'bg-white text-marca shadow-sm' : 'text-stone-600'
+                }`}
               >
-                {opcion === null ? 'No se repite' : textoFrecuenciaMeses(opcion).replace('cada', 'Cada')}
+                Otra
               </button>
-            ))}
-          </div>
-        </fieldset>
+            </div>
+            {verOtras && (
+              <div className="flex flex-wrap gap-2">
+                {OTRAS_FRECUENCIAS.map((opcion) => (
+                  <button
+                    key={String(opcion)}
+                    type="button"
+                    aria-pressed={meses === opcion}
+                    onClick={() => cambiarTipoOFrecuencia(tipo, opcion)}
+                    className={estiloChip(meses === opcion)}
+                  >
+                    {opcion === null ? 'Una sola vez (prueba gratis…)' : textoFrecuenciaMeses(opcion).replace('cada', 'Cada')}
+                  </button>
+                ))}
+              </div>
+            )}
+          </fieldset>
+        ) : (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Cada cuánto se renueva?</legend>
+            <div className="flex flex-wrap gap-2">
+              {FRECUENCIAS.map((opcion) => (
+                <button
+                  key={String(opcion)}
+                  type="button"
+                  aria-pressed={meses === opcion}
+                  onClick={() => cambiarTipoOFrecuencia(tipo, opcion)}
+                  className={estiloChip(meses === opcion)}
+                >
+                  {opcion === null ? 'No se repite' : textoFrecuenciaMeses(opcion).replace('cada', 'Cada')}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-stone-700">
-            Importe <span className="font-normal text-stone-400">(opcional)</span>
+            {tipo === 'suscripcion' ? 'Precio' : 'Importe'}{' '}
+            <span className="font-normal text-stone-400">(opcional)</span>
           </span>
           <div className="flex items-center gap-2">
             <input
@@ -248,8 +314,17 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
               placeholder="12,99"
               maxLength={12}
             />
-            <span className="text-stone-600">€ {meses ? textoFrecuenciaMeses(meses) : ''}</span>
+            <span className="text-stone-600">€ {textoPeriodo(meses)}</span>
           </div>
+          {precioValido && meses !== null && (
+            <span className="text-xs text-stone-500">
+              {meses === 1
+                ? `Al año son ${euros(precio * 12)}.`
+                : meses === 12
+                  ? `Al mes salen ${euros(precio / 12)}.`
+                  : `Al mes salen ${euros(precio / meses)}; al año, ${euros((precio / meses) * 12)}.`}
+            </span>
+          )}
         </label>
 
         <fieldset className="flex flex-col gap-2">
