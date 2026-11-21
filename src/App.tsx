@@ -14,6 +14,14 @@ import { PantallaLogin } from './components/PantallaLogin'
 import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
 import { TarjetaProximo } from './components/TarjetaProximo'
+import { ConPestanas } from './components/BarraPestanas'
+import { PantallaVencimientos } from './components/PantallaVencimientos'
+import {
+  PantallaEditarVencimiento,
+  PantallaNuevoVencimiento,
+} from './components/FormularioVencimiento'
+import { PantallaCasa } from './components/PantallaCasa'
+import { PantallaEditarRutina, PantallaNuevaRutina } from './components/FormularioRutina'
 import { PantallaTareas } from './components/PantallaTareas'
 import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
@@ -171,6 +179,12 @@ function App() {
   //   #/tareas                             → lista de tareas
   //   #/tareas/nueva                       → nueva tarea
   //   #/tareas/<id>/editar                 → editar tarea
+  //   #/casa                               → rutinas y lista de la compra
+  //   #/casa/rutinas/nueva                 → nueva rutina
+  //   #/casa/rutinas/<id>/editar           → editar rutina
+  //   #/vencimientos                       → seguros y suscripciones
+  //   #/vencimientos/nuevo/<seguro|suscripcion>
+  //   #/vencimientos/<id>/editar
   const partes = ruta.split('/').filter(Boolean)
   const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
   if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
@@ -189,7 +203,37 @@ function App() {
     return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
   }
   if (partes[0] === 'tareas' && !partes[1]) {
-    return <PantallaTareas miUserId={yo.userId} />
+    return (
+      <ConPestanas actual="tareas">
+        <PantallaTareas miUserId={yo.userId} />
+      </ConPestanas>
+    )
+  }
+  if (partes[0] === 'casa' && !partes[1]) {
+    return (
+      <ConPestanas actual="casa">
+        <PantallaCasa {...comun} />
+      </ConPestanas>
+    )
+  }
+  if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] === 'nueva') {
+    return <PantallaNuevaRutina {...comun} />
+  }
+  if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] && partes[3] === 'editar') {
+    return <PantallaEditarRutina key={partes[2]} id={partes[2]} {...comun} />
+  }
+  if (partes[0] === 'vencimientos' && !partes[1]) {
+    return (
+      <ConPestanas actual="vencimientos">
+        <PantallaVencimientos miUserId={yo.userId} />
+      </ConPestanas>
+    )
+  }
+  if (partes[0] === 'vencimientos' && partes[1] === 'nuevo' && (partes[2] === 'seguro' || partes[2] === 'suscripcion')) {
+    return <PantallaNuevoVencimiento key={partes[2]} tipo={partes[2]} {...comun} />
+  }
+  if (partes[0] === 'vencimientos' && partes[1] && partes[2] === 'editar') {
+    return <PantallaEditarVencimiento key={partes[1]} id={partes[1]} {...comun} />
   }
   if (partes[0] === 'tareas' && partes[1] === 'nueva') {
     return <PantallaNuevaTarea {...comun} />
@@ -199,31 +243,33 @@ function App() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-marca">Tareas</h1>
-          <p className="mt-1 text-stone-600">Hola, {yo.nombre} 👋</p>
-        </div>
-        <button
-          type="button"
-          onClick={salir}
-          className="rounded-full px-3 py-1 text-sm text-stone-500 ring-1 ring-stone-300"
-        >
-          Salir
-        </button>
-      </header>
+    <ConPestanas actual="inicio">
+      <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-marca">Tareas</h1>
+            <p className="mt-1 text-stone-600">Hola, {yo.nombre} 👋</p>
+          </div>
+          <button
+            type="button"
+            onClick={salir}
+            className="rounded-full px-3 py-1 text-sm text-stone-500 ring-1 ring-stone-300"
+          >
+            Salir
+          </button>
+        </header>
 
-      <TarjetaProximo miUserId={yo.userId} />
+        <TarjetaProximo miUserId={yo.userId} />
 
-      <TarjetaMascotas />
+        <TarjetaMascotas />
 
-      <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} />
+        <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} />
 
-      <footer className="mt-auto text-center text-xs text-stone-400">
-        Tareas · Fase 1
-      </footer>
-    </main>
+        <footer className="mt-auto text-center text-xs text-stone-400">
+          Tareas · Fase 1
+        </footer>
+      </main>
+    </ConPestanas>
   )
 }
 
