@@ -5,6 +5,7 @@ import {
   diasHasta,
   euros,
   fechaCorta,
+  periodoCorto,
   proximaRenovacion,
   textoFrecuenciaMeses,
 } from '../lib/fechas'
@@ -90,17 +91,21 @@ export function PantallaVencimientos({ miUserId }: Props) {
       </header>
 
       {(suscripcionesAlMes > 0 || segurosAlAnio > 0) && (
-        <section className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-marca-suave p-4">
-            <p className="text-xs font-medium text-marca">Suscripciones</p>
-            <p className="text-lg font-bold text-marca">{euros(suscripcionesAlMes)}</p>
-            <p className="text-xs text-stone-600">al mes</p>
-          </div>
-          <div className="rounded-2xl bg-marca-suave p-4">
-            <p className="text-xs font-medium text-marca">Seguros</p>
-            <p className="text-lg font-bold text-marca">{euros(segurosAlAnio)}</p>
-            <p className="text-xs text-stone-600">al año</p>
-          </div>
+        <section className="flex gap-3">
+          {suscripcionesAlMes > 0 && (
+            <div className="flex-1 rounded-2xl bg-marca-suave p-4">
+              <p className="text-xs font-medium text-marca">Suscripciones</p>
+              <p className="text-lg font-bold text-marca">{euros(suscripcionesAlMes)}</p>
+              <p className="text-xs text-stone-600">al mes · {euros(suscripcionesAlMes * 12)} al año</p>
+            </div>
+          )}
+          {segurosAlAnio > 0 && (
+            <div className="flex-1 rounded-2xl bg-marca-suave p-4">
+              <p className="text-xs font-medium text-marca">Seguros</p>
+              <p className="text-lg font-bold text-marca">{euros(segurosAlAnio)}</p>
+              <p className="text-xs text-stone-600">al año</p>
+            </div>
+          )}
         </section>
       )}
 
@@ -131,14 +136,22 @@ export function PantallaVencimientos({ miUserId }: Props) {
                           <span className="flex items-baseline justify-between gap-2">
                             <span className="font-medium">{v.nombre}</span>
                             {v.importe !== null && (
-                              <span className="shrink-0 text-sm font-semibold text-stone-700">{euros(v.importe)}</span>
+                              <span className="shrink-0 text-sm font-semibold text-stone-700">
+                                {euros(v.importe)}
+                                {periodoCorto(v.frecuencia_meses)}
+                              </span>
                             )}
                           </span>
                           <span className={`block text-sm font-medium ${color}`}>
                             {dias < 0 ? 'Venció' : 'Se renueva'} el {fechaCorta(v.proxima)} · {cuandoToca(v.proxima)}
                           </span>
                           <span className="block text-sm text-stone-500">
-                            {textoFrecuenciaMeses(v.frecuencia_meses)} · {textoAviso(v.aviso_dias)}
+                            {v.tipo === 'suscripcion' && v.frecuencia_meses === 1
+                              ? 'Pago mensual'
+                              : v.tipo === 'suscripcion' && v.frecuencia_meses === 12
+                                ? 'Pago anual'
+                                : textoFrecuenciaMeses(v.frecuencia_meses)}{' '}
+                            · {textoAviso(v.aviso_dias)}
                             {encargada && ` · ${encargada}`}
                           </span>
                         </span>

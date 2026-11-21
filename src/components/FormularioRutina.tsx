@@ -68,12 +68,25 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
   const [responsable, setResponsable] = useState<string | null | undefined>(
     rutina ? rutina.responsable_id : undefined,
   )
+  const [turnos, setTurnos] = useState(rutina?.turnos ?? false)
   const [notas, setNotas] = useState(rutina?.notas ?? '')
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id ?? null
-  const responsableElegido = responsable !== undefined ? responsable : miembros ? miMiembroId : undefined
+  // Con turnos siempre le toca a alguien: si no hay nadie elegido, a ti.
+  const responsableElegido =
+    responsable !== undefined && !(turnos && responsable === null)
+      ? responsable
+      : miembros
+        ? miMiembroId
+        : undefined
+  // Para la explicación: a quién le tocará después (orden de llegada).
+  const posicion = miembros?.findIndex((m) => m.id === responsableElegido) ?? -1
+  const despues =
+    miembros && miembros.length > 1 && posicion >= 0
+      ? miembros[(posicion + 1) % miembros.length].nombre_visible
+      : null
   const frecuenciaValida = Number.isInteger(frecuencia) && frecuencia >= 1 && frecuencia <= 365
   const fechaUltima = !fecha ? '' : modoFecha === 'ultima' ? fecha : sumarDias(fecha, -frecuencia)
   const proxima =
@@ -98,6 +111,7 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
       frecuencia_dias: frecuencia,
       fecha_ultima: fechaUltima,
       responsable_id: responsableElegido ?? null,
+      turnos,
       notas: notas.trim() || null,
     }
     const { error } = rutina
@@ -253,8 +267,36 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
           </p>
         )}
 
+        <label className="flex items-start gap-3 rounded-xl bg-stone-50 p-3">
+          <input
+            type="checkbox"
+            checked={turnos}
+            onChange={(e) => setTurnos(e.target.checked)}
+            className="mt-1 h-5 w-5 shrink-0 accent-marca"
+          />
+          <span className="flex flex-col gap-0.5">
+            <span className="font-medium text-stone-800">Turnos que rotan</span>
+            <span className="text-sm text-stone-600">
+              Cada vez que alguien la hace, pasa el turno a la siguiente persona
+              del hogar. Si haces la de otra persona, cuenta como tu turno.
+            </span>
+            {turnos && despues && (
+              <span className="text-sm font-medium text-marca">
+                Ahora le toca a {miembros?.[posicion].nombre_visible}; después, a {despues}.
+              </span>
+            )}
+            {turnos && miembros && miembros.length < 2 && (
+              <span className="text-sm text-stone-500">
+                Cuando haya más gente en el hogar, os iréis turnando.
+              </span>
+            )}
+          </span>
+        </label>
+
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Quién se encarga?</legend>
+          <legend className="mb-1.5 text-sm font-medium text-stone-700">
+            {turnos ? '¿A quién le toca ahora?' : '¿Quién se encarga?'}
+          </legend>
           <div className="flex flex-wrap gap-2">
             {miembros?.map((miembro) => (
               <button
@@ -268,16 +310,19 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
                 {miembro.user_id === miUserId && ' (tú)'}
               </button>
             ))}
-            <button
-              type="button"
-              aria-pressed={responsableElegido === null}
-              onClick={() => setResponsable(null)}
-              className={estiloChip(responsableElegido === null)}
-            >
-              Sin asignar
-            </button>
+            {!turnos && (
+              <button
+                type="button"
+                aria-pressed={responsableElegido === null}
+                onClick={() => setResponsable(null)}
+                className={estiloChip(responsableElegido === null)}
+              >
+                Sin asignar
+              </button>
+            )}
           </div>
         </fieldset>
+
 
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-stone-700">

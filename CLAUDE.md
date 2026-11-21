@@ -55,14 +55,14 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **pesos**: id, mascota_id, fecha, kg
 - **tareas**: id, hogar_id, titulo, descripcion, fecha_limite, responsable_id, creada_por, completada, completada_por, completada_en, categoria (mascota / casa / coche / papeleo / otros), mascota_id, tratamiento_id, vencimiento_id, rutina_id (estos tres últimos marcan las tareas automáticas)
 - **vencimientos**: id, hogar_id, tipo (seguro / suscripcion), nombre, fecha_renovacion, frecuencia_meses (vacío = no se repite), importe, aviso_dias (vacío = sin aviso), responsable_id, notas, revisado_para, creada_por
-- **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, notas, creada_por
+- **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), notas, creada_por
 - **lista_compra**: id, hogar_id, nombre, cantidad, comprado, anadido_por, comprado_por, comprado_en (quién añade y quién compra lo pone la base de datos)
 
 **Mismo hogar garantizado:** `responsable_id` apunta a `miembros.id`. Las relaciones entre tablas usan claves compuestas `(id, hogar_id)`, así la base de datos impide enlazar una mascota, un tratamiento o una persona de otro hogar.
 
 **Regla clave que une las dos ideas:** cada tratamiento genera automáticamente una tarea para su próxima fecha (`fecha_ultima + frecuencia_dias`). Al marcar esa tarea como hecha, se actualiza `fecha_ultima` del tratamiento y se crea la siguiente tarea. Lo hace la propia base de datos: el disparador `sincronizar_tarea_del_tratamiento` (al crear o cambiar un tratamiento) y la función `completar_tarea` (al marcar como hecha).
 
-**Otras reglas automáticas:** las rutinas funcionan igual que los tratamientos (`sincronizar_tarea_de_la_rutina`). Los vencimientos con aviso crean una tarea `aviso_dias` antes de `fecha_renovacion` (`sincronizar_tarea_del_vencimiento`); al completarla, `fecha_renovacion` salta a la siguiente renovación futura. Las suscripciones sin aviso no crean tareas: la app calcula sola la próxima renovación.
+**Otras reglas automáticas:** las rutinas funcionan igual que los tratamientos (`sincronizar_tarea_de_la_rutina`). Si tienen `turnos`, al completarlas `completar_tarea` pasa el turno a la persona que va después de quien la ha hecho (por orden de llegada al hogar, dando la vuelta); hacer la de otra persona cuenta como tu turno. Los vencimientos con aviso crean una tarea `aviso_dias` antes de `fecha_renovacion` (`sincronizar_tarea_del_vencimiento`); al completarla, `fecha_renovacion` salta a la siguiente renovación futura. Las suscripciones sin aviso no crean tareas: la app calcula sola la próxima renovación.
 
 **Tareas a mano vs. automáticas:** las tareas creadas a mano se crean, editan, borran y reabren (`reabrir_tarea`) desde la app. Las automáticas (de un tratamiento, una rutina o un vencimiento) solo se cambian editando su origen y no se pueden reabrir, para que la regla automática nunca se rompa. Nadie puede marcar una tarea como hecha sin pasar por `completar_tarea`, ni falsear `creada_por` o `completada_por`.
 
@@ -80,7 +80,9 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - Navegación con pestañas abajo: **Inicio · Tareas · Casa · Vencimientos**.
 - **Vencimientos**: seguros y suscripciones con fecha de renovación, importe y aviso previo. Resumen de gasto (suscripciones al mes, seguros al año).
 - **Casa**: solo tareas de casa rutinarias (limpieza, basura, compra…) y una **lista de la compra** compartida.
-- Ideas pendientes: turnos que rotan en las rutinas; lista de la compra en tiempo real (Supabase Realtime).
+- **Turnos que rotan** en las rutinas.
+- **Lista de la compra en tiempo real**: cada cambio manda un aviso (Realtime Broadcast) por el canal privado `hogar:<id>:compra`; una regla RLS en `realtime.messages` solo deja escuchar el canal del propio hogar. En Supabase, «Allow public access» de Realtime está desactivado (no usamos canales públicos).
+- Ideas pendientes: elegir qué personas participan en los turnos de cada rutina.
 
 ### Fase 2
 - **Contador de carga mental**: por persona y mes, cuántas cosas ha *creado* (pensar) frente a cuántas ha *completado* (hacer). Tono neutro y amable, nunca de reproche.

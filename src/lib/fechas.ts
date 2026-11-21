@@ -133,3 +133,19 @@ export function textoFrecuenciaMeses(meses: number | null): string {
 export function euros(importe: number): string {
   return importe.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
 }
+
+// «al mes», «al año», «cada 3 meses»… (para acompañar a un precio).
+export function textoPeriodo(meses: number | null): string {
+  if (meses === null) return 'una vez'
+  if (meses === 1) return 'al mes'
+  if (meses === 12) return 'al año'
+  return `cada ${meses} meses`
+}
+
+// «/mes», «/año», « cada 3 meses»… (versión corta para listas).
+export function periodoCorto(meses: number | null): string {
+  if (meses === null) return ''
+  if (meses === 1) return '/mes'
+  if (meses === 12) return '/año'
+  return ` cada ${meses} meses`
+}

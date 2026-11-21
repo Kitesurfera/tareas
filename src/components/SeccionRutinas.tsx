@@ -101,7 +101,9 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
                     <span className="block font-medium">{rutina.nombre}</span>
                     <span className="block text-sm text-stone-500">
                       {textoFrecuencia(rutina.frecuencia_dias).replace('cada', 'Cada')} ·{' '}
-                      {encargada ?? 'Sin responsable'}
+                      {rutina.turnos
+                        ? `🔄 Turnos · le toca a ${encargada === 'Tú' ? 'ti' : (encargada ?? 'alguien')}`
+                        : (encargada ?? 'Sin responsable')}
                     </span>
                     {pendiente?.fecha_limite && (
                       <span className={`block text-sm font-medium ${colorDeFecha(pendiente.fecha_limite)}`}>
