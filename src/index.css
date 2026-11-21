@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Colores propios de la app */
+@theme {
+  --color-marca: #0f766e;
+  --color-marca-suave: #ccfbf1;
+}
+
+body {
+  @apply bg-stone-50 text-stone-900 antialiased;
+}

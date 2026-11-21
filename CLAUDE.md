@@ -59,7 +59,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ## Fases
 
 ### Fase 1 — MVP (empezamos aquí)
-1. Proyecto creado, con login (email + contraseña o enlace mágico) usando Supabase.
+1. Proyecto creado, con login con Google usando Supabase (Google OAuth). El ID y el secreto de Google se configuran en el panel de Supabase, nunca en el código.
 2. Crear un hogar e invitar a la pareja con un código o enlace.
 3. Ficha de la mascota (nombre, foto, datos básicos).
 4. Tratamientos de la mascota que generan tareas automáticamente.
