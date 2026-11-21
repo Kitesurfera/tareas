@@ -16,3 +16,16 @@ export type Yo = {
   nombre: string
   hogar: Hogar
 }
+
+export type Mascota = {
+  id: string
+  hogar_id: string
+  nombre: string
+  especie: string
+  raza: string | null
+  fecha_nacimiento: string | null
+  foto_ruta: string | null
+  notas: string | null
+}
+
+export const ESPECIES = ['Perro', 'Gato', 'Conejo', 'Pájaro'] as const
