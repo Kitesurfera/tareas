@@ -1,9 +1,16 @@
 import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState, type ReactNode } from 'react'
+import {
+  PantallaEditarMascota,
+  PantallaNuevaMascota,
+} from './components/FormularioMascota'
 import { PantallaBienvenida } from './components/PantallaBienvenida'
+import { PantallaFichaMascota } from './components/PantallaFichaMascota'
 import { PantallaLogin } from './components/PantallaLogin'
 import { TarjetaHogar } from './components/TarjetaHogar'
+import { TarjetaMascotas } from './components/TarjetaMascotas'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
+import { useRuta } from './lib/ruta'
 import { supabase } from './lib/supabase'
 import type { Hogar, Yo } from './lib/tipos'
 
@@ -56,6 +63,12 @@ function App() {
   // undefined = todavía comprobando si hay sesión; null = no has entrado.
   const [sesion, setSesion] = useState<Session | null | undefined>(undefined)
   const [errorLogin] = useState(leerErrorDeLogin)
+  const ruta = useRuta()
+
+  // Al cambiar de pantalla, empezamos arriba del todo.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [ruta])
   // Tu hogar, guardado junto a tu id de usuaria: si cambia la cuenta,
   // nunca se enseñan por error los datos de la cuenta anterior.
   const [cargado, setCargado] = useState<{ userId: string; yo: Yo | null } | null>(null)
@@ -142,6 +155,18 @@ function App() {
     )
   }
 
+  // Pantallas de mascotas: #/mascotas/nueva, #/mascotas/<id>, #/mascotas/<id>/editar
+  const [seccion, id, accion] = ruta.split('/').filter(Boolean)
+  if (seccion === 'mascotas' && id === 'nueva') {
+    return <PantallaNuevaMascota hogarId={yo.hogar.id} />
+  }
+  if (seccion === 'mascotas' && id && accion === 'editar') {
+    return <PantallaEditarMascota key={id} id={id} hogarId={yo.hogar.id} />
+  }
+  if (seccion === 'mascotas' && id) {
+    return <PantallaFichaMascota key={id} id={id} />
+  }
+
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
       <header className="flex items-start justify-between gap-4">
@@ -165,6 +190,8 @@ function App() {
           próximos 30 días y quién se encarga.
         </p>
       </section>
+
+      <TarjetaMascotas />
 
       <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} />
 
