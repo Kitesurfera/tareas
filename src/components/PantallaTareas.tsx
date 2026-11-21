@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { mensajeDeError } from '../lib/errores'
 import { diasHasta } from '../lib/fechas'
-import { ir, volver } from '../lib/ruta'
+import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Tarea } from '../lib/tipos'
 import { useAccionesTarea } from '../lib/useAccionesTarea'
@@ -76,14 +76,6 @@ export function PantallaTareas({ miUserId }: Props) {
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
-      <button
-        type="button"
-        onClick={() => volver('/')}
-        className="self-start text-sm font-medium text-marca"
-      >
-        ← Inicio
-      </button>
-
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-marca">Tareas del hogar</h1>
       </header>
