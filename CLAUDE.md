@@ -26,6 +26,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Frontend:** React + Vite + TypeScript, con Tailwind CSS.
 - **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas (`autoUpdate`). Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
+- **Servidor (Vercel Functions, carpeta `api/`):** `recordatorios.ts` (aviso diario; lo llama Vercel con `crons` de `vercel.json` a las 6:00 y 7:00 UTC y solo envía cuando son las 8:00 en España; protegido con `CRON_SECRET`) y `aviso-de-prueba.ts` (botón «Probar aviso»; comprueba la sesión y solo avisa a los móviles de quien lo pide). El código compartido va en `api/_lib/`. Usa la librería `web-push`.
 - **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
 - Diseño **mobile-first**. Toda la interfaz en **español**.
 
@@ -43,6 +44,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - Los cambios de la base de datos van en `supabase/migrations/` (un archivo `.sql` por paso). Yo los ejecuto a mano en Supabase → SQL Editor: ejecutarlo es mi forma de aprobarlo. Antes de dármelos, pruébalos en un PostgreSQL local que imite Supabase, incluidos intentos de acceder a datos de otro hogar.
 - Las claves van en las variables de entorno de Vercel (o en un `.env` local, que está en `.gitignore`). Nunca subas claves al repositorio.
 - En el frontend solo se usa la clave pública de Supabase (`publishable`, `sb_publishable_…`; sustituye a la antigua `anon`), nunca la `secret` (`sb_secret_…`, antigua `service_role`).
+- La clave `secret` de Supabase solo existe en el **servidor** (funciones de Vercel en `api/`, variable `SUPABASE_SECRET_KEY`). Nunca lleva el prefijo `VITE_`, porque todo lo que empieza por `VITE_` acaba dentro de la app del móvil. Lo mismo con `VAPID_PRIVATE_KEY` y `CRON_SECRET`.
 - Cuando terminemos cada fase, repasa conmigo cómo podría alguien acceder a datos de otro hogar y cómo lo hemos impedido (me interesa aprender hacking ético).
 - Cabeceras de seguridad de la web en `vercel.json` (CSP, no dejar meter la app en un marco, etc.). Si se añade algo que cargue cosas de otro dominio, hay que permitirlo ahí o el navegador lo bloqueará.
 - En Supabase solo está activado el login con Google (el de email y contraseña está desactivado a propósito).
@@ -59,6 +61,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **vencimientos**: id, hogar_id, tipo (seguro / suscripcion), nombre, fecha_renovacion, frecuencia_meses (vacío = no se repite), importe, aviso_dias (vacío = sin aviso), responsable_id, notas, revisado_para, creada_por
 - **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), participantes (miembros.id que se turnan; vacío = todo el hogar), notas, creada_por
 - **lista_compra**: id, hogar_id, nombre, cantidad, comprado, anadido_por, comprado_por, comprado_en (quién añade y quién compra lo pone la base de datos)
+- **avisos_push**: id, user_id, endpoint, p256dh, auth, ultimo_envio (móviles con avisos activados; cada persona solo ve los suyos; `guardar_aviso_push` los guarda y `recordatorios_del_dia` —solo para el servidor— prepara el resumen: lo pendiente hasta hoy que es tuyo o no es de nadie)
 
 **Mismo hogar garantizado:** `responsable_id` apunta a `miembros.id`. Las relaciones entre tablas usan claves compuestas `(id, hogar_id)`, así la base de datos impide enlazar una mascota, un tratamiento o una persona de otro hogar.
 
@@ -91,7 +94,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ### Fase 2
 - **Contador de carga mental**: por persona y mes, cuántas cosas ha *creado* (pensar) frente a cuántas ha *completado* (hacer). Tono neutro y amable, nunca de reproche.
 - Registro de peso con una gráfica sencilla.
-- Recordatorios (por email primero; las notificaciones push en iPhone solo funcionan si la app está instalada en la pantalla de inicio).
+- ~~Recordatorios~~ ✅ Hechos con notificaciones push (aviso diario a las 8:00). En iPhone solo funcionan con la app instalada en la pantalla de inicio. Pendiente: avisos por email para quien no instale la app.
 
 ### Fase 3
 - Foto de la cartilla veterinaria → la IA extrae vacunas y fechas.
