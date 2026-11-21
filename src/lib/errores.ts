@@ -11,6 +11,7 @@ const MENSAJES_PROPIOS = [
   'No encontramos esa tarea',
   'Esa tarea ya estaba hecha',
   'Elige una fecha',
+  'Las tareas de un tratamiento',
 ]
 
 // Errores técnicos que sí sabemos explicar.

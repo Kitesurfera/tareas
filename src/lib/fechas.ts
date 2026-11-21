@@ -67,6 +67,10 @@ export function cuandoToca(texto: string): string {
   if (dias === 0) return 'Hoy'
   if (dias === 1) return 'Mañana'
   if (dias === -1) return 'Ayer'
+  // A partir de dos meses, en meses: «En 12 meses» se lee mejor que «En 365 días».
+  const meses = Math.round(Math.abs(dias) / 30.4)
+  if (dias > 60) return `En ${meses} meses`
+  if (dias < -60) return `Hace ${meses} meses`
   if (dias > 1) return `En ${dias} días`
   return `Hace ${-dias} días`
 }
