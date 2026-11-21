@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { cuandoToca, diasHasta, fechaCorta, hoyComoTexto, textoFrecuencia } from '../lib/fechas'
+import { cuandoToca, diasHasta, fechaCorta, textoFrecuencia } from '../lib/fechas'
 import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { infoTipo, type Tarea, type Tratamiento } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
-import { avisoError, botonSecundario, campo } from './estilos'
+import { ConfirmarHecho } from './ConfirmarHecho'
+import { avisoError, botonSecundario } from './estilos'
 
 type Props = {
   mascotaId: string
@@ -33,7 +34,6 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [recarga, setRecarga] = useState(0)
   const [marcando, setMarcando] = useState<string | null>(null) // id de la tarea
-  const [fechaHecho, setFechaHecho] = useState(hoyComoTexto())
   const [enviando, setEnviando] = useState(false)
   const [mensaje, setMensaje] = useState<string | null>(null)
 
@@ -44,7 +44,7 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
       supabase.from('tratamientos').select('*').eq('mascota_id', mascotaId),
       supabase
         .from('tareas')
-        .select('id, titulo, fecha_limite, responsable_id, completada, mascota_id, tratamiento_id')
+        .select('*')
         .eq('mascota_id', mascotaId)
         .eq('completada', false),
     ]).then(([tratamientos, tareas]) => {
@@ -75,7 +75,7 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
     return miembros?.find((m) => m.id === miembroId)?.nombre_visible ?? null
   }
 
-  async function confirmarHecho(fila: Fila) {
+  async function confirmarHecho(fila: Fila, fechaHecho: string) {
     if (!supabase || !fila.pendiente) return
     setEnviando(true)
     setError(null)
@@ -152,7 +152,6 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
                       type="button"
                       onClick={() => {
                         setMarcando(pendiente.id)
-                        setFechaHecho(hoyComoTexto())
                         setMensaje(null)
                         setError(null)
                       }}
@@ -164,36 +163,11 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
                 </div>
 
                 {abierto && (
-                  <div className="mt-3 flex flex-col gap-3 rounded-xl bg-stone-50 p-3">
-                    <label className="flex flex-col gap-1.5">
-                      <span className="text-sm font-medium text-stone-700">¿Cuándo se hizo?</span>
-                      <input
-                        type="date"
-                        className={campo}
-                        value={fechaHecho}
-                        max={hoyComoTexto()}
-                        onChange={(e) => setFechaHecho(e.target.value)}
-                        required
-                      />
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setMarcando(null)}
-                        className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-stone-600 ring-1 ring-stone-300"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => confirmarHecho(fila)}
-                        disabled={enviando || !fechaHecho}
-                        className="flex-1 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-                      >
-                        {enviando ? 'Guardando…' : 'Confirmar'}
-                      </button>
-                    </div>
-                  </div>
+                  <ConfirmarHecho
+                    enviando={enviando}
+                    onConfirmar={(fecha) => confirmarHecho(fila, fecha)}
+                    onCancelar={() => setMarcando(null)}
+                  />
                 )}
               </li>
             )

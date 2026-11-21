@@ -68,12 +68,32 @@ export type Tratamiento = {
   notas: string | null
 }
 
+export type Categoria = 'mascota' | 'casa' | 'coche' | 'papeleo' | 'otros'
+
+export const CATEGORIAS: { valor: Categoria; texto: string; dibujo: string }[] = [
+  { valor: 'casa', texto: 'Casa', dibujo: '🏠' },
+  { valor: 'mascota', texto: 'Mascota', dibujo: '🐾' },
+  { valor: 'coche', texto: 'Coche', dibujo: '🚗' },
+  { valor: 'papeleo', texto: 'Papeleo', dibujo: '📄' },
+  { valor: 'otros', texto: 'Otros', dibujo: '📌' },
+]
+
+export function infoCategoria(categoria: Categoria) {
+  return CATEGORIAS.find((c) => c.valor === categoria) ?? CATEGORIAS[4]
+}
+
 export type Tarea = {
   id: string
+  hogar_id: string
   titulo: string
+  descripcion: string | null
   fecha_limite: string | null
   responsable_id: string | null
-  completada: boolean
+  categoria: Categoria
   mascota_id: string | null
   tratamiento_id: string | null
+  creada_por: string | null
+  completada: boolean
+  completada_por: string | null
+  completada_en: string | null
 }

@@ -13,6 +13,9 @@ import {
 import { PantallaLogin } from './components/PantallaLogin'
 import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
+import { TarjetaTareas } from './components/TarjetaTareas'
+import { PantallaTareas } from './components/PantallaTareas'
+import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
 import { useRuta } from './lib/ruta'
 import { supabase } from './lib/supabase'
@@ -165,6 +168,9 @@ function App() {
   //   #/mascotas/<id>/editar               → editar mascota
   //   #/mascotas/<id>/tratamientos/nuevo   → añadir tratamiento
   //   #/tratamientos/<id>/editar           → editar tratamiento
+  //   #/tareas                             → lista de tareas
+  //   #/tareas/nueva                       → nueva tarea
+  //   #/tareas/<id>/editar                 → editar tarea
   const partes = ruta.split('/').filter(Boolean)
   const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
   if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
@@ -181,6 +187,15 @@ function App() {
   }
   if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
     return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
+  }
+  if (partes[0] === 'tareas' && !partes[1]) {
+    return <PantallaTareas miUserId={yo.userId} />
+  }
+  if (partes[0] === 'tareas' && partes[1] === 'nueva') {
+    return <PantallaNuevaTarea {...comun} />
+  }
+  if (partes[0] === 'tareas' && partes[1] && partes[2] === 'editar') {
+    return <PantallaEditarTarea key={partes[1]} id={partes[1]} {...comun} />
   }
 
   return (
@@ -203,10 +218,11 @@ function App() {
         <h2 className="text-lg font-semibold">Próximo</h2>
         <p className="mt-2 text-stone-500">
           Muy pronto aquí verás lo que vence en los próximos 30 días y quién
-          se encarga. De momento, las próximas vacunas y desparasitaciones
-          están en la ficha de cada mascota.
+          se encarga. De momento, lo tienes todo en Tareas.
         </p>
       </section>
+
+      <TarjetaTareas miUserId={yo.userId} />
 
       <TarjetaMascotas />
 
