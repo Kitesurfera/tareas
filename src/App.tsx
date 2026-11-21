@@ -263,7 +263,7 @@ function App() {
 
         <TarjetaMascotas />
 
-        <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} />
+        <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} onSalir={recargar} />
 
         <footer className="mt-auto text-center text-xs text-stone-400">
           Tareas · Fase 1

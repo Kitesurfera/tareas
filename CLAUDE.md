@@ -44,6 +44,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - Las claves van en las variables de entorno de Vercel (o en un `.env` local, que está en `.gitignore`). Nunca subas claves al repositorio.
 - En el frontend solo se usa la clave pública de Supabase (`publishable`, `sb_publishable_…`; sustituye a la antigua `anon`), nunca la `secret` (`sb_secret_…`, antigua `service_role`).
 - Cuando terminemos cada fase, repasa conmigo cómo podría alguien acceder a datos de otro hogar y cómo lo hemos impedido (me interesa aprender hacking ético).
+- Cabeceras de seguridad de la web en `vercel.json` (CSP, no dejar meter la app en un marco, etc.). Si se añade algo que cargue cosas de otro dominio, hay que permitirlo ahí o el navegador lo bloqueará.
+- En Supabase solo está activado el login con Google (el de email y contraseña está desactivado a propósito).
 
 ## Modelo de datos (versión inicial)
 
@@ -63,6 +65,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 **Regla clave que une las dos ideas:** cada tratamiento genera automáticamente una tarea para su próxima fecha (`fecha_ultima + frecuencia_dias`). Al marcar esa tarea como hecha, se actualiza `fecha_ultima` del tratamiento y se crea la siguiente tarea. Lo hace la propia base de datos: el disparador `sincronizar_tarea_del_tratamiento` (al crear o cambiar un tratamiento) y la función `completar_tarea` (al marcar como hecha).
 
 **Otras reglas automáticas:** las rutinas funcionan igual que los tratamientos (`sincronizar_tarea_de_la_rutina`). Si tienen `turnos`, al completarlas `completar_tarea` pasa el turno a la persona que va después de quien la ha hecho (por orden de llegada al hogar, dando la vuelta); hacer la de otra persona cuenta como tu turno. Si la rutina tiene `participantes`, solo rotan esas personas; si la hace alguien que no participa, el turno sigue como si la hubiera hecho la persona a la que le tocaba. El disparador `comprobar_participantes` impide meter a gente de otro hogar. Los vencimientos con aviso crean una tarea `aviso_dias` antes de `fecha_renovacion` (`sincronizar_tarea_del_vencimiento`); al completarla, `fecha_renovacion` salta a la siguiente renovación futura. Las suscripciones sin aviso no crean tareas: la app calcula sola la próxima renovación.
+
+**Salir y quitar:** `salir_del_hogar` (cualquiera; si es la última persona se borra el hogar entero, y la app borra antes sus fotos), `quitar_del_hogar` (solo admin) y `anular_invitaciones` (cualquiera del hogar). Lo que tenía asignado quien se va queda sin responsable (las rutinas con turnos pasan a la siguiente persona) y siempre queda alguien de admin.
 
 **Tareas a mano vs. automáticas:** las tareas creadas a mano se crean, editan, borran y reabren (`reabrir_tarea`) desde la app. Las automáticas (de un tratamiento, una rutina o un vencimiento) solo se cambian editando su origen y no se pueden reabrir, para que la regla automática nunca se rompa. Nadie puede marcar una tarea como hecha sin pasar por `completar_tarea`, ni falsear `creada_por` o `completada_por`.
 

@@ -13,6 +13,10 @@ const MENSAJES_PROPIOS = [
   'Elige una fecha',
   'Las tareas automáticas',
   'Solo puede participar',
+  'Solo quien administra',
+  'Esa persona no está',
+  'Para irte tú',
+  'No perteneces',
 ]
 
 // Errores técnicos que sí sabemos explicar.

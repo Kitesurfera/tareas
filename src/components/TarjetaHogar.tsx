@@ -7,6 +7,8 @@ import { useMiembros } from '../lib/useMiembros'
 type Props = {
   hogar: Hogar
   miUserId: string
+  // Se llama cuando sales del hogar, para volver a la pantalla de bienvenida.
+  onSalir: () => void
 }
 
 type Invitacion = {
@@ -15,8 +17,11 @@ type Invitacion = {
 }
 
 // Tarjeta con la gente del hogar y el botón para invitar a alguien.
-export function TarjetaHogar({ hogar, miUserId }: Props) {
-  const { miembros, error: errorMiembros } = useMiembros()
+export function TarjetaHogar({ hogar, miUserId, onSalir }: Props) {
+  const { miembros, error: errorMiembros, recargar } = useMiembros()
+  const [ocupado, setOcupado] = useState(false)
+  const yo = miembros?.find((m) => m.user_id === miUserId)
+  const soyAdmin = yo?.rol === 'admin'
   const [invitacion, setInvitacion] = useState<Invitacion | null>(null)
   const [creando, setCreando] = useState(false)
   const [copiado, setCopiado] = useState(false)
@@ -58,6 +63,61 @@ export function TarjetaHogar({ hogar, miUserId }: Props) {
     }
   }
 
+  async function anularInvitacion() {
+    if (!supabase) return
+    setError(null)
+    const { error } = await supabase.rpc('anular_invitaciones')
+    if (error) {
+      setError(mensajeDeError(error))
+      return
+    }
+    setInvitacion(null)
+  }
+
+  async function quitar(id: string, nombre: string) {
+    if (!supabase) return
+    const seguro = window.confirm(
+      `¿Quitar a ${nombre} del hogar? Dejará de ver todo lo del hogar y lo que tenía asignado quedará sin responsable.`,
+    )
+    if (!seguro) return
+    setOcupado(true)
+    setError(null)
+    const { error } = await supabase.rpc('quitar_del_hogar', { miembro_id: id })
+    setOcupado(false)
+    if (error) {
+      setError(mensajeDeError(error))
+      return
+    }
+    recargar()
+  }
+
+  async function salirDelHogar() {
+    if (!supabase || !miembros) return
+    const ultima = miembros.length <= 1
+    const seguro = window.confirm(
+      ultima
+        ? `Eres la última persona de «${hogar.nombre}». Si sales, se borrará el hogar con todas sus mascotas, fotos, tareas y listas. No se puede deshacer. ¿Seguro?`
+        : `¿Salir de «${hogar.nombre}»? Dejarás de ver todo lo del hogar. Para volver, necesitarás una invitación nueva.`,
+    )
+    if (!seguro) return
+    setOcupado(true)
+    setError(null)
+    // Si eres la última, primero borramos las fotos del almacén: la base de
+    // datos borra el resto, pero los archivos se quitan desde aquí.
+    if (ultima) {
+      const { data } = await supabase.storage.from('mascotas').list(hogar.id, { limit: 1000 })
+      const rutas = (data ?? []).map((archivo) => `${hogar.id}/${archivo.name}`)
+      if (rutas.length > 0) await supabase.storage.from('mascotas').remove(rutas)
+    }
+    const { error } = await supabase.rpc('salir_del_hogar')
+    setOcupado(false)
+    if (error) {
+      setError(mensajeDeError(error))
+      return
+    }
+    onSalir()
+  }
+
   const caduca = invitacion
     ? new Date(invitacion.caduca_en).toLocaleDateString('es-ES', {
         day: 'numeric',
@@ -85,12 +145,27 @@ export function TarjetaHogar({ hogar, miUserId }: Props) {
             >
               {miembro.nombre_visible.charAt(0).toUpperCase()}
             </span>
-            <span className="font-medium">
+            <span className="flex-1 font-medium">
               {miembro.nombre_visible}
               {miembro.user_id === miUserId && (
                 <span className="font-normal text-stone-400"> (tú)</span>
               )}
+              {miembro.rol === 'admin' && (
+                <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-normal text-stone-500">
+                  admin
+                </span>
+              )}
             </span>
+            {soyAdmin && miembro.user_id !== miUserId && (
+              <button
+                type="button"
+                onClick={() => quitar(miembro.id, miembro.nombre_visible)}
+                disabled={ocupado}
+                className="shrink-0 rounded-full px-3 py-1 text-sm text-red-700 ring-1 ring-red-200 disabled:opacity-50"
+              >
+                Quitar
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -111,6 +186,13 @@ export function TarjetaHogar({ hogar, miUserId }: Props) {
           >
             {copiado ? '¡Copiado!' : 'Compartir invitación'}
           </button>
+          <button
+            type="button"
+            onClick={anularInvitacion}
+            className="mt-2 text-sm text-stone-600 underline"
+          >
+            Anular invitación
+          </button>
         </div>
       ) : (
         <button
@@ -127,6 +209,17 @@ export function TarjetaHogar({ hogar, miUserId }: Props) {
         <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">
           {error}
         </p>
+      )}
+
+      {miembros && (
+        <button
+          type="button"
+          onClick={salirDelHogar}
+          disabled={ocupado}
+          className="mt-4 w-full py-2 text-sm font-medium text-red-700 disabled:opacity-50"
+        >
+          Salir del hogar
+        </button>
       )}
     </section>
   )
