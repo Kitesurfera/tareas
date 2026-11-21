@@ -39,7 +39,11 @@ export default defineConfig({
         // Supabase, así nunca ves datos viejos ni quedan copias en el móvil.
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         navigateFallback: '/index.html',
+        // Las direcciones del servidor (/api/…) no son pantallas de la app.
+        navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,
+        // Añade al service worker lo que recibe y enseña los avisos.
+        importScripts: ['sw-push.js'],
       },
     }),
   ],
