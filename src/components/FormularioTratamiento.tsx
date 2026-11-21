@@ -18,7 +18,7 @@ import {
 } from '../lib/tipos'
 import { useMascota } from '../lib/useMascota'
 import { useMiembros } from '../lib/useMiembros'
-import { avisoError, botonPrincipal, campo } from './estilos'
+import { avisoError, botonPrincipal, campo, campoBase } from './estilos'
 
 type Comun = {
   hogarId: string
@@ -269,7 +269,7 @@ function Formulario({ hogarId, miUserId, mascotaId, tratamiento }: Props) {
                 inputMode="numeric"
                 min={1}
                 max={3650}
-                className={`${campo} w-24 text-center`}
+                className={`${campoBase} w-24 text-center`}
                 value={Number.isNaN(frecuencia) ? '' : frecuencia}
                 onChange={(e) => setFrecuencia(e.target.valueAsNumber)}
                 required
