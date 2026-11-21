@@ -37,6 +37,29 @@ export function ListaCompra({ hogarId, nombres }: Props) {
     }
   }, [recarga])
 
+  // En tiempo real: escuchamos el canal privado de la lista de NUESTRO
+  // hogar. Cuando alguien cambia algo, la base de datos avisa y recargamos.
+  // (Una regla en Supabase impide escuchar el canal de otro hogar.)
+  const [enDirecto, setEnDirecto] = useState(false)
+  useEffect(() => {
+    const cliente = supabase
+    if (!cliente) return
+    const canal = cliente.channel(`hogar:${hogarId}:compra`, { config: { private: true } })
+    const recargar = () => setRecarga((n) => n + 1)
+    canal
+      .on('broadcast', { event: 'INSERT' }, recargar)
+      .on('broadcast', { event: 'UPDATE' }, recargar)
+      .on('broadcast', { event: 'DELETE' }, recargar)
+    // Primero le pasamos tu sesión al canal (para que Supabase compruebe
+    // que eres de este hogar) y después nos conectamos.
+    cliente.realtime.setAuth().then(() =>
+      canal.subscribe((estado) => setEnDirecto(estado === 'SUBSCRIBED')),
+    )
+    return () => {
+      cliente.removeChannel(canal)
+    }
+  }, [hogarId])
+
   // Al volver a la app (por ejemplo, después de que tu pareja haya
   // apuntado algo), recargamos la lista.
   useEffect(() => {
@@ -128,8 +151,16 @@ export function ListaCompra({ hogarId, nombres }: Props) {
 
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Lista de la compra</h2>
-      <p className="text-sm text-stone-500">Compartida: lo que apuntes lo ve todo el hogar</p>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">Lista de la compra</h2>
+        {enDirecto && (
+          <span className="flex items-center gap-1.5 text-xs font-medium text-marca" title="Los cambios del resto del hogar aparecen al momento">
+            <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-marca" />
+            En directo
+          </span>
+        )}
+      </div>
+      <p className="text-sm text-stone-500">Compartida: lo que apuntes lo ve todo el hogar al momento</p>
 
       <form onSubmit={anadir} className="mt-3 flex gap-2">
         <input
