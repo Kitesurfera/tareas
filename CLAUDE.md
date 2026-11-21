@@ -40,6 +40,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 
 - **El repositorio es público**: cualquiera puede leer el código. Antes de cada commit, comprueba que no se cuela ninguna clave, contraseña, email personal ni dato real de la mascota o del hogar.
 - Activa **Row Level Security (RLS)** en todas las tablas de Supabase desde el principio: cada hogar solo puede ver y modificar sus propios datos.
+- Los cambios de la base de datos van en `supabase/migrations/` (un archivo `.sql` por paso). Yo los ejecuto a mano en Supabase → SQL Editor: ejecutarlo es mi forma de aprobarlo. Antes de dármelos, pruébalos en un PostgreSQL local que imite Supabase, incluidos intentos de acceder a datos de otro hogar.
 - Las claves van en las variables de entorno de Vercel (o en un `.env` local, que está en `.gitignore`). Nunca subas claves al repositorio.
 - En el frontend solo se usa la clave pública de Supabase (`publishable`, `sb_publishable_…`; sustituye a la antigua `anon`), nunca la `secret` (`sb_secret_…`, antigua `service_role`).
 - Cuando terminemos cada fase, repasa conmigo cómo podría alguien acceder a datos de otro hogar y cómo lo hemos impedido (me interesa aprender hacking ético).
@@ -49,7 +50,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **hogares**: id, nombre, creado_en
 - **miembros**: id, hogar_id, user_id, nombre_visible, rol (admin / miembro)
 - **invitaciones**: id, hogar_id, email o código, estado, caduca_en
-- **mascotas**: id, hogar_id, nombre, especie, raza, fecha_nacimiento, foto_url, notas
+- **mascotas**: id, hogar_id, nombre, especie, raza, fecha_nacimiento, foto_ruta (ruta en el almacén privado `mascotas`, carpeta = id del hogar), notas, creada_por
 - **tratamientos**: id, mascota_id, tipo (vacuna / desparasitación interna / desparasitación externa / medicación / revisión), nombre, fecha_ultima, frecuencia_dias, notas
 - **pesos**: id, mascota_id, fecha, kg
 - **tareas**: id, hogar_id, titulo, descripcion, fecha_limite, responsable_id, creada_por, completada, completada_por, completada_en, categoria (mascota / casa / coche / papeleo / otros), mascota_id (opcional), tratamiento_id (opcional)

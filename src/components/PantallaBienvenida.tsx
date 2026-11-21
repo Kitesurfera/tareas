@@ -5,6 +5,7 @@ import {
   leerInvitacionPendiente,
 } from '../lib/invitacionPendiente'
 import { supabase } from '../lib/supabase'
+import { botonPrincipal, campo } from './estilos'
 
 type Props = {
   nombreSugerido: string
@@ -13,11 +14,6 @@ type Props = {
 }
 
 type Opcion = 'crear' | 'unirme'
-
-const campo =
-  'w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base outline-none focus:border-marca focus:ring-2 focus:ring-marca/20'
-const botonPrincipal =
-  'w-full rounded-full bg-marca px-5 py-3 font-semibold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-60'
 
 // Primera pantalla después de entrar, para quien aún no tiene hogar:
 // o crea uno nuevo, o se une al de su pareja con un código.

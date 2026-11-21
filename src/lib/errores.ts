@@ -10,8 +10,16 @@ const MENSAJES_PROPIOS = [
   'Ponle un nombre',
 ]
 
+// Errores técnicos que sí sabemos explicar.
+const TRADUCCIONES: [string, string][] = [
+  ['Payload too large', 'La foto es demasiado grande.'],
+  ['mime type', 'Ese tipo de archivo no vale: elige una foto.'],
+]
+
 export function mensajeDeError(error: { message?: string } | null): string {
   const texto = error?.message ?? ''
   if (MENSAJES_PROPIOS.some((inicio) => texto.startsWith(inicio))) return texto
+  const traduccion = TRADUCCIONES.find(([trozo]) => texto.includes(trozo))
+  if (traduccion) return traduccion[1]
   return 'Algo ha fallado. Comprueba tu conexión e inténtalo de nuevo.'
 }
