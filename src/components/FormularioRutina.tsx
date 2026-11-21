@@ -110,6 +110,10 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
   }
   const frecuenciaValida = Number.isInteger(frecuencia) && frecuencia >= 1 && frecuencia <= 365
   const fechaUltima = !fecha ? '' : modoFecha === 'ultima' ? fecha : sumarDias(fecha, -frecuencia)
+  // La próxima vez no puede ser más tarde que «hoy + frecuencia»: eso
+  // querría decir que la última vez fue en el futuro (suele ser el año
+  // mal puesto en el selector de fecha del móvil).
+  const proximaMaxima = frecuenciaValida ? sumarDias(hoyComoTexto(), frecuencia) : ''
   const proxima =
     fecha && frecuenciaValida ? (modoFecha === 'proxima' ? fecha : sumarDias(fecha, frecuencia)) : ''
 
@@ -123,6 +127,12 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
     if (!supabase) return
     if (!frecuenciaValida) {
       setError('Elige cada cuántos días toca (entre 1 y 365).')
+      return
+    }
+    if (fechaUltima > hoyComoTexto()) {
+      setError(
+        `Con «${textoFrecuencia(frecuencia)}», la próxima vez no puede ser más tarde del ${fechaLarga(proximaMaxima)}. Revisa el año de la fecha.`,
+      )
       return
     }
     if (turnos && enElTurno.length === 0) {
@@ -280,7 +290,7 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
             className={campo}
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
-            max={modoFecha === 'ultima' ? hoyComoTexto() : undefined}
+            max={modoFecha === 'ultima' ? hoyComoTexto() : proximaMaxima || undefined}
             min="2000-01-02"
             required
             aria-label={modoFecha === 'ultima' ? 'Fecha de la última vez' : 'Fecha de la próxima vez'}
