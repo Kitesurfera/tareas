@@ -15,6 +15,7 @@ import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
 import { TarjetaProximo } from './components/TarjetaProximo'
 import { TarjetaInstalar } from './components/TarjetaInstalar'
+import { TarjetaAvisos } from './components/TarjetaAvisos'
 import { ConPestanas } from './components/BarraPestanas'
 import { PantallaVencimientos } from './components/PantallaVencimientos'
 import {
@@ -263,6 +264,8 @@ function App() {
         <TarjetaInstalar />
 
         <TarjetaProximo miUserId={yo.userId} />
+
+        <TarjetaAvisos />
 
         <TarjetaMascotas />
 
