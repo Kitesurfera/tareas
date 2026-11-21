@@ -7,6 +7,7 @@ import type { Miembro } from './tipos'
 export function useMiembros() {
   const [miembros, setMiembros] = useState<Miembro[] | null>(null)
   const [error, setError] = useState(false)
+  const [recarga, setRecarga] = useState(0)
 
   useEffect(() => {
     if (!supabase) return
@@ -23,7 +24,7 @@ export function useMiembros() {
     return () => {
       vigente = false
     }
-  }, [])
+  }, [recarga])
 
-  return { miembros, error }
+  return { miembros, error, recargar: () => setRecarga((n) => n + 1) }
 }
