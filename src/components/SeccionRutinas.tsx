@@ -57,6 +57,17 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
     }
   }, [recarga])
 
+  // « entre tú y Dani» si solo participan algunas personas.
+  function entre(participantes: string[] | null): string {
+    if (!participantes) return ''
+    const nombresLista = participantes
+      .map((id) => nombres.responsable(id))
+      .filter((n): n is string => Boolean(n))
+      .map((n) => (n === 'Tú' ? 'tú' : n))
+    if (nombresLista.length < 2) return nombresLista.length === 1 ? ` (solo ${nombresLista[0]})` : ''
+    return ` entre ${nombresLista.slice(0, -1).join(', ')} y ${nombresLista[nombresLista.length - 1]}`
+  }
+
   async function confirmarHecho(tarea: Tarea, fecha: string) {
     if (!supabase) return
     setEnviando(true)
@@ -102,7 +113,7 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
                     <span className="block text-sm text-stone-500">
                       {textoFrecuencia(rutina.frecuencia_dias).replace('cada', 'Cada')} ·{' '}
                       {rutina.turnos
-                        ? `🔄 Turnos · le toca a ${encargada === 'Tú' ? 'ti' : (encargada ?? 'alguien')}`
+                        ? `🔄 Turnos${entre(rutina.participantes)} · le toca a ${encargada === 'Tú' ? 'ti' : (encargada ?? 'alguien')}`
                         : (encargada ?? 'Sin responsable')}
                     </span>
                     {pendiente?.fecha_limite && (

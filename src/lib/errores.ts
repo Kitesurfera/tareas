@@ -12,6 +12,7 @@ const MENSAJES_PROPIOS = [
   'Esa tarea ya estaba hecha',
   'Elige una fecha',
   'Las tareas automáticas',
+  'Solo puede participar',
 ]
 
 // Errores técnicos que sí sabemos explicar.

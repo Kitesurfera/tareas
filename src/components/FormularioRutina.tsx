@@ -69,24 +69,45 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
     rutina ? rutina.responsable_id : undefined,
   )
   const [turnos, setTurnos] = useState(rutina?.turnos ?? false)
+  // Quién se turna: null = todo el hogar (también quien entre más adelante).
+  const [participantes, setParticipantes] = useState<string[] | null>(rutina?.participantes ?? null)
   const [notas, setNotas] = useState(rutina?.notas ?? '')
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id ?? null
-  // Con turnos siempre le toca a alguien: si no hay nadie elegido, a ti.
-  const responsableElegido =
-    responsable !== undefined && !(turnos && responsable === null)
-      ? responsable
+  // Las personas que se turnan, en orden de llegada al hogar.
+  const enElTurno = (miembros ?? []).filter((m) => participantes === null || participantes.includes(m.id))
+  const idsEnElTurno = enElTurno.map((m) => m.id)
+
+  // ¿A quién le toca ahora? Si no se ha elegido a nadie, a ti. Con turnos,
+  // tiene que ser alguien que participa (si no, la primera que participa).
+  const elegido = responsable !== undefined ? responsable : miembros ? miMiembroId : undefined
+  const responsableElegido = !turnos
+    ? elegido
+    : elegido && idsEnElTurno.includes(elegido)
+      ? elegido
       : miembros
-        ? miMiembroId
+        ? (idsEnElTurno.includes(miMiembroId ?? '') ? miMiembroId : (idsEnElTurno[0] ?? null))
         : undefined
-  // Para la explicación: a quién le tocará después (orden de llegada).
-  const posicion = miembros?.findIndex((m) => m.id === responsableElegido) ?? -1
+
+  // Para la explicación: a quién le tocará después.
+  const posicion = enElTurno.findIndex((m) => m.id === responsableElegido)
   const despues =
-    miembros && miembros.length > 1 && posicion >= 0
-      ? miembros[(posicion + 1) % miembros.length].nombre_visible
-      : null
+    enElTurno.length > 1 && posicion >= 0 ? enElTurno[(posicion + 1) % enElTurno.length].nombre_visible : null
+
+  // Marca o desmarca a alguien. Si quedan todas marcadas, es «todo el hogar».
+  function cambiarParticipante(id: string) {
+    if (!miembros) return
+    const actuales = participantes ?? miembros.map((m) => m.id)
+    const quitar = actuales.includes(id)
+    // Siempre en orden de llegada al hogar.
+    const nuevas = miembros
+      .map((m) => m.id)
+      .filter((x) => (x === id ? !quitar : actuales.includes(x)))
+    setParticipantes(nuevas.length === miembros.length ? null : nuevas)
+    setError(null)
+  }
   const frecuenciaValida = Number.isInteger(frecuencia) && frecuencia >= 1 && frecuencia <= 365
   const fechaUltima = !fecha ? '' : modoFecha === 'ultima' ? fecha : sumarDias(fecha, -frecuencia)
   const proxima =
@@ -104,6 +125,10 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
       setError('Elige cada cuántos días toca (entre 1 y 365).')
       return
     }
+    if (turnos && enElTurno.length === 0) {
+      setError('Elige al menos una persona para los turnos.')
+      return
+    }
     setGuardando(true)
     setError(null)
     const datos = {
@@ -112,6 +137,8 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
       fecha_ultima: fechaUltima,
       responsable_id: responsableElegido ?? null,
       turnos,
+      // Sin turnos no hace falta guardar quién participa.
+      participantes: turnos ? participantes : null,
       notas: notas.trim() || null,
     }
     const { error } = rutina
@@ -278,13 +305,8 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
             <span className="font-medium text-stone-800">Turnos que rotan</span>
             <span className="text-sm text-stone-600">
               Cada vez que alguien la hace, pasa el turno a la siguiente persona
-              del hogar. Si haces la de otra persona, cuenta como tu turno.
+              que participa. Si haces la de otra persona, cuenta como tu turno.
             </span>
-            {turnos && despues && (
-              <span className="text-sm font-medium text-marca">
-                Ahora le toca a {miembros?.[posicion].nombre_visible}; después, a {despues}.
-              </span>
-            )}
             {turnos && miembros && miembros.length < 2 && (
               <span className="text-sm text-stone-500">
                 Cuando haya más gente en el hogar, os iréis turnando.
@@ -293,12 +315,41 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
           </span>
         </label>
 
+        {turnos && miembros && miembros.length > 1 && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Quién participa?</legend>
+            <div className="flex flex-wrap gap-2">
+              {miembros.map((miembro) => {
+                const dentro = idsEnElTurno.includes(miembro.id)
+                return (
+                  <button
+                    key={miembro.id}
+                    type="button"
+                    aria-pressed={dentro}
+                    onClick={() => cambiarParticipante(miembro.id)}
+                    className={estiloChip(dentro)}
+                  >
+                    {dentro ? '✓ ' : ''}
+                    {miembro.nombre_visible}
+                    {miembro.user_id === miUserId && ' (tú)'}
+                  </button>
+                )
+              })}
+            </div>
+            <span className="text-xs text-stone-500">
+              {participantes === null
+                ? 'Participa todo el hogar, también quien entre más adelante.'
+                : 'Solo se turnan las personas marcadas.'}
+            </span>
+          </fieldset>
+        )}
+
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 text-sm font-medium text-stone-700">
             {turnos ? '¿A quién le toca ahora?' : '¿Quién se encarga?'}
           </legend>
           <div className="flex flex-wrap gap-2">
-            {miembros?.map((miembro) => (
+            {(turnos ? enElTurno : (miembros ?? [])).map((miembro) => (
               <button
                 key={miembro.id}
                 type="button"
@@ -321,8 +372,12 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
               </button>
             )}
           </div>
+          {turnos && despues && posicion >= 0 && (
+            <span className="text-sm font-medium text-marca">
+              Ahora le toca a {enElTurno[posicion].nombre_visible}; después, a {despues}.
+            </span>
+          )}
         </fieldset>
-
 
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-stone-700">
