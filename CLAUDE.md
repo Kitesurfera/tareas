@@ -24,7 +24,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ## Stack
 
 - **Frontend:** React + Vite + TypeScript, con Tailwind CSS.
-- **PWA:** instalable en móvil (vite-plugin-pwa).
+- **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas (`autoUpdate`). Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
 - **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
 - Diseño **mobile-first**. Toda la interfaz en **español**.
