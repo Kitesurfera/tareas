@@ -1,0 +1,167 @@
+import { useEffect, useState } from 'react'
+import { mensajeDeError } from '../lib/errores'
+import {
+  cuandoToca,
+  diasHasta,
+  euros,
+  fechaCorta,
+  proximaRenovacion,
+  textoFrecuenciaMeses,
+} from '../lib/fechas'
+import { ir } from '../lib/ruta'
+import { supabase } from '../lib/supabase'
+import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
+import { useNombres } from '../lib/useNombres'
+import { avisoError, botonSecundario } from './estilos'
+
+type Props = {
+  miUserId: string
+}
+
+const SECCIONES: { tipo: TipoVencimiento; titulo: string; dibujo: string; vacio: string; boton: string }[] = [
+  {
+    tipo: 'seguro',
+    titulo: 'Seguros',
+    dibujo: '🛡️',
+    vacio: 'Coche, casa, salud, mascota… Apunta cuándo vence cada póliza.',
+    boton: '+ Añadir seguro',
+  },
+  {
+    tipo: 'suscripcion',
+    titulo: 'Suscripciones',
+    dibujo: '🔁',
+    vacio: 'Plataformas, gimnasio, apps, pruebas gratis que se acaban…',
+    boton: '+ Añadir suscripción',
+  },
+]
+
+function textoAviso(dias: number | null): string {
+  if (dias === null) return 'Sin aviso'
+  if (dias === 0) return 'Aviso el mismo día'
+  if (dias === 30) return 'Aviso 1 mes antes'
+  if (dias === 7) return 'Aviso 1 semana antes'
+  return `Aviso ${dias} días antes`
+}
+
+// Lo que cuesta al mes (para sumar suscripciones con distintas frecuencias).
+function alMes(v: Vencimiento): number {
+  return v.importe && v.frecuencia_meses ? v.importe / v.frecuencia_meses : 0
+}
+
+// Pestaña «Vencimientos»: seguros y suscripciones.
+export function PantallaVencimientos({ miUserId }: Props) {
+  const nombres = useNombres(miUserId)
+  const [lista, setLista] = useState<Vencimiento[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!supabase) return
+    let vigente = true
+    // Gracias a RLS, solo llegan los de tu hogar.
+    supabase
+      .from('vencimientos')
+      .select('*')
+      .then(({ data, error }) => {
+        if (!vigente) return
+        if (error) setError(mensajeDeError(error))
+        else setLista(data as Vencimiento[])
+      })
+    return () => {
+      vigente = false
+    }
+  }, [])
+
+  const conProxima = (lista ?? [])
+    .map((v) => ({ ...v, proxima: proximaRenovacion(v.fecha_renovacion, v.frecuencia_meses) }))
+    .sort((a, b) => a.proxima.localeCompare(b.proxima))
+
+  const suscripcionesAlMes = conProxima
+    .filter((v) => v.tipo === 'suscripcion')
+    .reduce((total, v) => total + alMes(v), 0)
+  const segurosAlAnio = conProxima
+    .filter((v) => v.tipo === 'seguro')
+    .reduce((total, v) => total + alMes(v) * 12, 0)
+
+  return (
+    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
+      <header>
+        <h1 className="text-2xl font-bold text-marca">Vencimientos</h1>
+        <p className="text-stone-600">Seguros y suscripciones que se renuevan</p>
+      </header>
+
+      {(suscripcionesAlMes > 0 || segurosAlAnio > 0) && (
+        <section className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-marca-suave p-4">
+            <p className="text-xs font-medium text-marca">Suscripciones</p>
+            <p className="text-lg font-bold text-marca">{euros(suscripcionesAlMes)}</p>
+            <p className="text-xs text-stone-600">al mes</p>
+          </div>
+          <div className="rounded-2xl bg-marca-suave p-4">
+            <p className="text-xs font-medium text-marca">Seguros</p>
+            <p className="text-lg font-bold text-marca">{euros(segurosAlAnio)}</p>
+            <p className="text-xs text-stone-600">al año</p>
+          </div>
+        </section>
+      )}
+
+      {error && <p role="alert" className={avisoError}>{error}</p>}
+      {lista === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
+
+      {lista &&
+        SECCIONES.map((seccion) => {
+          const delTipo = conProxima.filter((v) => v.tipo === seccion.tipo)
+          return (
+            <section key={seccion.tipo} className="rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="text-lg font-semibold">{seccion.titulo}</h2>
+              {delTipo.length === 0 && <p className="mt-1 text-sm text-stone-500">{seccion.vacio}</p>}
+              <ul className="mt-2 divide-y divide-stone-100">
+                {delTipo.map((v) => {
+                  const dias = diasHasta(v.proxima)
+                  const color = dias < 0 ? 'text-red-700' : dias <= 7 ? 'text-amber-700' : 'text-stone-600'
+                  const encargada = nombres.responsable(v.responsable_id)
+                  return (
+                    <li key={v.id}>
+                      <button
+                        type="button"
+                        onClick={() => ir(`/vencimientos/${v.id}/editar`)}
+                        className="flex w-full items-start gap-3 py-3 text-left"
+                      >
+                        <span aria-hidden="true" className="text-2xl leading-none">{seccion.dibujo}</span>
+                        <span className="flex-1">
+                          <span className="flex items-baseline justify-between gap-2">
+                            <span className="font-medium">{v.nombre}</span>
+                            {v.importe !== null && (
+                              <span className="shrink-0 text-sm font-semibold text-stone-700">{euros(v.importe)}</span>
+                            )}
+                          </span>
+                          <span className={`block text-sm font-medium ${color}`}>
+                            {dias < 0 ? 'Venció' : 'Se renueva'} el {fechaCorta(v.proxima)} · {cuandoToca(v.proxima)}
+                          </span>
+                          <span className="block text-sm text-stone-500">
+                            {textoFrecuenciaMeses(v.frecuencia_meses)} · {textoAviso(v.aviso_dias)}
+                            {encargada && ` · ${encargada}`}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <button
+                type="button"
+                onClick={() => ir(`/vencimientos/nuevo/${seccion.tipo}`)}
+                className={`mt-3 ${botonSecundario}`}
+              >
+                {seccion.boton}
+              </button>
+            </section>
+          )
+        })}
+
+      <p className="px-2 text-center text-xs text-stone-500">
+        Los avisos aparecen en Próximo y en Tareas. Al marcarlos como hechos, la
+        fecha pasa a la siguiente renovación.
+      </p>
+    </main>
+  )
+}
