@@ -136,6 +136,8 @@ export type Rutina = {
   frecuencia_dias: number
   fecha_ultima: string
   responsable_id: string | null
+  // Si es true, cada vez que alguien la hace le toca a la siguiente persona.
+  turnos: boolean
   notas: string | null
 }
 
