@@ -26,7 +26,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Frontend:** React + Vite + TypeScript, con Tailwind CSS.
 - **PWA:** instalable en móvil (vite-plugin-pwa).
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
-- **Despliegue:** Vercel (más adelante).
+- **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
 - Diseño **mobile-first**. Toda la interfaz en **español**.
 
 ## GitHub y flujo de trabajo
@@ -34,14 +34,14 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - El código vive en GitHub (`Kitesurfera/tareas`). Trabajo con Claude Code conectado a este repositorio.
 - `main` siempre tiene que funcionar. Cada paso de una fase se hace en una rama propia (por ejemplo `fase1-login`) y se une a `main` con un pull request.
 - En cada pull request, explícame en español qué cambia y cómo probarlo antes de que yo lo apruebe.
-- Más adelante, Vercel desplegará automáticamente cada cambio que llegue a `main`.
+- Vercel despliega automáticamente cada cambio que llega a `main`. Yo lo pruebo todo desde el móvil con el enlace de prueba del pull request (no tengo el proyecto en mi ordenador).
 
 ## Seguridad (no negociable)
 
 - **El repositorio es público**: cualquiera puede leer el código. Antes de cada commit, comprueba que no se cuela ninguna clave, contraseña, email personal ni dato real de la mascota o del hogar.
 - Activa **Row Level Security (RLS)** en todas las tablas de Supabase desde el principio: cada hogar solo puede ver y modificar sus propios datos.
-- Las claves van en `.env`, que debe estar en `.gitignore`. Nunca subas claves al repositorio.
-- En el frontend solo se usa la clave pública (`anon`) de Supabase, nunca la `service_role`.
+- Las claves van en las variables de entorno de Vercel (o en un `.env` local, que está en `.gitignore`). Nunca subas claves al repositorio.
+- En el frontend solo se usa la clave pública de Supabase (`publishable`, `sb_publishable_…`; sustituye a la antigua `anon`), nunca la `secret` (`sb_secret_…`, antigua `service_role`).
 - Cuando terminemos cada fase, repasa conmigo cómo podría alguien acceder a datos de otro hogar y cómo lo hemos impedido (me interesa aprender hacking ético).
 
 ## Modelo de datos (versión inicial)
