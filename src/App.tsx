@@ -6,6 +6,10 @@ import {
 } from './components/FormularioMascota'
 import { PantallaBienvenida } from './components/PantallaBienvenida'
 import { PantallaFichaMascota } from './components/PantallaFichaMascota'
+import {
+  PantallaEditarTratamiento,
+  PantallaNuevoTratamiento,
+} from './components/FormularioTratamiento'
 import { PantallaLogin } from './components/PantallaLogin'
 import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
@@ -155,16 +159,28 @@ function App() {
     )
   }
 
-  // Pantallas de mascotas: #/mascotas/nueva, #/mascotas/<id>, #/mascotas/<id>/editar
-  const [seccion, id, accion] = ruta.split('/').filter(Boolean)
-  if (seccion === 'mascotas' && id === 'nueva') {
+  // Pantallas según la dirección (lo que va detrás de «#»):
+  //   #/mascotas/nueva                     → añadir mascota
+  //   #/mascotas/<id>                      → ficha
+  //   #/mascotas/<id>/editar               → editar mascota
+  //   #/mascotas/<id>/tratamientos/nuevo   → añadir tratamiento
+  //   #/tratamientos/<id>/editar           → editar tratamiento
+  const partes = ruta.split('/').filter(Boolean)
+  const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
+  if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
     return <PantallaNuevaMascota hogarId={yo.hogar.id} />
   }
-  if (seccion === 'mascotas' && id && accion === 'editar') {
-    return <PantallaEditarMascota key={id} id={id} hogarId={yo.hogar.id} />
+  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'tratamientos' && partes[3] === 'nuevo') {
+    return <PantallaNuevoTratamiento key={partes[1]} mascotaId={partes[1]} {...comun} />
   }
-  if (seccion === 'mascotas' && id) {
-    return <PantallaFichaMascota key={id} id={id} />
+  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'editar') {
+    return <PantallaEditarMascota key={partes[1]} id={partes[1]} hogarId={yo.hogar.id} />
+  }
+  if (partes[0] === 'mascotas' && partes[1] && !partes[2]) {
+    return <PantallaFichaMascota key={partes[1]} id={partes[1]} />
+  }
+  if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
+    return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
   }
 
   return (
@@ -186,8 +202,9 @@ function App() {
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold">Próximo</h2>
         <p className="mt-2 text-stone-500">
-          Todavía no hay nada pendiente. Aquí verás lo que vence en los
-          próximos 30 días y quién se encarga.
+          Muy pronto aquí verás lo que vence en los próximos 30 días y quién
+          se encarga. De momento, las próximas vacunas y desparasitaciones
+          están en la ficha de cada mascota.
         </p>
       </section>
 

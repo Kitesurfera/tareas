@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { mensajeDeError } from '../lib/errores'
 import { supabase } from '../lib/supabase'
-import type { Hogar, Miembro } from '../lib/tipos'
+import type { Hogar } from '../lib/tipos'
+import { useMiembros } from '../lib/useMiembros'
 
 type Props = {
   hogar: Hogar
@@ -15,24 +16,11 @@ type Invitacion = {
 
 // Tarjeta con la gente del hogar y el botón para invitar a alguien.
 export function TarjetaHogar({ hogar, miUserId }: Props) {
-  const [miembros, setMiembros] = useState<Miembro[] | null>(null)
+  const { miembros, error: errorMiembros } = useMiembros()
   const [invitacion, setInvitacion] = useState<Invitacion | null>(null)
   const [creando, setCreando] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!supabase) return
-    // Gracias a RLS, esto solo devuelve la gente de MI hogar.
-    supabase
-      .from('miembros')
-      .select('id, user_id, nombre_visible, rol')
-      .order('creado_en')
-      .then(({ data, error }) => {
-        if (error) setError(mensajeDeError(error))
-        else setMiembros(data as Miembro[])
-      })
-  }, [hogar.id])
 
   async function invitar() {
     if (!supabase) return
@@ -83,7 +71,10 @@ export function TarjetaHogar({ hogar, miUserId }: Props) {
       <p className="text-sm text-stone-500">Quién está en este hogar</p>
 
       <ul className="mt-4 flex flex-col gap-3">
-        {miembros === null && !error && (
+        {errorMiembros && (
+          <li className="text-sm text-red-700">No se ha podido cargar la gente del hogar.</li>
+        )}
+        {miembros === null && !errorMiembros && (
           <li className="text-sm text-stone-400">Cargando…</li>
         )}
         {miembros?.map((miembro) => (
