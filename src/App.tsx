@@ -13,7 +13,7 @@ import {
 import { PantallaLogin } from './components/PantallaLogin'
 import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
-import { TarjetaTareas } from './components/TarjetaTareas'
+import { TarjetaProximo } from './components/TarjetaProximo'
 import { PantallaTareas } from './components/PantallaTareas'
 import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
@@ -214,22 +214,14 @@ function App() {
         </button>
       </header>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Próximo</h2>
-        <p className="mt-2 text-stone-500">
-          Muy pronto aquí verás lo que vence en los próximos 30 días y quién
-          se encarga. De momento, lo tienes todo en Tareas.
-        </p>
-      </section>
-
-      <TarjetaTareas miUserId={yo.userId} />
+      <TarjetaProximo miUserId={yo.userId} />
 
       <TarjetaMascotas />
 
       <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} />
 
       <footer className="mt-auto text-center text-xs text-stone-400">
-        Fase 1 en construcción
+        Tareas · Fase 1
       </footer>
     </main>
   )

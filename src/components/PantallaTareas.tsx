@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { diasHasta, hoyComoTexto } from '../lib/fechas'
+import { diasHasta } from '../lib/fechas'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Tarea } from '../lib/tipos'
-import { useMascotasDelHogar } from '../lib/useMascotasDelHogar'
-import { useMiembros } from '../lib/useMiembros'
-import { ConfirmarHecho } from './ConfirmarHecho'
+import { useAccionesTarea } from '../lib/useAccionesTarea'
+import { useNombres } from '../lib/useNombres'
 import { avisoError, botonPrincipal } from './estilos'
-import { FilaTarea } from './FilaTarea'
+import { AvisoRecienHecha, ListaTareas } from './ListaTareas'
 
 type Props = {
   miUserId: string
@@ -28,17 +27,13 @@ const ORDEN_GRUPOS = ['Atrasadas', 'Próximos 7 días', 'Más adelante', 'Sin fe
 
 // Lista de tareas del hogar.
 export function PantallaTareas({ miUserId }: Props) {
-  const { miembros } = useMiembros()
-  const mascotas = useMascotasDelHogar()
+  const nombres = useNombres(miUserId)
   const [pestana, setPestana] = useState<Pestana>('pendientes')
   const [soloMias, setSoloMias] = useState(false)
   const [tareas, setTareas] = useState<{ pestana: Pestana; lista: Tarea[] } | null>(null)
   const [recarga, setRecarga] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [marcando, setMarcando] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
-  // Última tarea marcada como hecha, para poder deshacerlo.
-  const [recienHecha, setRecienHecha] = useState<Tarea | null>(null)
+  const [errorCarga, setErrorCarga] = useState<string | null>(null)
+  const acciones = useAccionesTarea(() => setRecarga((n) => n + 1))
 
   useEffect(() => {
     if (!supabase) return
@@ -59,7 +54,7 @@ export function PantallaTareas({ miUserId }: Props) {
             .limit(50)
     consulta.then(({ data, error }) => {
       if (!vigente) return
-      if (error) setError(mensajeDeError(error))
+      if (error) setErrorCarga(mensajeDeError(error))
       else setTareas({ pestana, lista: data as Tarea[] })
     })
     return () => {
@@ -67,75 +62,12 @@ export function PantallaTareas({ miUserId }: Props) {
     }
   }, [pestana, recarga])
 
-  const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id
-  const nombreMiembro = (id: string | null) =>
-    miembros?.find((m) => m.id === id)?.nombre_visible ?? null
-  const nombrePorUsuario = (userId: string | null) =>
-    miembros?.find((m) => m.user_id === userId)?.nombre_visible ?? null
-  const nombreMascota = (id: string | null) =>
-    mascotas?.find((m) => m.id === id)?.nombre ?? null
-
   // Mientras cambia de pestaña no enseñamos la lista anterior.
   const lista =
     tareas?.pestana === pestana
-      ? tareas.lista.filter((t) => !soloMias || t.responsable_id === miMiembroId)
+      ? tareas.lista.filter((t) => !soloMias || t.responsable_id === nombres.miMiembroId)
       : null
-
-  async function completar(tarea: Tarea, fecha: string) {
-    if (!supabase) return
-    setEnviando(true)
-    setError(null)
-    const { error } = await supabase.rpc('completar_tarea', { tarea_id: tarea.id, hecha_el: fecha })
-    setEnviando(false)
-    if (error) {
-      setError(mensajeDeError(error))
-      return
-    }
-    setMarcando(null)
-    setRecienHecha(tarea)
-    setRecarga((n) => n + 1)
-  }
-
-  function pulsarCirculo(tarea: Tarea) {
-    setError(null)
-    // Las tareas a mano se marcan al momento (y se pueden deshacer).
-    // Las de un tratamiento preguntan la fecha, porque de ella depende
-    // cuándo toca la siguiente.
-    if (tarea.tratamiento_id) setMarcando(tarea.id)
-    else completar(tarea, hoyComoTexto())
-  }
-
-  async function reabrir(tarea: Tarea) {
-    if (!supabase) return
-    setError(null)
-    const { error } = await supabase.rpc('reabrir_tarea', { tarea_id: tarea.id })
-    if (error) {
-      setError(mensajeDeError(error))
-      return
-    }
-    setRecienHecha(null)
-    setRecarga((n) => n + 1)
-  }
-
-  const fila = (tarea: Tarea) => (
-    <FilaTarea
-      key={tarea.id}
-      tarea={tarea}
-      nombreResponsable={nombreMiembro(tarea.responsable_id)}
-      nombreMascota={nombreMascota(tarea.mascota_id)}
-      nombreQuienLaHizo={nombrePorUsuario(tarea.completada_por)}
-      onPulsarCirculo={() => pulsarCirculo(tarea)}
-      onReabrir={tarea.completada && !tarea.tratamiento_id ? () => reabrir(tarea) : undefined}
-    >
-      {marcando === tarea.id && (
-        <ConfirmarHecho
-          enviando={enviando}
-          onConfirmar={(fecha) => completar(tarea, fecha)}
-          onCancelar={() => setMarcando(null)}
-        />
-      )}
-    </FilaTarea>
-  )
+  const error = errorCarga ?? acciones.error
 
   const chip = (activo: boolean) =>
     `rounded-full px-4 py-1.5 text-sm font-medium ring-1 transition ${
@@ -174,7 +106,8 @@ export function PantallaTareas({ miUserId }: Props) {
             aria-selected={pestana === valor}
             onClick={() => {
               setPestana(valor)
-              setMarcando(null)
+              acciones.cancelarMarcado()
+              acciones.olvidarRecienHecha()
             }}
             className={`rounded-full px-3 py-2 text-sm font-medium transition ${
               pestana === valor ? 'bg-white text-marca shadow-sm' : 'text-stone-600'
@@ -194,16 +127,7 @@ export function PantallaTareas({ miUserId }: Props) {
         </button>
       </div>
 
-      {recienHecha && pestana === 'pendientes' && (
-        <div role="status" className="flex items-center justify-between gap-3 rounded-xl bg-marca-suave p-3 text-sm text-marca">
-          <span>¡Hecho! «{recienHecha.titulo}»</span>
-          {!recienHecha.tratamiento_id && (
-            <button type="button" onClick={() => reabrir(recienHecha)} className="shrink-0 font-semibold underline">
-              Deshacer
-            </button>
-          )}
-        </div>
-      )}
+      <AvisoRecienHecha acciones={acciones} />
 
       {error && <p role="alert" className={avisoError}>{error}</p>}
 
@@ -228,14 +152,14 @@ export function PantallaTareas({ miUserId }: Props) {
               <h2 className={`pt-2 text-sm font-semibold ${grupo === 'Atrasadas' ? 'text-red-700' : 'text-stone-500'}`}>
                 {grupo}
               </h2>
-              <ul className="divide-y divide-stone-100">{delGrupo.map(fila)}</ul>
+              <ListaTareas tareas={delGrupo} acciones={acciones} nombres={nombres} />
             </section>
           )
         })}
 
       {lista && lista.length > 0 && pestana === 'hechas' && (
         <section className="rounded-2xl bg-white px-5 py-2 shadow-sm">
-          <ul className="divide-y divide-stone-100">{lista.map(fila)}</ul>
+          <ListaTareas tareas={lista} acciones={acciones} nombres={nombres} />
         </section>
       )}
     </main>
