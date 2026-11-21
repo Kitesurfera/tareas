@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { mensajeDeError } from './errores'
 import { hoyComoTexto } from './fechas'
 import { supabase } from './supabase'
-import type { Tarea } from './tipos'
+import { esAutomatica, type Tarea } from './tipos'
 
 // Marcar tareas como hechas, deshacer y reabrir. Lo usan la pantalla de
 // Tareas y la tarjeta «Próximo». «alCambiar» se llama para recargar.
@@ -30,11 +30,11 @@ export function useAccionesTarea(alCambiar: () => void) {
   }
 
   // Las tareas a mano se marcan al momento (y se pueden deshacer).
-  // Las de un tratamiento preguntan la fecha, porque de ella depende
-  // cuándo toca la siguiente.
+  // Las automáticas (tratamiento, rutina, vencimiento) no se pueden
+  // deshacer, así que piden confirmar la fecha.
   function pulsarCirculo(tarea: Tarea) {
     setError(null)
-    if (tarea.tratamiento_id) setMarcando(tarea.id)
+    if (esAutomatica(tarea)) setMarcando(tarea.id)
     else completar(tarea, hoyComoTexto())
   }
 

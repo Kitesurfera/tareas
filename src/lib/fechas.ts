@@ -93,3 +93,43 @@ export function textoFrecuencia(dias: number): string {
 }
 
 export const FRECUENCIAS_HABITUALES = [30, 90, 182, 365]
+
+// Suma meses a una fecha «2026-03-31». Si el día no existe en ese mes,
+// se queda en el último día (31 de marzo + 1 mes = 30 de abril).
+export function sumarMeses(texto: string, meses: number): string {
+  const [anio, mes, dia] = texto.split('-').map(Number)
+  const ultimoDiaDelMes = new Date(anio, mes - 1 + meses + 1, 0).getDate()
+  const fecha = new Date(anio, mes - 1 + meses, Math.min(dia, ultimoDiaDelMes))
+  const m = String(fecha.getMonth() + 1).padStart(2, '0')
+  const d = String(fecha.getDate()).padStart(2, '0')
+  return `${fecha.getFullYear()}-${m}-${d}`
+}
+
+// Próxima renovación que aún no ha pasado. Las suscripciones se renuevan
+// solas aunque nadie toque la app, así que si la fecha guardada ya pasó,
+// calculamos la siguiente.
+export function proximaRenovacion(fecha: string, frecuenciaMeses: number | null): string {
+  if (!frecuenciaMeses) return fecha
+  const hoy = hoyComoTexto()
+  let siguiente = fecha
+  for (let vueltas = 1; siguiente < hoy && vueltas < 1000; vueltas++) {
+    siguiente = sumarMeses(fecha, frecuenciaMeses * vueltas)
+  }
+  return siguiente
+}
+
+export function textoFrecuenciaMeses(meses: number | null): string {
+  if (!meses) return 'no se repite'
+  const conocidas: Record<number, string> = {
+    1: 'cada mes',
+    3: 'cada 3 meses',
+    6: 'cada 6 meses',
+    12: 'cada año',
+    24: 'cada 2 años',
+  }
+  return conocidas[meses] ?? `cada ${meses} meses`
+}
+
+export function euros(importe: number): string {
+  return importe.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+}

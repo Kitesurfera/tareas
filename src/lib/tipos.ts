@@ -92,8 +92,71 @@ export type Tarea = {
   categoria: Categoria
   mascota_id: string | null
   tratamiento_id: string | null
+  vencimiento_id: string | null
+  rutina_id: string | null
   creada_por: string | null
   completada: boolean
   completada_por: string | null
   completada_en: string | null
+}
+
+// Las tareas automáticas vienen de un tratamiento, un vencimiento o una
+// rutina: no se editan ni se reabren a mano.
+export function esAutomatica(tarea: Tarea): boolean {
+  return Boolean(tarea.tratamiento_id || tarea.vencimiento_id || tarea.rutina_id)
+}
+
+// Dónde se edita una tarea automática.
+export function rutaDeOrigen(tarea: Tarea): string | null {
+  if (tarea.tratamiento_id) return `/tratamientos/${tarea.tratamiento_id}/editar`
+  if (tarea.vencimiento_id) return `/vencimientos/${tarea.vencimiento_id}/editar`
+  if (tarea.rutina_id) return `/casa/rutinas/${tarea.rutina_id}/editar`
+  return null
+}
+
+export type TipoVencimiento = 'seguro' | 'suscripcion'
+
+export type Vencimiento = {
+  id: string
+  hogar_id: string
+  tipo: TipoVencimiento
+  nombre: string
+  fecha_renovacion: string
+  frecuencia_meses: number | null
+  importe: number | null
+  aviso_dias: number | null
+  responsable_id: string | null
+  notas: string | null
+}
+
+export type Rutina = {
+  id: string
+  hogar_id: string
+  nombre: string
+  frecuencia_dias: number
+  fecha_ultima: string
+  responsable_id: string | null
+  notas: string | null
+}
+
+// Ideas para empezar rápido: nombre y cada cuántos días.
+export const RUTINAS_HABITUALES: { nombre: string; dias: number }[] = [
+  { nombre: 'Sacar la basura', dias: 2 },
+  { nombre: 'Poner lavadoras', dias: 3 },
+  { nombre: 'Hacer la compra', dias: 7 },
+  { nombre: 'Limpiar el baño', dias: 7 },
+  { nombre: 'Pasar la aspiradora', dias: 7 },
+  { nombre: 'Fregar el suelo', dias: 7 },
+  { nombre: 'Regar las plantas', dias: 4 },
+  { nombre: 'Cambiar las sábanas', dias: 14 },
+  { nombre: 'Limpiar la nevera', dias: 30 },
+]
+
+export type ArticuloCompra = {
+  id: string
+  nombre: string
+  cantidad: string | null
+  comprado: boolean
+  anadido_por: string | null
+  comprado_por: string | null
 }
