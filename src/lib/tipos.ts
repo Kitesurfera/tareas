@@ -138,6 +138,8 @@ export type Rutina = {
   responsable_id: string | null
   // Si es true, cada vez que alguien la hace le toca a la siguiente persona.
   turnos: boolean
+  // Quién se turna (miembros.id). null = todo el hogar.
+  participantes: string[] | null
   notas: string | null
 }
 
