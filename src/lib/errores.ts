@@ -8,6 +8,9 @@ const MENSAJES_PROPIOS = [
   'Ese código',
   'Escribe tu nombre',
   'Ponle un nombre',
+  'No encontramos esa tarea',
+  'Esa tarea ya estaba hecha',
+  'Elige una fecha',
 ]
 
 // Errores técnicos que sí sabemos explicar.
