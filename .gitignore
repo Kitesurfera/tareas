@@ -1,0 +1,13 @@
+# Claves y configuración local (NUNCA subir)
+.env
+.env.*
+!.env.example
+
+# Dependencias y builds
+node_modules/
+dist/
+.vercel/
+
+# Sistema
+.DS_Store
+*.log
