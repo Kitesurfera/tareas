@@ -1,6 +1,6 @@
 import type { AccionesTarea } from '../lib/useAccionesTarea'
 import type { Nombres } from '../lib/useNombres'
-import type { Tarea } from '../lib/tipos'
+import { esAutomatica, type Tarea } from '../lib/tipos'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { FilaTarea } from './FilaTarea'
 
@@ -23,7 +23,7 @@ export function ListaTareas({ tareas, acciones, nombres }: Props) {
           nombreQuienLaHizo={nombres.porUsuario(tarea.completada_por)}
           onPulsarCirculo={() => acciones.pulsarCirculo(tarea)}
           onReabrir={
-            tarea.completada && !tarea.tratamiento_id ? () => acciones.reabrir(tarea) : undefined
+            tarea.completada && !esAutomatica(tarea) ? () => acciones.reabrir(tarea) : undefined
           }
         >
           {acciones.marcando === tarea.id && (
@@ -49,7 +49,7 @@ export function AvisoRecienHecha({ acciones }: { acciones: AccionesTarea }) {
       className="flex items-center justify-between gap-3 rounded-xl bg-marca-suave p-3 text-sm text-marca"
     >
       <span>¡Hecho! «{tarea.titulo}»</span>
-      {!tarea.tratamiento_id && (
+      {!esAutomatica(tarea) && (
         <button
           type="button"
           onClick={() => acciones.reabrir(tarea)}

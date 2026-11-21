@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cuandoToca, diasHasta } from '../lib/fechas'
 import { ir } from '../lib/ruta'
-import { infoCategoria, type Tarea } from '../lib/tipos'
+import { infoCategoria, rutaDeOrigen, type Tarea } from '../lib/tipos'
 
 type Props = {
   tarea: Tarea
@@ -31,13 +31,8 @@ export function FilaTarea({
   children,
 }: Props) {
   const categoria = infoCategoria(tarea.categoria)
-  // Las tareas de un tratamiento se editan desde el tratamiento.
-  const editar = () =>
-    ir(
-      tarea.tratamiento_id
-        ? `/tratamientos/${tarea.tratamiento_id}/editar`
-        : `/tareas/${tarea.id}/editar`,
-    )
+  // Las tareas automáticas se editan desde su origen.
+  const editar = () => ir(rutaDeOrigen(tarea) ?? `/tareas/${tarea.id}/editar`)
 
   return (
     <li className="py-3">

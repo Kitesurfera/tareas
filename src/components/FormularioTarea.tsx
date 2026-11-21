@@ -3,7 +3,7 @@ import { mensajeDeError } from '../lib/errores'
 import { cuandoToca, fechaLarga } from '../lib/fechas'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
-import { CATEGORIAS, type Categoria, type Tarea } from '../lib/tipos'
+import { CATEGORIAS, rutaDeOrigen, type Categoria, type Tarea } from '../lib/tipos'
 import { useMascotasDelHogar } from '../lib/useMascotasDelHogar'
 import { useMiembros } from '../lib/useMiembros'
 import { avisoError, botonPrincipal, campo } from './estilos'
@@ -43,15 +43,16 @@ export function PantallaEditarTarea({ id, ...comun }: Comun & { id: string }) {
   if (estado.error) return <Aviso texto={estado.error} />
   if (!estado.tarea) return <Aviso texto="No encontramos esta tarea en tu hogar." />
   const { tarea } = estado
-  if (tarea.tratamiento_id) {
+  const origen = rutaDeOrigen(tarea)
+  if (origen) {
     return (
-      <Aviso texto="Esta tarea viene de un tratamiento: se cambia desde el tratamiento.">
+      <Aviso texto="Esta tarea es automática: se cambia desde su tratamiento, rutina o vencimiento.">
         <button
           type="button"
-          onClick={() => ir(`/tratamientos/${tarea.tratamiento_id}/editar`)}
+          onClick={() => ir(origen)}
           className="rounded-full bg-marca px-5 py-2 font-semibold text-white"
         >
-          Ir al tratamiento
+          Ir a su origen
         </button>
       </Aviso>
     )
