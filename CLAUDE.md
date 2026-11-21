@@ -81,7 +81,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Vencimientos**: seguros y suscripciones con fecha de renovación, importe y aviso previo. Resumen de gasto (suscripciones al mes, seguros al año).
 - **Casa**: solo tareas de casa rutinarias (limpieza, basura, compra…) y una **lista de la compra** compartida.
 - **Turnos que rotan** en las rutinas.
-- Ideas pendientes: lista de la compra en tiempo real (Supabase Realtime); elegir qué personas participan en los turnos de cada rutina.
+- **Lista de la compra en tiempo real**: cada cambio manda un aviso (Realtime Broadcast) por el canal privado `hogar:<id>:compra`; una regla RLS en `realtime.messages` solo deja escuchar el canal del propio hogar. En Supabase, «Allow public access» de Realtime está desactivado (no usamos canales públicos).
+- Ideas pendientes: elegir qué personas participan en los turnos de cada rutina.
 
 ### Fase 2
 - **Contador de carga mental**: por persona y mes, cuántas cosas ha *creado* (pensar) frente a cuántas ha *completado* (hacer). Tono neutro y amable, nunca de reproche.
