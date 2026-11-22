@@ -56,7 +56,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **invitaciones**: id, hogar_id, email o código, estado, caduca_en
 - **mascotas**: id, hogar_id, nombre, especie, raza, fecha_nacimiento, foto_ruta (ruta en el almacén privado `mascotas`, carpeta = id del hogar), notas, creada_por
 - **tratamientos**: id, hogar_id, mascota_id, tipo (vacuna / desparasitacion_interna / desparasitacion_externa / medicacion / revision), nombre, fecha_ultima, frecuencia_dias, responsable_id (sus tareas lo heredan), notas, creada_por
-- **pesos**: id, mascota_id, fecha, kg
+- **pesos**: id, hogar_id, mascota_id, fecha, kg (hasta 3 decimales, entre 0 y 500), creada_por. Como mucho un peso por mascota y día (`un_peso_por_dia`; si se vuelve a pesar ese día, la app cambia el que había). Se ve en la sección «⚖️ Peso» de la ficha, con gráfica (`GraficaPeso`, dibujada a mano en SVG, sin librerías).
 - **tareas**: id, hogar_id, titulo, descripcion, fecha_limite, responsable_id, creada_por, completada, completada_por, completada_en, categoria (mascota / casa / coche / papeleo / otros), mascota_id, tratamiento_id, vencimiento_id, rutina_id (estos tres últimos marcan las tareas automáticas)
 - **vencimientos**: id, hogar_id, tipo (seguro / suscripcion), nombre, fecha_renovacion, frecuencia_meses (vacío = no se repite), importe, aviso_dias (vacío = sin aviso), responsable_id, notas, revisado_para, creada_por
 - **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), participantes (miembros.id que se turnan; vacío = todo el hogar), notas, creada_por
@@ -95,7 +95,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ### Fase 2
 - ✅ **Carga mental «En equipo»** (tarjeta en Inicio y pantalla `#/carga` con meses anteriores). **Nunca compara a personas**: enseña lo pensado y hecho entre todas, «💚 Gracias por acordarte» con lo que pensaron las demás, y tus propios números, que solo ves tú. Sin porcentajes, sin barras por persona y sin frases que juzguen (la primera versión con marcador resultaba pasivo-agresiva).
 - ✅ **Ajustes** (botón ⚙️ arriba a la derecha del inicio, `#/ajustes`): tu nombre, avisos, nombre del hogar, quién está en el hogar (invitar, quitar, salir), instalar la app y cerrar sesión (solo en ese dispositivo).
-- Registro de peso con una gráfica sencilla.
+- ✅ **Registro de peso** con una gráfica sencilla (sección «⚖️ Peso» de la ficha de la mascota: último peso, cuánto ha cambiado, gráfica que se puede tocar e historial).
 - ~~Recordatorios~~ ✅ Hechos con notificaciones push (aviso diario a las 8:00). En iPhone solo funcionan con la app instalada en la pantalla de inicio. Pendiente: avisos por email para quien no instale la app.
 
 ### Fase 3
