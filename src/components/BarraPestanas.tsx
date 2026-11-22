@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { ir, reemplazar } from '../lib/ruta'
 
-export type Pestana = 'inicio' | 'tareas' | 'casa' | 'vencimientos'
+export type Pestana = 'inicio' | 'tareas' | 'casa' | 'planes' | 'vencimientos'
 
 // Cada pestaña con su dibujo y su color (las clases van enteras para que
 // Tailwind las encuentre).
@@ -9,6 +9,7 @@ const PESTANAS: { valor: Pestana; texto: string; dibujo: string; ruta: string; a
   { valor: 'inicio', texto: 'Inicio', dibujo: '🏡', ruta: '/', activa: 'bg-inicio text-inicio-tinta' },
   { valor: 'tareas', texto: 'Tareas', dibujo: '📝', ruta: '/tareas', activa: 'bg-tareas text-tareas-tinta' },
   { valor: 'casa', texto: 'Casa', dibujo: '🧹', ruta: '/casa', activa: 'bg-casa text-casa-tinta' },
+  { valor: 'planes', texto: 'Planes', dibujo: '🎲', ruta: '/planes', activa: 'bg-planes text-planes-tinta' },
   { valor: 'vencimientos', texto: 'Vencimientos', dibujo: '📅', ruta: '/vencimientos', activa: 'bg-vencimientos text-vencimientos-tinta' },
 ]
 
@@ -148,7 +149,7 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
           aria-label="Secciones"
           className="fixed inset-x-0 bottom-0 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] md:hidden"
         >
-          <ul className="mx-auto grid max-w-md grid-cols-4 gap-1 rounded-[1.75rem] bg-white/90 p-1.5 shadow-[0_10px_30px_-12px_rgb(60_40_20/0.35)] ring-1 ring-stone-900/5 backdrop-blur-md">
+          <ul className="mx-auto grid max-w-md grid-cols-5 gap-0.5 rounded-[1.75rem] bg-white/90 p-1.5 shadow-[0_10px_30px_-12px_rgb(60_40_20/0.35)] ring-1 ring-stone-900/5 backdrop-blur-md">
             {PESTANAS.map((pestana) => {
               const activa = pestana.valor === seccion
               return (
@@ -158,7 +159,7 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
                     // Cambiar de pestaña no apila pantallas en el «atrás».
                     onClick={() => reemplazar(pestana.ruta)}
                     aria-current={activa ? 'page' : undefined}
-                    className={`flex w-full flex-col items-center gap-0.5 rounded-[1.35rem] py-1.5 text-[11px] font-semibold transition-colors ${
+                    className={`flex w-full flex-col items-center gap-0.5 rounded-[1.35rem] py-1.5 text-[10.5px] font-semibold tracking-tight transition-colors ${
                       activa ? pestana.activa : 'text-stone-500 active:bg-stone-100'
                     }`}
                   >

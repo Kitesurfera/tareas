@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 
-export type ColorCabecera = 'inicio' | 'tareas' | 'casa' | 'vencimientos' | 'ajustes'
+export type ColorCabecera = 'inicio' | 'tareas' | 'casa' | 'planes' | 'vencimientos' | 'ajustes'
 
 // Las clases van escritas enteras para que Tailwind las encuentre.
 const COLORES: Record<ColorCabecera, { fondo: string; tinta: string }> = {
   inicio: { fondo: 'bg-inicio', tinta: 'text-inicio-tinta' },
   tareas: { fondo: 'bg-tareas', tinta: 'text-tareas-tinta' },
   casa: { fondo: 'bg-casa', tinta: 'text-casa-tinta' },
+  planes: { fondo: 'bg-planes', tinta: 'text-planes-tinta' },
   vencimientos: { fondo: 'bg-vencimientos', tinta: 'text-vencimientos-tinta' },
   ajustes: { fondo: 'bg-ajustes', tinta: 'text-ajustes-tinta' },
 }

@@ -3,7 +3,7 @@ import type { Categoria } from './tipos'
 // Colores de la app para cosas que se repiten. Las clases van escritas
 // enteras para que Tailwind las encuentre.
 
-export type ColorSuave = 'inicio' | 'tareas' | 'casa' | 'vencimientos' | 'ajustes' | 'plantas' | 'coral'
+export type ColorSuave = 'inicio' | 'tareas' | 'casa' | 'vencimientos' | 'ajustes' | 'plantas' | 'planes' | 'coral'
 
 // Fondo suave + tinta (texto) con buen contraste.
 export const SUAVE: Record<ColorSuave, string> = {
@@ -13,6 +13,7 @@ export const SUAVE: Record<ColorSuave, string> = {
   vencimientos: 'bg-vencimientos text-vencimientos-tinta',
   ajustes: 'bg-ajustes text-ajustes-tinta',
   plantas: 'bg-plantas text-plantas-tinta',
+  planes: 'bg-planes text-planes-tinta',
   coral: 'bg-coral-suave text-coral-tinta',
 }
 
