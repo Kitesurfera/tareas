@@ -4,6 +4,7 @@
 -- Necesita que antes se hayan ejecutado todos los SQL anteriores.
 -- Cómo usarlo: Supabase → SQL Editor → New query → pega todo → Run.
 -- Se ejecuta de una vez: si algo falla, no se aplica nada.
+-- Se puede ejecutar varias veces: si ya estaba aplicado, no cambia nada.
 --
 -- Qué hace:
 --   * Cuando alguien abre un enlace de acceso, se guarda su nombre de
@@ -28,13 +29,14 @@ begin
 end;
 $$;
 
-alter table public.accesos add column aceptado_nombre text;
-alter table public.accesos add column aceptado_email text;
-alter table public.accesos add column aceptado_en timestamptz;
+-- «if not exists»: si ya están (porque el SQL ya se ejecutó), no hace nada.
+alter table public.accesos add column if not exists aceptado_nombre text;
+alter table public.accesos add column if not exists aceptado_email text;
+alter table public.accesos add column if not exists aceptado_en timestamptz;
 -- (No se da permiso para escribirlas desde la app: solo la base de datos.)
 
 -- «marta.garcia@ejemplo.com» → «ma•••@ejemplo.com»
-create function public.email_a_medias(email text)
+create or replace function public.email_a_medias(email text)
 returns text
 language sql
 immutable
