@@ -66,10 +66,21 @@ export async function POST(request: Request): Promise<Response> {
   if ((count ?? 0) >= MAX_LECTURAS_AL_DIA) {
     return error(`Ya habéis leído ${MAX_LECTURAS_AL_DIA} cartillas en las últimas 24 horas. Prueba mañana.`, 429)
   }
-  // Se apunta antes de llamar a la IA: así cuentan también los intentos fallidos.
-  await supabase
+  // Se apunta antes de llamar a la IA: así cuentan también los intentos
+  // fallidos. Si no se puede apuntar, no se sigue (sin límite no hay IA).
+  const { error: errorApunte } = await supabase
     .from('lecturas_cartilla')
     .insert({ hogar_id: miembro.hogar_id, user_id: usuario.user.id, paginas: paginas.length })
+  if (errorApunte) {
+    const falta = errorApunte.code === '42P01' || errorApunte.code === 'PGRST205'
+    console.error('Cartilla: no se pudo apuntar la lectura', errorApunte.code)
+    return error(
+      falta
+        ? 'Falta ejecutar en Supabase el SQL de la cartilla (lecturas_cartilla).'
+        : 'No se ha podido apuntar la lectura. Prueba otra vez.',
+      500,
+    )
+  }
 
   // 5. Se las pasamos a la IA.
   const contenido: ParteDelMensaje[] = []
