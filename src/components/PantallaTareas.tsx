@@ -9,6 +9,7 @@ import { useNombres } from '../lib/useNombres'
 import { avisoError, botonPrincipal } from './estilos'
 import { AvisoRecienHecha, ListaTareas } from './ListaTareas'
 import { CabeceraPestana } from './CabeceraPestana'
+import { Vacio } from './Piezas'
 
 type Props = {
   miUserId: string
@@ -132,13 +133,15 @@ export function PantallaTareas({ miUserId }: Props) {
       {lista === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
 
       {lista?.length === 0 && (
-        <p className="tarjeta text-center text-stone-500">
-          {pestana === 'pendientes'
-            ? soloMias
-              ? 'No tienes nada pendiente. 🎉'
-              : 'No hay nada pendiente en el hogar. 🎉'
-            : 'Todavía no hay tareas hechas.'}
-        </p>
+        <div className="tarjeta">
+          <Vacio dibujo={pestana === 'pendientes' ? '🎉' : '🌱'} color="tareas">
+            {pestana === 'pendientes'
+              ? soloMias
+                ? 'No tienes nada pendiente. ¡Disfruta!'
+                : 'No hay nada pendiente en el hogar. ¡Disfrutad!'
+              : 'Todavía no hay tareas hechas. La primera está al caer.'}
+          </Vacio>
+        </div>
       )}
 
       {lista && lista.length > 0 && pestana === 'pendientes' &&

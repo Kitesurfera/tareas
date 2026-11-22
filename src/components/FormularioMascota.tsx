@@ -195,7 +195,7 @@ function Formulario({ hogarId, mascota, fotoActual }: Props) {
               type="button"
               onClick={() => selectorFoto.current?.click()}
               disabled={preparandoFoto}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-marca ring-1 ring-marca"
+              className="rounded-full px-4 py-2 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15"
             >
               {preparandoFoto ? 'Preparando…' : fotoVisible ? 'Cambiar foto' : 'Añadir foto'}
             </button>

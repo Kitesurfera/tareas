@@ -3,6 +3,7 @@ import { mensajeDeError } from '../lib/errores'
 import { supabase } from '../lib/supabase'
 import type { Hogar } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
+import { Avatar, TituloSeccion } from './Piezas'
 
 type Props = {
   hogar: Hogar
@@ -130,12 +131,9 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
   return (
     <section className="tarjeta">
       {titulo ? (
-        <h2 className="font-semibold">{titulo}</h2>
+        <TituloSeccion dibujo="👥" titulo={titulo} color="tareas" />
       ) : (
-        <>
-          <h2 className="text-lg font-semibold">{hogar.nombre}</h2>
-          <p className="text-sm text-stone-500">Quién está en este hogar</p>
-        </>
+        <TituloSeccion dibujo="🏡" titulo={hogar.nombre} subtitulo="Quién está en este hogar" color="inicio" />
       )}
 
       <ul className="mt-4 flex flex-col gap-3">
@@ -147,12 +145,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
         )}
         {miembros?.map((miembro) => (
           <li key={miembro.id} className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-marca-suave font-semibold text-marca"
-            >
-              {miembro.nombre_visible.charAt(0).toUpperCase()}
-            </span>
+            <Avatar id={miembro.id} nombre={miembro.nombre_visible} />
             <span className="flex-1 font-medium">
               {miembro.nombre_visible}
               {miembro.user_id === miUserId && (
@@ -190,7 +183,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
           <button
             type="button"
             onClick={() => compartir(invitacion.codigo)}
-            className="mt-3 w-full rounded-full bg-marca px-5 py-3 font-semibold text-white shadow-sm active:scale-[0.98]"
+            className="mt-3 w-full rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-5 py-3 font-semibold text-white active:scale-[0.98]"
           >
             {copiado ? '¡Copiado!' : 'Compartir invitación'}
           </button>
@@ -207,7 +200,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
           type="button"
           onClick={invitar}
           disabled={creando}
-          className="mt-5 w-full rounded-full px-5 py-3 font-semibold text-marca ring-1 ring-marca transition active:scale-[0.98] disabled:opacity-60"
+          className="mt-5 w-full rounded-full px-5 py-3 font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 transition active:scale-[0.98] disabled:opacity-60"
         >
           {creando ? 'Creando invitación…' : '+ Invitar a alguien'}
         </button>

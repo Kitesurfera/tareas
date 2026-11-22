@@ -15,6 +15,7 @@ import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
 import { useNombres } from '../lib/useNombres'
 import { avisoError, botonSecundario } from './estilos'
 import { CabeceraPestana } from './CabeceraPestana'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   miUserId: string
@@ -115,9 +116,7 @@ export function PantallaVencimientos({ miUserId }: Props) {
           const delTipo = conProxima.filter((v) => v.tipo === seccion.tipo)
           return (
             <section key={seccion.tipo} className="tarjeta">
-              <h2 className="text-lg font-semibold">
-                {seccion.dibujo} {seccion.titulo}
-              </h2>
+              <TituloSeccion dibujo={seccion.dibujo} titulo={seccion.titulo} color="vencimientos" />
               {delTipo.length === 0 && <p className="mt-1 text-sm text-stone-500">{seccion.vacio}</p>}
               <ul className="mt-2 divide-y divide-stone-100">
                 {delTipo.map((v) => {

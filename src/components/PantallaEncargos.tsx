@@ -75,7 +75,7 @@ function FilaEncargo({ tarea, onHecha }: { tarea: EncargoTarea; onHecha: () => v
           <button
             type="button"
             onClick={() => setAbierta(true)}
-            className="shrink-0 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white"
+            className="shrink-0 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white"
           >
             Hecho
           </button>
@@ -160,7 +160,7 @@ function NotaSuelta({ encargoId }: { encargoId: string }) {
       <button
         type="submit"
         disabled={enviando || !texto.trim()}
-        className="self-start rounded-full px-4 py-2 text-sm font-semibold text-marca ring-1 ring-marca disabled:opacity-40"
+        className="self-start rounded-full px-4 py-2 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 disabled:opacity-40"
       >
         {enviando ? 'Enviando…' : 'Enviar nota'}
       </button>

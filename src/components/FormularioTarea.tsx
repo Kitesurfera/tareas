@@ -50,7 +50,7 @@ export function PantallaEditarTarea({ id, ...comun }: Comun & { id: string }) {
         <button
           type="button"
           onClick={() => ir(origen)}
-          className="rounded-full bg-marca px-5 py-2 font-semibold text-white"
+          className="rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-5 py-2 font-semibold text-white"
         >
           Ir a su origen
         </button>

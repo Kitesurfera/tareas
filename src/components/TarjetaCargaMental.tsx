@@ -2,6 +2,7 @@ import { mesActual, nombreDelMes, useEquipo } from '../lib/cargaMental'
 import { ir } from '../lib/ruta'
 import { useMiembros } from '../lib/useMiembros'
 import { CifrasEquipo, ListaGracias, TusNumeros } from './PiezasEquipo'
+import { TituloSeccion } from './Piezas'
 
 // Tarjeta del inicio «En equipo»: lo de todas, las gracias y tus números.
 export function TarjetaCargaMental() {
@@ -12,8 +13,7 @@ export function TarjetaCargaMental() {
 
   return (
     <section className="tarjeta">
-      <h2 className="text-lg font-semibold">💚 En equipo</h2>
-      <p className="text-sm text-stone-500">Lo pensado y hecho en casa · {nombreDelMes(mes)}</p>
+      <TituloSeccion dibujo="💚" titulo="En equipo" subtitulo={`Lo pensado y hecho en casa · ${nombreDelMes(mes)}`} color="coral" />
 
       {error && <p className="mt-3 text-sm text-red-700">No se ha podido cargar.</p>}
       {!datos && !error && <p className="mt-3 text-sm text-stone-400">Cargando…</p>}
@@ -45,7 +45,7 @@ export function TarjetaCargaMental() {
       <button
         type="button"
         onClick={() => ir('/carga')}
-        className="mt-4 w-full rounded-full px-3 py-2.5 text-sm font-semibold text-marca ring-1 ring-marca active:scale-[0.98]"
+        className="mt-4 w-full rounded-full px-3 py-2.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 active:scale-[0.98]"
       >
         Ver más y otros meses
       </button>

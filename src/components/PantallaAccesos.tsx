@@ -67,7 +67,7 @@ function BotonCompartir({ acceso, nombreHogar, principal }: { acceso: Acceso; no
         className={
           principal
             ? botonPrincipal
-            : 'rounded-full px-3 py-1.5 text-sm font-semibold text-marca ring-1 ring-marca active:scale-[0.98]'
+            : 'rounded-full px-3 py-1.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 active:scale-[0.98]'
         }
       >
         Compartir enlace

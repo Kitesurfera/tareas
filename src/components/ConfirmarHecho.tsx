@@ -36,7 +36,7 @@ export function ConfirmarHecho({ enviando, onConfirmar, onCancelar }: Props) {
           type="button"
           onClick={() => onConfirmar(fecha)}
           disabled={enviando || !fecha}
-          className="flex-1 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="flex-1 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
           {enviando ? 'Guardando…' : 'Confirmar'}
         </button>

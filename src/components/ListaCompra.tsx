@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import type { ArticuloCompra } from '../lib/tipos'
 import type { Nombres } from '../lib/useNombres'
 import { avisoError, campoBase } from './estilos'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   hogarId: string
@@ -151,16 +152,20 @@ export function ListaCompra({ hogarId, nombres }: Props) {
 
   return (
     <section className="tarjeta">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">🛒 Lista de la compra</h2>
-        {enDirecto && (
-          <span className="flex items-center gap-1.5 text-xs font-medium text-marca" title="Los cambios del resto del hogar aparecen al momento">
-            <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-marca" />
-            En directo
-          </span>
-        )}
-      </div>
-      <p className="text-sm text-stone-500">Compartida: lo que apuntes lo ve todo el hogar al momento</p>
+      <TituloSeccion
+        dibujo="🛒"
+        titulo="Lista de la compra"
+        subtitulo="Lo que apuntes lo ve todo el hogar al momento"
+        color="vencimientos"
+        derecha={
+          enDirecto && (
+            <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-marca" title="Los cambios del resto del hogar aparecen al momento">
+              <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-marca" />
+              En directo
+            </span>
+          )
+        }
+      />
 
       <form onSubmit={anadir} className="mt-3 flex gap-2">
         <input

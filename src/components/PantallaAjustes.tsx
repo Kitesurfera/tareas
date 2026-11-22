@@ -9,6 +9,7 @@ import { TarjetaAvisos } from './TarjetaAvisos'
 import { TarjetaHogar } from './TarjetaHogar'
 import { TarjetaInstalar } from './TarjetaInstalar'
 import { CabeceraPestana } from './CabeceraPestana'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   yo: Yo
@@ -131,7 +132,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       />
 
       <section className="tarjeta flex flex-col gap-4">
-        <h2 className="font-semibold">👤 Tu perfil</h2>
+        <TituloSeccion dibujo="👤" titulo="Tu perfil" color="inicio" />
         <CampoEditable
           etiqueta="Tu nombre en la app"
           valorInicial={yo.nombre}
@@ -145,8 +146,8 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       <TarjetaAvisos />
 
       <section className="tarjeta">
-        <h2 className="font-semibold">✈️ Modo viaje</h2>
-        <p className="mt-1 text-sm text-stone-600">
+        <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
+        <p className="mt-3 text-sm text-stone-600">
           Si alguien se va de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa.
         </p>
         <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
@@ -155,8 +156,8 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       </section>
 
       <section className="tarjeta">
-        <h2 className="font-semibold">🔑 Acceso temporal</h2>
-        <p className="mt-1 text-sm text-stone-600">
+        <TituloSeccion dibujo="🔑" titulo="Acceso temporal" color="casa" />
+        <p className="mt-3 text-sm text-stone-600">
           Deja que alguien de fuera (quien cuida la mascota, riega…) vea y haga solo las tareas que elijáis,
           durante unos días.
         </p>
@@ -166,7 +167,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       </section>
 
       <section className="tarjeta flex flex-col gap-4">
-        <h2 className="font-semibold">🏡 Tu hogar</h2>
+        <TituloSeccion dibujo="🏡" titulo="Tu hogar" color="coral" />
         <CampoEditable
           etiqueta="Nombre del hogar"
           valorInicial={yo.hogar.nombre}
@@ -181,13 +182,13 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         hogar={yo.hogar}
         miUserId={yo.userId}
         onSalir={onSalirDelHogar}
-        titulo="👥 Quién está en el hogar"
+        titulo="Quién está en el hogar"
       />
 
       {abiertaComoApp() ? (
         <section className="tarjeta">
-          <h2 className="font-semibold">📲 La app</h2>
-          <p className="mt-1 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
+          <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
+          <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
         </section>
       ) : (
         <TarjetaInstalar siempre />

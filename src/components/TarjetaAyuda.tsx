@@ -2,6 +2,7 @@ import { estadoAcceso, useAccesos, useNotasEncargo } from '../lib/accesos'
 import { hoyComoTexto, sumarDias } from '../lib/fechas'
 import { ir } from '../lib/ruta'
 import { diaMes } from '../lib/viajes'
+import { TituloSeccion } from './Piezas'
 
 // En el inicio: quién os ayuda ahora (acceso temporal) y sus últimas notas.
 export function TarjetaAyuda() {
@@ -16,7 +17,7 @@ export function TarjetaAyuda() {
 
   return (
     <section className="tarjeta">
-      <h2 className="font-semibold">🔑 Quién os ayuda</h2>
+      <TituloSeccion dibujo="🔑" titulo="Quién os ayuda" color="casa" />
       <ul className="mt-2 flex flex-col gap-1 text-stone-700">
         {activos.map((a) => (
           <li key={a.id}>
