@@ -12,9 +12,9 @@ export default defineConfig({
     VitePWA({
       // Cuando hay una versión nueva, se instala sola y se usa al volver a abrir.
       registerType: 'autoUpdate',
-      // El aviso al navegador va en un archivo aparte (no «en línea»), para
-      // respetar la política de seguridad de vercel.json.
-      injectRegister: 'script',
+      // El service worker lo registra src/lib/actualizaciones.ts, que además
+      // recarga la app cuando llega una versión nueva.
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Tareas',
@@ -42,6 +42,10 @@ export default defineConfig({
         // Las direcciones del servidor (/api/…) no son pantallas de la app.
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,
+        // La versión nueva toma el control enseguida, sin esperar a que
+        // cierres todas las ventanas de la app.
+        skipWaiting: true,
+        clientsClaim: true,
         // Añade al service worker lo que recibe y enseña los avisos.
         importScripts: ['sw-push.js'],
       },

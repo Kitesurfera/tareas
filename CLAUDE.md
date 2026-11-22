@@ -24,7 +24,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ## Stack
 
 - **Frontend:** React + Vite + TypeScript, con Tailwind CSS.
-- **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas (`autoUpdate`). Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
+- **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas: `src/lib/actualizaciones.ts` registra el service worker y, cuando llega una versión nueva, recarga la app si acabas de abrirla o enseña el aviso «Actualizar» si llevas un rato usándola. Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
 - **Servidor (Vercel Functions, carpeta `api/`):** `recordatorios.ts` (aviso diario; lo llama Vercel con `crons` de `vercel.json` a las 6:00 y 7:00 UTC y solo envía cuando son las 8:00 en España; protegido con `CRON_SECRET`) y `aviso-de-prueba.ts` (botón «Probar aviso»; comprueba la sesión y solo avisa a los móviles de quien lo pide). El código compartido va en `api/_lib/`. Usa la librería `web-push`.
 - **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
