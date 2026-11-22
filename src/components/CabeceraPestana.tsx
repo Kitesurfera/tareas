@@ -32,7 +32,7 @@ export function CabeceraPestana({ color, titulo, subtitulo, etiqueta, dibujo, bo
     <header className={`relative -mx-5 -mt-8 overflow-hidden rounded-b-[2.25rem] px-5 pt-8 pb-7 lg:mx-0 lg:mt-0 lg:rounded-[2.25rem] lg:px-10 lg:py-10 ${fondo}`}>
       {/* Burbujas de adorno */}
       <span aria-hidden="true" className="absolute -top-12 -right-10 h-44 w-44 rounded-full bg-white/35 lg:-top-20 lg:h-72 lg:w-72" />
-      <span aria-hidden="true" className="absolute top-24 right-36 h-6 w-6 rounded-full bg-white/50 lg:right-72" />
+      <span aria-hidden="true" className="absolute top-24 right-36 h-6 w-6 rounded-full bg-white/50 lg:top-8" />
       <span
         aria-hidden="true"
         className="absolute right-5 bottom-5 inline-block animate-flotar text-5xl leading-none drop-shadow-sm select-none lg:right-14 lg:bottom-7 lg:text-7xl"
