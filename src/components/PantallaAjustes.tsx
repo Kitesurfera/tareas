@@ -16,6 +16,8 @@ type Props = {
   onCambio: () => void
   onSalirDelHogar: () => void
   onCerrarSesion: () => void
+  // Cierra la sesión en TODOS los dispositivos (por si pierdes el móvil).
+  onCerrarSesionEnTodos: () => void
 }
 
 // Un campo de texto con botón «Guardar» que solo se activa si hay cambios.
@@ -82,7 +84,7 @@ function CampoEditable({
 }
 
 // Pantalla de ajustes: perfil, avisos, viajes, accesos, hogar, la app y cerrar sesión.
-export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion }: Props) {
+export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion, onCerrarSesionEnTodos }: Props) {
   async function guardarMiNombre(nombre: string): Promise<string | null> {
     if (!supabase) return 'Sin conexión'
     // Gracias a RLS, solo puedes cambiar tu propio nombre.
@@ -104,6 +106,13 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
     if (window.confirm('¿Cerrar sesión en este móvil? Tus datos se quedan guardados; para volver, entra con Google.')) {
       onCerrarSesion()
     }
+  }
+
+  function cerrarSesionEnTodos() {
+    const seguro = window.confirm(
+      '¿Cerrar sesión en TODOS tus dispositivos (este y cualquier otro móvil u ordenador)? Úsalo si has perdido el móvil. Los demás dispositivos saldrán en menos de una hora; para volver, entra con Google.',
+    )
+    if (seguro) onCerrarSesionEnTodos()
   }
 
   return (
@@ -184,6 +193,14 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       >
         Cerrar sesión
       </button>
+      <button
+        type="button"
+        onClick={cerrarSesionEnTodos}
+        className="-mt-2 w-full py-2 text-sm text-red-700 underline-offset-2 hover:underline"
+      >
+        Cerrar sesión en todos mis dispositivos
+      </button>
+      <p className="-mt-3 text-center text-xs text-stone-500">Por si pierdes el móvil o entraste en un sitio que no es tuyo.</p>
     </main>
   )
 }

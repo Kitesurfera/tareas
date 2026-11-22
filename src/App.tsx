@@ -186,6 +186,9 @@ function App() {
 
   // Cierra la sesión solo en este dispositivo (no en los demás).
   const salir = () => supabase?.auth.signOut({ scope: 'local' })
+  // Cierra la sesión en todos tus dispositivos: los demás salen cuando
+  // caduca su sesión actual (como mucho, una hora).
+  const salirDeTodos = () => supabase?.auth.signOut({ scope: 'global' })
 
   if (!supabase) {
     return (
@@ -299,6 +302,7 @@ function App() {
         onCambio={refrescar}
         onSalirDelHogar={despuesDeSalirDelHogar}
         onCerrarSesion={salir}
+        onCerrarSesionEnTodos={salirDeTodos}
       />
     )
   }
