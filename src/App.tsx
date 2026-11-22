@@ -212,7 +212,7 @@ function App() {
     return <PantallaEditarMascota key={partes[1]} id={partes[1]} hogarId={yo.hogar.id} />
   }
   if (partes[0] === 'mascotas' && partes[1] && !partes[2]) {
-    return <PantallaFichaMascota key={partes[1]} id={partes[1]} />
+    return <PantallaFichaMascota key={partes[1]} id={partes[1]} miUserId={yo.userId} />
   }
   if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
     return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />

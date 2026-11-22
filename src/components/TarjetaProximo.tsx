@@ -50,7 +50,8 @@ export function TarjetaProximo({ miUserId }: Props) {
   const proximas = pendientes?.filter((t) => t.fecha_limite && t.fecha_limite <= limite) ?? []
   const visibles = proximas.slice(0, MAXIMO_EN_INICIO)
   const atrasadas = proximas.filter((t) => t.fecha_limite && diasHasta(t.fecha_limite) < 0).length
-  const tuyas = proximas.filter((t) => t.responsable_id === nombres.miMiembroId).length
+  // Cuenta también lo que cubres de quien está de viaje.
+  const tuyas = proximas.filter((t) => nombres.esMia(t.responsable_id, t.fecha_limite)).length
   const error = errorCarga ?? acciones.error
 
   return (
