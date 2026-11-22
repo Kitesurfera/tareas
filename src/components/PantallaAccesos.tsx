@@ -144,6 +144,13 @@ export function PantallaAccesos({ nombreHogar }: Props) {
                       {diaMes(acceso.desde)} – {diaMes(acceso.hasta)} · {textoQueVe(acceso)}
                     </span>
                     <span className={`block text-sm font-medium ${estado.color}`}>{estado.texto}</span>
+                    {acceso.user_id && (acceso.aceptado_nombre || acceso.aceptado_email) && (
+                      <span className="mt-1 block text-sm text-stone-600">
+                        👤 Lo abrió {[acceso.aceptado_nombre, acceso.aceptado_email && `(${acceso.aceptado_email})`].filter(Boolean).join(' ')}
+                        {acceso.aceptado_en &&
+                          ` el ${new Date(acceso.aceptado_en).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`}
+                      </span>
+                    )}
                   </span>
                   <span aria-hidden="true" className="text-stone-400">›</span>
                 </button>
@@ -256,7 +263,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     let vigente = true
     supabase
       .from('accesos')
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
+      .select('*')
       .eq('id', id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -345,7 +352,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     const { data, error } = await supabase
       .from('accesos')
       .insert({ ...datos, hogar_id: hogarId })
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
+      .select('*')
       .single()
     setGuardando(false)
     if (error) return setError(mensajeDeError(error))
@@ -362,8 +369,8 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
             {diaMes(creado.desde)} al {diaMes(creado.hasta)}, verá sus encargos.
           </p>
           <p className="text-sm text-stone-600">
-            El enlace solo vale para la primera persona que lo abra. Si se lo mandas a alguien por error, quita el
-            acceso y crea otro.
+            El enlace solo vale para la primera persona que lo abra. Cuando lo abra, aquí verás con qué cuenta de
+            Google entró. Si no es quien esperabas, quita el acceso y crea otro.
           </p>
           <BotonCompartir acceso={creado} nombreHogar={nombreHogar} principal />
         </section>
