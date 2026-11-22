@@ -171,11 +171,11 @@ function Formulario({ hogarId, mascota, fotoActual }: Props) {
         ← Cancelar
       </button>
 
-      <h1 className="text-2xl font-bold text-marca">
+      <h1 className="text-2xl font-extrabold text-marca">
         {editando ? `Editar a ${mascota?.nombre}` : 'Nueva mascota'}
       </h1>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         {/* Foto */}
         <div className="flex items-center gap-4">
           <FotoMascota
@@ -195,7 +195,7 @@ function Formulario({ hogarId, mascota, fotoActual }: Props) {
               type="button"
               onClick={() => selectorFoto.current?.click()}
               disabled={preparandoFoto}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-marca ring-1 ring-marca"
+              className="rounded-full px-4 py-2 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15"
             >
               {preparandoFoto ? 'Preparando…' : fotoVisible ? 'Cambiar foto' : 'Añadir foto'}
             </button>

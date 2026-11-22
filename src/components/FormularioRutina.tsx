@@ -181,9 +181,9 @@ function Formulario({ hogarId, miUserId, rutina }: Comun & { rutina?: Rutina }) 
         ← Cancelar
       </button>
 
-      <h1 className="text-2xl font-bold text-marca">{editando ? 'Editar rutina' : 'Nueva rutina'}</h1>
+      <h1 className="text-2xl font-extrabold text-marca">{editando ? 'Editar rutina' : 'Nueva rutina'}</h1>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         {!editando && (
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-1.5 text-sm font-medium text-stone-700">Ideas rápidas</legend>

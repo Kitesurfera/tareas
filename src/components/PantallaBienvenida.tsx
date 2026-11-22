@@ -56,7 +56,7 @@ export function PantallaBienvenida({ nombreSugerido, onListo, onSalir }: Props) 
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-marca">¡Hola!</h1>
+          <h1 className="text-3xl font-extrabold text-marca">¡Hola!</h1>
           <p className="mt-1 text-stone-600">
             Para empezar, necesitas un hogar: el espacio que compartes con tu
             pareja o con quien vivas.
@@ -97,7 +97,7 @@ export function PantallaBienvenida({ nombreSugerido, onListo, onSalir }: Props) 
         ))}
       </div>
 
-      <form onSubmit={enviar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={enviar} className="tarjeta flex flex-col gap-5">
         {opcion === 'unirme' && invitacion && (
           <p className="rounded-xl bg-marca-suave p-3 text-sm text-marca">
             Te han invitado a un hogar. Revisa tu nombre y pulsa «Unirme».

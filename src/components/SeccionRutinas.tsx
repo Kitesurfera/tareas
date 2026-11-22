@@ -7,6 +7,7 @@ import type { Rutina, Tarea } from '../lib/tipos'
 import type { Nombres } from '../lib/useNombres'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { avisoError, botonSecundario } from './estilos'
+import { TituloSeccion, Vacio } from './Piezas'
 
 type Fila = {
   rutina: Rutina
@@ -83,16 +84,15 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Rutinas</h2>
-      <p className="text-sm text-stone-500">Lo que hay que hacer cada cierto tiempo</p>
+    <section className="tarjeta">
+      <TituloSeccion dibujo="🔄" titulo="Rutinas" subtitulo="Lo que hay que hacer cada cierto tiempo" color="casa" />
 
       {filas === null && !error && <p className="mt-3 text-sm text-stone-400">Cargando…</p>}
       {filas?.length === 0 && (
-        <p className="mt-3 text-stone-500">
-          Limpiar el baño, sacar la basura, cambiar las sábanas… Añádelas y la
-          app os recordará cuándo toca cada una y a quién.
-        </p>
+        <Vacio dibujo="🧽" color="casa">
+          Limpiar el baño, sacar la basura, cambiar las sábanas… Añádelas y la app os recordará cuándo toca
+          cada una y a quién.
+        </Vacio>
       )}
 
       {filas && filas.length > 0 && (
@@ -131,7 +131,7 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
                     <button
                       type="button"
                       onClick={() => setMarcando(pendiente.id)}
-                      className="shrink-0 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white"
+                      className="shrink-0 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white"
                     >
                       Hecho
                     </button>

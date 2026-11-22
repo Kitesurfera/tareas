@@ -235,11 +235,11 @@ function Formulario({ hogarId, miUserId, plantaId, cuidado }: Comun & { plantaId
       </button>
 
       <header>
-        <h1 className="text-2xl font-bold text-marca">{editando ? 'Editar cuidado' : 'Nuevo cuidado'}</h1>
+        <h1 className="text-2xl font-extrabold text-marca">{editando ? 'Editar cuidado' : 'Nuevo cuidado'}</h1>
         {nombrePlanta && <p className="text-stone-600">de {nombrePlanta}</p>}
       </header>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 text-sm font-medium text-stone-700">¿Qué hay que hacer?</legend>
           <div className="flex flex-wrap gap-2">

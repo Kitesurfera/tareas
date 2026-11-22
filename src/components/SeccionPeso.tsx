@@ -5,6 +5,7 @@ import { diferenciaKg, formatoKg, leerKg, type Peso } from '../lib/peso'
 import { supabase } from '../lib/supabase'
 import { avisoError, botonPrincipal, botonSecundario, campoBase, estiloChip } from './estilos'
 import { GraficaPeso } from './GraficaPeso'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   mascotaId: string
@@ -115,8 +116,8 @@ export function SeccionPeso({ mascotaId, hogarId, nombreMascota, fechaNacimiento
   const historial = pesos ? [...pesos].reverse() : []
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="font-semibold">⚖️ Peso</h2>
+    <section className="tarjeta">
+      <TituloSeccion dibujo="⚖️" titulo="Peso" color="tareas" />
 
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
       {pesos === null && !error && <p className="mt-3 text-sm text-stone-400">Cargando…</p>}

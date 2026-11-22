@@ -14,6 +14,8 @@ import { supabase } from '../lib/supabase'
 import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
 import { useNombres } from '../lib/useNombres'
 import { avisoError, botonSecundario } from './estilos'
+import { CabeceraPestana } from './CabeceraPestana'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   miUserId: string
@@ -85,24 +87,21 @@ export function PantallaVencimientos({ miUserId }: Props) {
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
-      <header>
-        <h1 className="text-2xl font-bold text-marca">Vencimientos</h1>
-        <p className="text-stone-600">Seguros y suscripciones que se renuevan</p>
-      </header>
+      <CabeceraPestana color="vencimientos" titulo="Vencimientos" subtitulo="Seguros y suscripciones, sin sustos." dibujo="📅" />
 
       {(suscripcionesAlMes > 0 || segurosAlAnio > 0) && (
         <section className="flex gap-3">
           {suscripcionesAlMes > 0 && (
-            <div className="flex-1 rounded-2xl bg-marca-suave p-4">
-              <p className="text-xs font-medium text-marca">Suscripciones</p>
-              <p className="text-lg font-bold text-marca">{euros(suscripcionesAlMes)}</p>
+            <div className="tarjeta flex-1 p-4">
+              <p className="text-xs font-medium text-vencimientos-tinta">🔁 Suscripciones</p>
+              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta">{euros(suscripcionesAlMes)}</p>
               <p className="text-xs text-stone-600">al mes · {euros(suscripcionesAlMes * 12)} al año</p>
             </div>
           )}
           {segurosAlAnio > 0 && (
-            <div className="flex-1 rounded-2xl bg-marca-suave p-4">
-              <p className="text-xs font-medium text-marca">Seguros</p>
-              <p className="text-lg font-bold text-marca">{euros(segurosAlAnio)}</p>
+            <div className="tarjeta flex-1 p-4">
+              <p className="text-xs font-medium text-vencimientos-tinta">🛡️ Seguros</p>
+              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta">{euros(segurosAlAnio)}</p>
               <p className="text-xs text-stone-600">al año</p>
             </div>
           )}
@@ -116,8 +115,8 @@ export function PantallaVencimientos({ miUserId }: Props) {
         SECCIONES.map((seccion) => {
           const delTipo = conProxima.filter((v) => v.tipo === seccion.tipo)
           return (
-            <section key={seccion.tipo} className="rounded-2xl bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold">{seccion.titulo}</h2>
+            <section key={seccion.tipo} className="tarjeta">
+              <TituloSeccion dibujo={seccion.dibujo} titulo={seccion.titulo} color="vencimientos" />
               {delTipo.length === 0 && <p className="mt-1 text-sm text-stone-500">{seccion.vacio}</p>}
               <ul className="mt-2 divide-y divide-stone-100">
                 {delTipo.map((v) => {

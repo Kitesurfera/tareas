@@ -44,7 +44,7 @@ export function PantallaViajes({ miUserId }: Props) {
       <button type="button" onClick={() => volver('/ajustes')} className="self-start text-sm font-medium text-marca">
         ← Ajustes
       </button>
-      <h1 className="text-2xl font-bold text-marca">✈️ Modo viaje</h1>
+      <h1 className="text-2xl font-extrabold text-marca">✈️ Modo viaje</h1>
 
       <section className="rounded-2xl bg-marca-suave p-5 text-sm text-stone-800">
         <p>
@@ -76,7 +76,7 @@ export function PantallaViajes({ miUserId }: Props) {
       {error && <p role="alert" className={avisoError}>No se han podido cargar los viajes.</p>}
       {grupos === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
       {grupos?.length === 0 && (
-        <p className="rounded-2xl bg-white p-5 text-center text-stone-500 shadow-sm">
+        <p className="tarjeta text-center text-stone-500">
           No hay ningún viaje apuntado.
         </p>
       )}
@@ -88,7 +88,7 @@ export function PantallaViajes({ miUserId }: Props) {
               <button
                 type="button"
                 onClick={() => ir(`/viajes/${grupo.grupo}/editar`)}
-                className="flex w-full items-start gap-3 rounded-2xl bg-white p-4 text-left shadow-sm"
+                className="tarjeta flex w-full items-start gap-3 p-4 text-left"
               >
                 <span aria-hidden="true" className="text-2xl leading-none">✈️</span>
                 <span className="flex-1">
@@ -212,12 +212,12 @@ export function FormularioViaje({ miUserId, grupo }: PropsFormulario) {
       <button type="button" onClick={() => volver('/viajes')} className="self-start text-sm font-medium text-marca">
         ← Viajes
       </button>
-      <h1 className="text-2xl font-bold text-marca">{grupo ? 'Cambiar viaje' : 'Nuevo viaje'}</h1>
+      <h1 className="text-2xl font-extrabold text-marca">{grupo ? 'Cambiar viaje' : 'Nuevo viaje'}</h1>
 
       {(!cargado || !miembros) && <p className="text-center text-stone-400">Cargando…</p>}
 
       {cargado && miembros && (
-        <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+        <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-sm font-medium text-stone-700">¿Quién se va?</legend>
             <div className="flex flex-wrap gap-2">

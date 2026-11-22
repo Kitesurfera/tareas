@@ -49,7 +49,7 @@ export function PantallaCargaMental() {
       </button>
 
       <header>
-        <h1 className="text-2xl font-bold text-marca">En equipo</h1>
+        <h1 className="text-2xl font-extrabold text-marca">En equipo</h1>
         <p className="text-stone-600">Lo que hay que recordar, entre todas</p>
       </header>
 
@@ -79,13 +79,13 @@ export function PantallaCargaMental() {
 
       {datos && (
         <>
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-3 font-semibold">Entre todas</h2>
+          <section className="tarjeta">
+            <h2 className="mb-3 font-semibold">🤝 Entre todas</h2>
             <CifrasEquipo pensar={datos.equipo.pensar} hacer={datos.equipo.hacer} />
           </section>
 
           {variasPersonas && (
-            <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <section className="tarjeta">
               <h2 className="mb-3 font-semibold">💚 Gracias por acordarte</h2>
               {datos.gracias.length > 0 ? (
                 <ListaGracias gracias={datos.gracias} />
@@ -99,7 +99,7 @@ export function PantallaCargaMental() {
             </section>
           )}
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
+          <section className="tarjeta">
             <h2 className="mb-3 font-semibold">{esEsteMes ? 'Tú este mes' : 'Tú ese mes'}</h2>
             <TusNumeros mio={datos.mio} esteMes={esEsteMes} />
             {datos.mio.pensar + datos.mio.hacer > 0 && <TuDesglose mio={datos.mio} />}
@@ -108,7 +108,7 @@ export function PantallaCargaMental() {
       )}
 
       <section className="rounded-2xl bg-marca-suave p-5 text-sm text-stone-700">
-        <h2 className="mb-2 font-semibold text-marca">¿Para qué sirve esto?</h2>
+        <h2 className="mb-2 font-semibold text-marca">💡 ¿Para qué sirve esto?</h2>
         <p>
           <strong>💭 Pensar</strong> es la parte invisible: darse cuenta de que algo
           hay que hacer y apuntarlo. <strong>✋ Hacer</strong> es completar tareas y

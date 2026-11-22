@@ -42,14 +42,14 @@ export function PantallaFichaMascota({ id, miUserId }: Props) {
           <header className="flex flex-col items-center gap-3 text-center">
             <FotoMascota mascota={mascota} enlace={foto} tamano="grande" />
             <div>
-              <h1 className="text-3xl font-bold text-marca">{mascota.nombre}</h1>
+              <h1 className="text-3xl font-extrabold text-marca">{mascota.nombre}</h1>
               <p className="text-stone-600">
                 {[mascota.especie, mascota.raza].filter(Boolean).join(' · ')}
               </p>
             </div>
           </header>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
+          <section className="tarjeta">
             <dl className="flex flex-col gap-3">
               <div>
                 <dt className="text-sm text-stone-500">Edad</dt>

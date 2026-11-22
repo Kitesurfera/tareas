@@ -50,7 +50,7 @@ export function PantallaEditarTarea({ id, ...comun }: Comun & { id: string }) {
         <button
           type="button"
           onClick={() => ir(origen)}
-          className="rounded-full bg-marca px-5 py-2 font-semibold text-white"
+          className="rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-5 py-2 font-semibold text-white"
         >
           Ir a su origen
         </button>
@@ -142,9 +142,9 @@ function Formulario({ hogarId, miUserId, tarea }: Comun & { tarea?: Tarea }) {
         ← Cancelar
       </button>
 
-      <h1 className="text-2xl font-bold text-marca">{editando ? 'Editar tarea' : 'Nueva tarea'}</h1>
+      <h1 className="text-2xl font-extrabold text-marca">{editando ? 'Editar tarea' : 'Nueva tarea'}</h1>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-stone-700">¿Qué hay que hacer?</span>
           <input

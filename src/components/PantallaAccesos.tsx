@@ -67,7 +67,7 @@ function BotonCompartir({ acceso, nombreHogar, principal }: { acceso: Acceso; no
         className={
           principal
             ? botonPrincipal
-            : 'rounded-full px-3 py-1.5 text-sm font-semibold text-marca ring-1 ring-marca active:scale-[0.98]'
+            : 'rounded-full px-3 py-1.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 active:scale-[0.98]'
         }
       >
         Compartir enlace
@@ -104,7 +104,7 @@ export function PantallaAccesos({ nombreHogar }: Props) {
       <button type="button" onClick={() => volver('/ajustes')} className="self-start text-sm font-medium text-marca">
         ← Ajustes
       </button>
-      <h1 className="text-2xl font-bold text-marca">🔑 Acceso temporal</h1>
+      <h1 className="text-2xl font-extrabold text-marca">🔑 Acceso temporal</h1>
 
       <section className="rounded-2xl bg-marca-suave p-5 text-sm text-stone-800">
         <p>
@@ -122,7 +122,7 @@ export function PantallaAccesos({ nombreHogar }: Props) {
       {(error || fallo) && <p role="alert" className={avisoError}>{fallo ?? 'No se han podido cargar los accesos.'}</p>}
       {accesos === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
       {accesos?.length === 0 && (
-        <p className="rounded-2xl bg-white p-5 text-center text-stone-500 shadow-sm">Aún no habéis dado ningún acceso.</p>
+        <p className="tarjeta text-center text-stone-500">Aún no habéis dado ningún acceso.</p>
       )}
 
       {accesos && accesos.length > 0 && (
@@ -131,7 +131,7 @@ export function PantallaAccesos({ nombreHogar }: Props) {
             const estado = textoEstado(acceso)
             const terminado = estadoAcceso(acceso) === 'terminado'
             return (
-              <li key={acceso.id} className="rounded-2xl bg-white p-4 shadow-sm">
+              <li key={acceso.id} className="tarjeta p-4">
                 <button
                   type="button"
                   onClick={() => ir(`/accesos/${acceso.id}/editar`)}
@@ -144,6 +144,13 @@ export function PantallaAccesos({ nombreHogar }: Props) {
                       {diaMes(acceso.desde)} – {diaMes(acceso.hasta)} · {textoQueVe(acceso)}
                     </span>
                     <span className={`block text-sm font-medium ${estado.color}`}>{estado.texto}</span>
+                    {acceso.user_id && (acceso.aceptado_nombre || acceso.aceptado_email) && (
+                      <span className="mt-1 block text-sm text-stone-600">
+                        👤 Lo abrió {[acceso.aceptado_nombre, acceso.aceptado_email && `(${acceso.aceptado_email})`].filter(Boolean).join(' ')}
+                        {acceso.aceptado_en &&
+                          ` el ${new Date(acceso.aceptado_en).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`}
+                      </span>
+                    )}
                   </span>
                   <span aria-hidden="true" className="text-stone-400">›</span>
                 </button>
@@ -164,7 +171,7 @@ export function PantallaAccesos({ nombreHogar }: Props) {
       )}
 
       {notas && notas.length > 0 && (
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <section className="tarjeta">
           <h2 className="font-semibold">📝 Notas de quien os ayuda</h2>
           <ul className="mt-2 divide-y divide-stone-100">
             {notas.map((nota) => (
@@ -256,7 +263,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     let vigente = true
     supabase
       .from('accesos')
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
+      .select('*')
       .eq('id', id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -345,7 +352,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     const { data, error } = await supabase
       .from('accesos')
       .insert({ ...datos, hogar_id: hogarId })
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
+      .select('*')
       .single()
     setGuardando(false)
     if (error) return setError(mensajeDeError(error))
@@ -355,15 +362,15 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
   if (creado) {
     return (
       <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
-        <h1 className="text-2xl font-bold text-marca">¡Listo! 🔑</h1>
-        <section className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm">
+        <h1 className="text-2xl font-extrabold text-marca">¡Listo! 🔑</h1>
+        <section className="tarjeta flex flex-col gap-3">
           <p>
             Ahora mándale el enlace a <strong>{creado.nombre}</strong>. Tendrá que entrar con su cuenta de Google y, del{' '}
             {diaMes(creado.desde)} al {diaMes(creado.hasta)}, verá sus encargos.
           </p>
           <p className="text-sm text-stone-600">
-            El enlace solo vale para la primera persona que lo abra. Si se lo mandas a alguien por error, quita el
-            acceso y crea otro.
+            El enlace solo vale para la primera persona que lo abra. Cuando lo abra, aquí verás con qué cuenta de
+            Google entró. Si no es quien esperabas, quita el acceso y crea otro.
           </p>
           <BotonCompartir acceso={creado} nombreHogar={nombreHogar} principal />
         </section>
@@ -379,12 +386,12 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
       <button type="button" onClick={() => volver('/accesos')} className="self-start text-sm font-medium text-marca">
         ← Accesos
       </button>
-      <h1 className="text-2xl font-bold text-marca">{id ? 'Cambiar acceso' : 'Dar acceso temporal'}</h1>
+      <h1 className="text-2xl font-extrabold text-marca">{id ? 'Cambiar acceso' : 'Dar acceso temporal'}</h1>
 
       {(!cargado || pendientes === null) && !error && <p className="text-center text-stone-400">Cargando…</p>}
 
       {cargado && pendientes !== null && (
-        <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+        <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
           <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
             ¿A quién?
             <input

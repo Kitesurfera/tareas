@@ -4,12 +4,12 @@ import { cosas, fraseDeGracias, type Gracia, type Mio } from '../lib/cargaMental
 export function CifrasEquipo({ pensar, hacer }: { pensar: number; hacer: number }) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      <div className="rounded-xl bg-marca-suave p-3">
-        <p className="text-2xl font-bold text-marca">{pensar}</p>
+      <div className="rounded-2xl bg-tareas p-3">
+        <p className="font-redonda text-3xl font-extrabold text-tareas-tinta">{pensar}</p>
         <p className="text-sm text-stone-700">💭 {pensar === 1 ? 'cosa pensada' : 'cosas pensadas'}</p>
       </div>
-      <div className="rounded-xl bg-marca-suave p-3">
-        <p className="text-2xl font-bold text-marca">{hacer}</p>
+      <div className="rounded-2xl bg-coral-suave p-3">
+        <p className="font-redonda text-3xl font-extrabold text-coral-tinta">{hacer}</p>
         <p className="text-sm text-stone-700">✋ {hacer === 1 ? 'cosa hecha' : 'cosas hechas'}</p>
       </div>
     </div>

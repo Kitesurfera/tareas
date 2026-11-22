@@ -49,7 +49,7 @@ export function TarjetaInstalar({ siempre = false }: { siempre?: boolean }) {
         <button
           type="button"
           onClick={instalar}
-          className="mt-4 w-full rounded-full bg-marca px-5 py-3 font-semibold text-white shadow-sm active:scale-[0.98]"
+          className="mt-4 w-full rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-5 py-3 font-semibold text-white active:scale-[0.98]"
         >
           Instalar
         </button>

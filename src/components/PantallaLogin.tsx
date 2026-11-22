@@ -35,7 +35,7 @@ export function PantallaLogin({ errorInicial }: Props) {
         <h1 className="text-4xl font-bold text-marca">Tareas</h1>
         <p className="mt-2 text-stone-600">
           {leerEncargoPendiente()
-            ? 'Te han dado acceso a unas tareas. Entra con tu cuenta de Google para verlas.'
+            ? 'Te han dado acceso a unas tareas. Entra con tu cuenta de Google para verlas (la casa verá tu nombre y parte de tu email, para saber que eres tú).'
             : 'Lo que hay que recordar en casa, repartido entre las dos.'}
         </p>
       </header>

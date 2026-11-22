@@ -7,6 +7,7 @@ import { infoCuidado, nombreDeCuidado, type Cuidado, type Planta, type Tarea } f
 import { useNombres } from '../lib/useNombres'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { avisoError, botonSecundario } from './estilos'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   id: string
@@ -92,21 +93,20 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
               🪴
             </span>
             <div>
-              <h1 className="text-3xl font-bold text-marca">{planta.nombre}</h1>
+              <h1 className="text-3xl font-extrabold text-marca">{planta.nombre}</h1>
               <p className="text-stone-600">{[planta.tipo, planta.ubicacion].filter(Boolean).join(' · ')}</p>
             </div>
           </header>
 
           {planta.notas && (
-            <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <section className="tarjeta">
               <h2 className="text-sm text-stone-500">Notas</h2>
               <p className="whitespace-pre-line">{planta.notas}</p>
             </section>
           )}
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold">Cuidados</h2>
-            <p className="text-sm text-stone-500">Cada uno os avisa cuando toca</p>
+          <section className="tarjeta">
+            <TituloSeccion dibujo="💧" titulo="Cuidados" subtitulo="Cada uno os avisa cuando toca" color="plantas" />
 
             {mensaje && (
               <p role="status" className="mt-3 rounded-xl bg-marca-suave p-3 text-sm text-marca">
@@ -161,7 +161,7 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
                               setMarcando(pendiente.id)
                               setMensaje(null)
                             }}
-                            className="shrink-0 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white"
+                            className="shrink-0 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white"
                           >
                             Hecho
                           </button>

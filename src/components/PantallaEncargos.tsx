@@ -75,7 +75,7 @@ function FilaEncargo({ tarea, onHecha }: { tarea: EncargoTarea; onHecha: () => v
           <button
             type="button"
             onClick={() => setAbierta(true)}
-            className="shrink-0 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white"
+            className="shrink-0 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white"
           >
             Hecho
           </button>
@@ -160,7 +160,7 @@ function NotaSuelta({ encargoId }: { encargoId: string }) {
       <button
         type="submit"
         disabled={enviando || !texto.trim()}
-        className="self-start rounded-full px-4 py-2 text-sm font-semibold text-marca ring-1 ring-marca disabled:opacity-40"
+        className="self-start rounded-full px-4 py-2 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 disabled:opacity-40"
       >
         {enviando ? 'Enviando…' : 'Enviar nota'}
       </button>
@@ -177,18 +177,18 @@ export function PantallaEncargos({ encargos, errorEnlace, recargar, soloEncargos
           ← Inicio
         </button>
       )}
-      <h1 className="text-2xl font-bold text-marca">🔑 Tus encargos</h1>
+      <h1 className="text-2xl font-extrabold text-marca">🔑 Tus encargos</h1>
 
       {errorEnlace && <p role="alert" className={avisoError}>{errorEnlace}</p>}
       {encargos === null && <p className="text-center text-stone-400">Cargando…</p>}
       {encargos?.length === 0 && (
-        <p className="rounded-2xl bg-white p-5 text-center text-stone-500 shadow-sm">
+        <p className="tarjeta text-center text-stone-500">
           Ahora mismo no tienes ningún encargo. Si alguien te ha mandado un enlace, ábrelo desde este móvil.
         </p>
       )}
 
       {encargos?.map((encargo) => (
-        <section key={encargo.id} className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm">
+        <section key={encargo.id} className="tarjeta flex flex-col gap-4">
           <div>
             <h2 className="text-lg font-semibold">De «{encargo.hogar}»</h2>
             <p className="text-sm text-stone-500">

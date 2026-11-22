@@ -149,3 +149,11 @@ export function periodoCorto(meses: number | null): string {
   if (meses === 12) return '/año'
   return ` cada ${meses} meses`
 }
+
+// «Buenos días» (6-13 h), «Buenas tardes» (13-20 h) o «Buenas noches», con su dibujo.
+export function saludoDelMomento(): { texto: string; dibujo: string } {
+  const hora = new Date().getHours()
+  if (hora >= 6 && hora < 13) return { texto: 'Buenos días', dibujo: '☀️' }
+  if (hora >= 13 && hora < 20) return { texto: 'Buenas tardes', dibujo: '🌤️' }
+  return { texto: 'Buenas noches', dibujo: '🌙' }
+}

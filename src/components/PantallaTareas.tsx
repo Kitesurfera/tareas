@@ -8,6 +8,8 @@ import { useAccionesTarea } from '../lib/useAccionesTarea'
 import { useNombres } from '../lib/useNombres'
 import { avisoError, botonPrincipal } from './estilos'
 import { AvisoRecienHecha, ListaTareas } from './ListaTareas'
+import { CabeceraPestana } from './CabeceraPestana'
+import { Vacio } from './Piezas'
 
 type Props = {
   miUserId: string
@@ -83,9 +85,7 @@ export function PantallaTareas({ miUserId }: Props) {
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-marca">Tareas del hogar</h1>
-      </header>
+      <CabeceraPestana color="tareas" titulo="Tareas" subtitulo="Todo lo que hay que recordar, sin que se quede en una sola cabeza." dibujo="📝" />
 
       <button type="button" onClick={() => ir('/tareas/nueva')} className={botonPrincipal}>
         + Nueva tarea
@@ -133,13 +133,15 @@ export function PantallaTareas({ miUserId }: Props) {
       {lista === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
 
       {lista?.length === 0 && (
-        <p className="rounded-2xl bg-white p-5 text-center text-stone-500 shadow-sm">
-          {pestana === 'pendientes'
-            ? soloMias
-              ? 'No tienes nada pendiente. 🎉'
-              : 'No hay nada pendiente en el hogar. 🎉'
-            : 'Todavía no hay tareas hechas.'}
-        </p>
+        <div className="tarjeta">
+          <Vacio dibujo={pestana === 'pendientes' ? '🎉' : '🌱'} color="tareas">
+            {pestana === 'pendientes'
+              ? soloMias
+                ? 'No tienes nada pendiente. ¡Disfruta!'
+                : 'No hay nada pendiente en el hogar. ¡Disfrutad!'
+              : 'Todavía no hay tareas hechas. La primera está al caer.'}
+          </Vacio>
+        </div>
       )}
 
       {lista && lista.length > 0 && pestana === 'pendientes' &&
@@ -147,7 +149,7 @@ export function PantallaTareas({ miUserId }: Props) {
           const delGrupo = lista.filter((t) => grupoDe(t) === grupo)
           if (delGrupo.length === 0) return null
           return (
-            <section key={grupo} className="rounded-2xl bg-white px-5 py-2 shadow-sm">
+            <section key={grupo} className="tarjeta px-5 py-2">
               <h2 className={`pt-2 text-sm font-semibold ${grupo === 'Atrasadas' ? 'text-red-700' : 'text-stone-500'}`}>
                 {grupo}
               </h2>
@@ -157,7 +159,7 @@ export function PantallaTareas({ miUserId }: Props) {
         })}
 
       {lista && lista.length > 0 && pestana === 'hechas' && (
-        <section className="rounded-2xl bg-white px-5 py-2 shadow-sm">
+        <section className="tarjeta px-5 py-2">
           <ListaTareas tareas={lista} acciones={acciones} nombres={nombres} />
         </section>
       )}

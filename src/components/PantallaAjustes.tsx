@@ -8,6 +8,8 @@ import { avisoError, botonSecundario, campo } from './estilos'
 import { TarjetaAvisos } from './TarjetaAvisos'
 import { TarjetaHogar } from './TarjetaHogar'
 import { TarjetaInstalar } from './TarjetaInstalar'
+import { CabeceraPestana } from './CabeceraPestana'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   yo: Yo
@@ -16,6 +18,8 @@ type Props = {
   onCambio: () => void
   onSalirDelHogar: () => void
   onCerrarSesion: () => void
+  // Cierra la sesión en TODOS los dispositivos (por si pierdes el móvil).
+  onCerrarSesionEnTodos: () => void
 }
 
 // Un campo de texto con botón «Guardar» que solo se activa si hay cambios.
@@ -82,7 +86,7 @@ function CampoEditable({
 }
 
 // Pantalla de ajustes: perfil, avisos, viajes, accesos, hogar, la app y cerrar sesión.
-export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion }: Props) {
+export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion, onCerrarSesionEnTodos }: Props) {
   async function guardarMiNombre(nombre: string): Promise<string | null> {
     if (!supabase) return 'Sin conexión'
     // Gracias a RLS, solo puedes cambiar tu propio nombre.
@@ -106,16 +110,29 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
     }
   }
 
+  function cerrarSesionEnTodos() {
+    const seguro = window.confirm(
+      '¿Cerrar sesión en TODOS tus dispositivos (este y cualquier otro móvil u ordenador)? Úsalo si has perdido el móvil. Los demás dispositivos saldrán en menos de una hora; para volver, entra con Google.',
+    )
+    if (seguro) onCerrarSesionEnTodos()
+  }
+
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
-      <button type="button" onClick={() => volver('/')} className="self-start text-sm font-medium text-marca">
-        ← Inicio
-      </button>
+      <CabeceraPestana
+        color="ajustes"
+        titulo="Ajustes"
+        subtitulo="Tu perfil, tu hogar y cómo te avisa la app."
+        dibujo="⚙️"
+        etiqueta={
+          <button type="button" onClick={() => volver('/')} className="font-semibold">
+            ← Inicio
+          </button>
+        }
+      />
 
-      <h1 className="text-2xl font-bold text-marca">Ajustes</h1>
-
-      <section className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="font-semibold">👤 Tu perfil</h2>
+      <section className="tarjeta flex flex-col gap-4">
+        <TituloSeccion dibujo="👤" titulo="Tu perfil" color="inicio" />
         <CampoEditable
           etiqueta="Tu nombre en la app"
           valorInicial={yo.nombre}
@@ -128,9 +145,9 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
 
       <TarjetaAvisos />
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="font-semibold">✈️ Modo viaje</h2>
-        <p className="mt-1 text-sm text-stone-600">
+      <section className="tarjeta">
+        <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
+        <p className="mt-3 text-sm text-stone-600">
           Si alguien se va de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa.
         </p>
         <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
@@ -138,9 +155,9 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         </button>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="font-semibold">🔑 Acceso temporal</h2>
-        <p className="mt-1 text-sm text-stone-600">
+      <section className="tarjeta">
+        <TituloSeccion dibujo="🔑" titulo="Acceso temporal" color="casa" />
+        <p className="mt-3 text-sm text-stone-600">
           Deja que alguien de fuera (quien cuida la mascota, riega…) vea y haga solo las tareas que elijáis,
           durante unos días.
         </p>
@@ -149,8 +166,8 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         </button>
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="font-semibold">🏡 Tu hogar</h2>
+      <section className="tarjeta flex flex-col gap-4">
+        <TituloSeccion dibujo="🏡" titulo="Tu hogar" color="coral" />
         <CampoEditable
           etiqueta="Nombre del hogar"
           valorInicial={yo.hogar.nombre}
@@ -165,13 +182,13 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         hogar={yo.hogar}
         miUserId={yo.userId}
         onSalir={onSalirDelHogar}
-        titulo="👥 Quién está en el hogar"
+        titulo="Quién está en el hogar"
       />
 
       {abiertaComoApp() ? (
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-semibold">📲 La app</h2>
-          <p className="mt-1 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
+        <section className="tarjeta">
+          <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
+          <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
         </section>
       ) : (
         <TarjetaInstalar siempre />
@@ -184,6 +201,14 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       >
         Cerrar sesión
       </button>
+      <button
+        type="button"
+        onClick={cerrarSesionEnTodos}
+        className="-mt-2 w-full py-2 text-sm text-red-700 underline-offset-2 hover:underline"
+      >
+        Cerrar sesión en todos mis dispositivos
+      </button>
+      <p className="-mt-3 text-center text-xs text-stone-500">Por si pierdes el móvil o entraste en un sitio que no es tuyo.</p>
     </main>
   )
 }

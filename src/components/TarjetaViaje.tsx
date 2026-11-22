@@ -12,6 +12,7 @@ import {
   useViajes,
   type GrupoViaje,
 } from '../lib/viajes'
+import { TituloSeccion } from './Piezas'
 
 type Props = {
   miUserId: string
@@ -69,7 +70,7 @@ export function TarjetaViaje({ miUserId }: Props) {
 
   return (
     <section className="rounded-2xl bg-sky-50 p-5 shadow-sm ring-1 ring-sky-100">
-      <h2 className="font-semibold">✈️ Modo viaje</h2>
+      <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
       <ul className="mt-2 flex flex-col gap-1 text-stone-700">
         {grupos.map((g) => (
           <li key={g.grupo}>{frase(g)}</li>

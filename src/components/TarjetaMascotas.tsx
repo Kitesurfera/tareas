@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import type { Mascota } from '../lib/tipos'
 import { avisoError, botonSecundario } from './estilos'
 import { FotoMascota } from './FotoMascota'
+import { TituloSeccion, Vacio } from './Piezas'
 
 // Tarjeta del inicio con las mascotas del hogar.
 export function TarjetaMascotas() {
@@ -40,18 +41,17 @@ export function TarjetaMascotas() {
   }, [])
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Mascotas</h2>
+    <section className="tarjeta">
+      <TituloSeccion dibujo="🐾" titulo="Mascotas" color="coral" />
 
       {mascotas === null && !error && (
         <p className="mt-2 text-sm text-stone-400">Cargando…</p>
       )}
 
       {mascotas?.length === 0 && (
-        <p className="mt-2 text-stone-500">
-          Añade a tu mascota para llevar al día sus vacunas,
-          desparasitaciones y medicación.
-        </p>
+        <Vacio dibujo="🐶" color="coral">
+          Añade a tu mascota para llevar al día sus vacunas, desparasitaciones y medicación.
+        </Vacio>
       )}
 
       {mascotas && mascotas.length > 0 && (

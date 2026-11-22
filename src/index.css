@@ -1,11 +1,104 @@
 @import "tailwindcss";
 
-/* Colores propios de la app */
+/* Colores, letra y animaciones propios de la app */
 @theme {
+  /* El verde de siempre (botones, enlaces, lo «hecho») */
   --color-marca: #0f766e;
   --color-marca-suave: #ccfbf1;
+
+  /* Fondo cálido en vez de gris, y un acento para celebrar */
+  --color-crema: #fbf7f1;
+  --color-coral: #e8634a;
+  --color-coral-suave: #fde6de;
+  --color-coral-tinta: #9f3a26;
+
+  /* Un color suave por pestaña (cabeceras y barra de abajo), con su tinta
+     para el texto encima (todas con buen contraste) */
+  --color-inicio: #d7f3ea;
+  --color-inicio-tinta: #115e56;
+  --color-tareas: #ece8ff;
+  --color-tareas-tinta: #5b3cc4;
+  --color-casa: #ffe9cf;
+  --color-casa-tinta: #9a4a12;
+  --color-vencimientos: #dfeefc;
+  --color-vencimientos-tinta: #1f5a99;
+  --color-ajustes: #efebe5;
+  --color-ajustes-tinta: #44403c;
+  --color-plantas: #e4f4d6;
+  --color-plantas-tinta: #3d6b1e;
+
+  /* Letra redondeada para los títulos: en iPhone es la «SF Pro Rounded»
+     del sistema (no se descarga nada); en otros móviles, la normal. */
+  --font-redonda: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+
+  --animate-flotar: flotar 6s ease-in-out infinite;
+  --animate-aparecer: aparecer 0.35s ease-out both;
+  --animate-estallar: estallar 0.9s ease-out forwards;
+
+  @keyframes flotar {
+    0%,
+    100% {
+      transform: translateY(0) rotate(8deg);
+    }
+    50% {
+      transform: translateY(-5px) rotate(3deg);
+    }
+  }
+
+  /* Confeti: cada trocito sale hacia su sitio (--x, --y) y se desvanece. */
+  @keyframes estallar {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(0.6);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--x), var(--y)) scale(1) rotate(var(--giro));
+    }
+  }
+
+  @keyframes aparecer {
+    0% {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
-body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+@layer base {
+  body {
+    @apply bg-crema text-stone-900 antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-redonda);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Las tarjetas blancas de todas las pantallas */
+  .tarjeta {
+    @apply rounded-3xl bg-white p-5 ring-1 ring-stone-900/5;
+    @apply shadow-[0_1px_2px_rgb(60_40_20/0.04),0_10px_24px_-14px_rgb(60_40_20/0.22)];
+  }
+}
+
+/* Si el móvil tiene activado «reducir movimiento», nada se mueve. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

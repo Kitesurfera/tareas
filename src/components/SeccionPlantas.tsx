@@ -7,6 +7,7 @@ import { infoCuidado, nombreDeCuidado, type Cuidado, type Planta, type Tarea } f
 import type { Nombres } from '../lib/useNombres'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { avisoError, botonSecundario } from './estilos'
+import { TituloSeccion, Vacio } from './Piezas'
 
 type Fila = {
   planta: Planta
@@ -72,17 +73,16 @@ export function SeccionPlantas({ nombres }: { nombres: Nombres }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">🪴 Plantas</h2>
-      <p className="text-sm text-stone-500">Riego, abono, trasplantes…</p>
+    <section className="tarjeta">
+      <TituloSeccion dibujo="🪴" titulo="Plantas" subtitulo="Riego, abono, trasplantes…" color="plantas" />
 
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
       {filas === null && !error && <p className="mt-3 text-sm text-stone-400">Cargando…</p>}
       {filas?.length === 0 && (
-        <p className="mt-3 text-stone-500">
+        <Vacio dibujo="🌱" color="plantas">
           Añade vuestras plantas y la app os recordará cuándo regar, abonar o trasplantar cada una, y a quién
           le toca.
-        </p>
+        </Vacio>
       )}
 
       {filas && filas.length > 0 && (
@@ -122,7 +122,7 @@ export function SeccionPlantas({ nombres }: { nombres: Nombres }) {
                     <button
                       type="button"
                       onClick={() => setMarcando(proximo.tarea.id)}
-                      className="shrink-0 rounded-full bg-marca px-4 py-2 text-sm font-semibold text-white"
+                      className="shrink-0 rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-4 py-2 text-sm font-semibold text-white"
                     >
                       Hecho
                     </button>

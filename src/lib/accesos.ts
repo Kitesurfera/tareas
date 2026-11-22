@@ -19,6 +19,10 @@ export type Acceso = {
   rutinas: string[]
   tratamientos: string[]
   cuidados: string[]
+  // Con qué cuenta se abrió el enlace (nombre de Google y email a medias).
+  aceptado_nombre?: string | null
+  aceptado_email?: string | null
+  aceptado_en?: string | null
 }
 
 export type NotaEncargo = {
@@ -40,7 +44,7 @@ export function useAccesos() {
     let vigente = true
     supabase
       .from('accesos')
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
+      .select('*')
       .order('desde', { ascending: false })
       .then(({ data, error }) => {
         if (!vigente) return

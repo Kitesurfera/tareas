@@ -9,6 +9,7 @@ import {
 } from '../lib/avisos'
 import { abiertaComoApp, esIOS } from '../lib/instalar'
 import { avisoError } from './estilos'
+import { TituloSeccion } from './Piezas'
 
 type Estado = 'comprobando' | 'apagados' | 'activados' | 'bloqueados'
 
@@ -40,7 +41,7 @@ export function TarjetaAvisos() {
   if (!soportados) {
     if (!esIOS() || abiertaComoApp()) return null
     return (
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
+      <section className="tarjeta">
         <h2 className="font-semibold">🔔 Avisos en el iPhone</h2>
         <p className="mt-1 text-sm text-stone-600">
           Para recibir avisos, primero instala la app (Compartir → «Añadir a
@@ -84,8 +85,8 @@ export function TarjetaAvisos() {
     })
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="font-semibold">🔔 Avisos</h2>
+    <section className="tarjeta">
+      <TituloSeccion dibujo="🔔" titulo="Avisos" color="casa" />
 
       {estado === 'comprobando' && <p className="mt-1 text-sm text-stone-400">Comprobando…</p>}
 
@@ -99,7 +100,7 @@ export function TarjetaAvisos() {
             type="button"
             onClick={activar}
             disabled={ocupado}
-            className="mt-3 w-full rounded-full bg-marca px-5 py-3 font-semibold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
+            className="mt-3 w-full rounded-full bg-linear-to-b from-marca to-[#0b5f58] shadow-[0_6px_14px_-6px_rgb(15_118_110/0.6)] px-5 py-3 font-semibold text-white active:scale-[0.98] disabled:opacity-60"
           >
             {ocupado ? 'Activando…' : 'Activar avisos'}
           </button>
@@ -116,7 +117,7 @@ export function TarjetaAvisos() {
               type="button"
               onClick={probar}
               disabled={ocupado}
-              className="rounded-full px-3 py-2.5 text-sm font-semibold text-marca ring-1 ring-marca disabled:opacity-60"
+              className="rounded-full px-3 py-2.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 disabled:opacity-60"
             >
               Probar aviso
             </button>
