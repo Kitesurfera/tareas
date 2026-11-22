@@ -54,7 +54,8 @@ type Props = {
 
 // El marco de todas las pantallas una vez dentro:
 // - En el móvil, la barra de pestañas flotando abajo (solo en las pestañas).
-// - En el ordenador (pantalla ancha), un menú fijo a la izquierda siempre.
+// - En la tablet y el ordenador (desde 768 px de ancho), un menú fijo a la
+//   izquierda siempre (más estrecho en la tablet).
 export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
   const seccion = seccionDe(ruta)
   const enPestana = RAICES.includes(ruta)
@@ -63,8 +64,8 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
     : OTRAS
 
   return (
-    <div className={enPestana ? 'pb-28 lg:pb-0' : undefined}>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 overflow-y-auto border-r border-stone-900/5 bg-white/75 px-4 py-6 backdrop-blur-md lg:flex">
+    <div className={enPestana ? 'pb-28 md:pb-0' : undefined}>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-52 flex-col gap-6 overflow-y-auto border-r border-stone-900/5 bg-white/75 px-4 py-6 backdrop-blur-md md:flex lg:w-64">
         <a href="#/" onClick={alPulsar('/', true)} aria-label={`Tareas · ${hogar} · ir al inicio`} className="flex items-center gap-3 rounded-2xl px-2 py-1">
           <img src="/pwa-192x192.png" alt="" className="h-11 w-11 rounded-2xl shadow-sm" />
           <span className="min-w-0">
@@ -140,12 +141,12 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
         </a>
       </aside>
 
-      <div className="lg:pl-64">{children}</div>
+      <div className="md:pl-52 lg:pl-64">{children}</div>
 
       {enPestana && (
         <nav
           aria-label="Secciones"
-          className="fixed inset-x-0 bottom-0 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:hidden"
+          className="fixed inset-x-0 bottom-0 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] md:hidden"
         >
           <ul className="mx-auto grid max-w-md grid-cols-4 gap-1 rounded-[1.75rem] bg-white/90 p-1.5 shadow-[0_10px_30px_-12px_rgb(60_40_20/0.35)] ring-1 ring-stone-900/5 backdrop-blur-md">
             {PESTANAS.map((pestana) => {

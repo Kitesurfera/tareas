@@ -27,6 +27,11 @@
   --color-plantas: #e4f4d6;
   --color-plantas-tinta: #3d6b1e;
 
+  /* Tamaños de pantalla: «md» empieza en 600 px para que TODAS las tablets
+     (también en vertical, como la Galaxy Tab o el iPad mini) tengan el
+     menú lateral del ordenador. «lg» (1024 px) es donde caben dos columnas. */
+  --breakpoint-md: 37.5rem;
+
   /* Letra redondeada para los títulos: en iPhone es la «SF Pro Rounded»
      del sistema (no se descarga nada); en otros móviles, la normal. */
   --font-redonda: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;

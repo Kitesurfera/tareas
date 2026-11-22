@@ -392,7 +392,7 @@ function App() {
     const saludo = saludoDelMomento()
 
     return (
-      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 lg:max-w-6xl lg:px-10 lg:py-10">
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
         <CabeceraPestana
           color="inicio"
           etiqueta={<>🏡 {yo.hogar.nombre}</>}
@@ -400,13 +400,13 @@ function App() {
           subtitulo="Esto es lo que se viene en casa."
           dibujo={saludo.dibujo}
           boton={
-            // En el ordenador, Ajustes ya está en el menú de la izquierda.
+            // En la tablet y el ordenador, Ajustes ya está en el menú de la izquierda.
             <button
               type="button"
               onClick={() => ir('/ajustes')}
               aria-label="Ajustes"
               title="Ajustes"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95 lg:hidden"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95 md:hidden"
             >
               <span aria-hidden="true">⚙️</span>
             </button>

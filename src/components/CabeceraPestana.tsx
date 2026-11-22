@@ -25,11 +25,11 @@ type Props = {
 
 // Cabecera de color de cada pestaña: título, subtítulo y un dibujo que flota.
 // En el móvil va pegada arriba y a los lados de la pantalla (por eso los
-// márgenes negativos); en el ordenador es una tarjeta grande redondeada.
+// márgenes negativos); en la tablet y el ordenador es una tarjeta grande redondeada.
 export function CabeceraPestana({ color, titulo, subtitulo, etiqueta, dibujo, boton }: Props) {
   const { fondo, tinta } = COLORES[color]
   return (
-    <header className={`relative -mx-5 -mt-8 overflow-hidden rounded-b-[2.25rem] px-5 pt-8 pb-7 lg:mx-0 lg:mt-0 lg:rounded-[2.25rem] lg:px-10 lg:py-10 ${fondo}`}>
+    <header className={`relative -mx-5 -mt-8 overflow-hidden rounded-b-[2.25rem] px-5 pt-8 pb-7 md:mx-0 md:mt-0 md:rounded-[2.25rem] md:px-6 md:py-7 lg:px-10 lg:py-10 ${fondo}`}>
       {/* Burbujas de adorno */}
       <span aria-hidden="true" className="absolute -top-12 -right-10 h-44 w-44 rounded-full bg-white/35 lg:-top-20 lg:h-72 lg:w-72" />
       <span aria-hidden="true" className="absolute top-24 right-36 h-6 w-6 rounded-full bg-white/50 lg:top-8" />
