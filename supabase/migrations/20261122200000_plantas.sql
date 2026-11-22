@@ -26,6 +26,19 @@
 
 begin;
 
+-- Antes de nada: ¿están los SQL anteriores? Si falta alguno, se para aquí
+-- con un mensaje claro (y no se aplica nada).
+do $$
+begin
+  if to_regclass('public.viajes') is null then
+    raise exception 'Falta un SQL anterior: ejecuta antes 20261122160000_modo_viaje.sql';
+  end if;
+  if to_regclass('public.accesos') is null then
+    raise exception 'Falta un SQL anterior: ejecuta antes 20261122180000_acceso_temporal.sql';
+  end if;
+end;
+$$;
+
 -- ---------------------------------------------------------------------
 -- Nuevo tipo de tarea: plantas
 -- ---------------------------------------------------------------------
