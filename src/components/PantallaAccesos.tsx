@@ -100,7 +100,7 @@ export function PantallaAccesos({ nombreHogar }: Props) {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-3xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-3xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver('/ajustes')} className="self-start text-sm font-medium text-marca">
         ← Ajustes
       </button>
@@ -361,7 +361,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
 
   if (creado) {
     return (
-      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-xl lg:px-10 lg:py-10">
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-xl lg:px-10 lg:py-10">
         <h1 className="text-2xl font-extrabold text-marca">¡Listo! 🔑</h1>
         <section className="tarjeta flex flex-col gap-3">
           <p>
@@ -382,7 +382,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver('/accesos')} className="self-start text-sm font-medium text-marca">
         ← Accesos
       </button>

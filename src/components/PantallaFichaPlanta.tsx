@@ -77,7 +77,7 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
   const planta = datos?.planta
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 lg:max-w-6xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver('/casa')} className="self-start text-sm font-medium text-marca">
         ← Casa
       </button>

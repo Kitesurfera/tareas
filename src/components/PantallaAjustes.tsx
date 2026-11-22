@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { abiertaComoApp, esMovil } from '../lib/instalar'
+import { abiertaComoApp, nombreDelDispositivo } from '../lib/instalar'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Yo } from '../lib/tipos'
@@ -118,7 +118,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-5xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-5xl lg:px-10 lg:py-10">
       <CabeceraPestana
         color="ajustes"
         titulo="Ajustes"
@@ -190,7 +190,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         {abiertaComoApp() ? (
           <section className="tarjeta">
             <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
-            <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este {esMovil() ? 'móvil' : 'ordenador'}. ✅</p>
+            <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en {nombreDelDispositivo() === 'tablet' ? 'esta' : 'este'} {nombreDelDispositivo()}. ✅</p>
           </section>
         ) : (
           <TarjetaInstalar siempre />

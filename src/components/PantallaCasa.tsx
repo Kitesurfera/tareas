@@ -13,7 +13,7 @@ type Props = {
 export function PantallaCasa({ hogarId, miUserId }: Props) {
   const nombres = useNombres(miUserId)
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-6xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
       <CabeceraPestana color="casa" titulo="Casa" subtitulo="Rutinas, plantas y la compra, entre todas." dibujo="🧹" />
       {/* En el ordenador: rutinas y plantas a la izquierda; la compra a la
           derecha, siempre a la vista al bajar. */}

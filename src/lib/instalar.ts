@@ -67,3 +67,14 @@ export function esIOS(): boolean {
 export function esMovil(): boolean {
   return esIOS() || /android|mobi/i.test(navigator.userAgent)
 }
+
+// ¿Tablet? iPad, o Android sin «Mobile» (los móviles Android lo llevan).
+export function esTablet(): boolean {
+  const ua = navigator.userAgent
+  return /ipad/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || (/android/i.test(ua) && !/mobi/i.test(ua))
+}
+
+// «móvil», «tablet» u «ordenador», para los textos.
+export function nombreDelDispositivo(): string {
+  return esTablet() ? 'tablet' : esMovil() ? 'móvil' : 'ordenador'
+}

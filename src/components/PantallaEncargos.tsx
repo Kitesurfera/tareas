@@ -171,7 +171,7 @@ function NotaSuelta({ encargoId }: { encargoId: string }) {
 // #/encargos: lo que te han encargado con un acceso temporal.
 export function PantallaEncargos({ encargos, errorEnlace, recargar, soloEncargos, onCrearHogar, onCerrarSesion }: Props) {
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-3xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-3xl lg:px-10 lg:py-10">
       {!soloEncargos && (
         <button type="button" onClick={() => volver('/')} className="self-start text-sm font-medium text-marca">
           ← Inicio

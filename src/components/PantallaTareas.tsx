@@ -84,7 +84,7 @@ export function PantallaTareas({ miUserId }: Props) {
     }`
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 lg:max-w-4xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-4xl lg:px-10 lg:py-10">
       <CabeceraPestana color="tareas" titulo="Tareas" subtitulo="Todo lo que hay que recordar, sin que se quede en una sola cabeza." dibujo="📝" />
 
       {/* En el ordenador, todo en una fila: pendientes/hechas, todas/mías y el botón. */}

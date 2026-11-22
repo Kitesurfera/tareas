@@ -28,9 +28,12 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
 - **Servidor (Vercel Functions, carpeta `api/`):** `recordatorios.ts` (aviso diario; lo llama Vercel con `crons` de `vercel.json` a las 6:00 y 7:00 UTC y solo envía cuando son las 8:00 en España; protegido con `CRON_SECRET`) `aviso-de-prueba.ts` (botón «Probar aviso»; comprueba la sesión y solo avisa a los móviles de quien lo pide) y `leer-cartilla.ts` (fotos de la cartilla → **Gemma 4**, modelo abierto, en **Cloudflare Workers AI**, gratis hasta 10.000 «neuronas» al día y sin librerías, con `fetch`; comprueba la sesión y el hogar, como mucho 8 fotos y 10 lecturas al día por hogar; las fotos no se guardan en ningún sitio y en el registro solo se apuntan números). Se eligió gratis a propósito: con Claude costaba unos céntimos por lectura, y el plan gratuito de Gemini está prohibido en apps que usa gente de la UE. El código compartido va en `api/_lib/` (lo que se le dice a la IA y la comprobación de su respuesta, en `api/_lib/cartilla.ts`). Usa la librería `web-push`.
 - **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
-- Diseño **mobile-first**, y cómodo también en el **ordenador**. A partir de 1024 px de ancho (prefijo `lg:` de Tailwind):
-  - la barra de pestañas de abajo pasa a ser un **menú lateral fijo**: `Marco`, en `BarraPestanas.tsx`, envuelve todas las pantallas de dentro de la app;
-  - las pestañas y las fichas se reparten en **dos columnas**, y los formularios y las listas se ensanchan.
+- Diseño **mobile-first**, y cómodo también en la **tablet** y el **ordenador**:
+  - **Desde 600 px** de ancho (prefijo `md:`, cambiado a propósito en `index.css`: así entran todas las tablets en vertical, también la Galaxy Tab o el iPad mini):
+    - la barra de pestañas de abajo pasa a ser un **menú lateral fijo**: `Marco`, en `BarraPestanas.tsx`, envuelve todas las pantallas de dentro de la app;
+    - la cabecera de color se convierte en tarjeta y el contenido se ensancha (una columna).
+    - Un móvil en horizontal también lo ve así.
+  - **Desde 1024 px** (prefijo `lg:`: tablet en horizontal y ordenador): las pestañas y las fichas se reparten en **dos columnas**, y los formularios y las listas se ensanchan más.
   - Truco para que el móvil no cambie de orden: cada columna es `contents lg:flex`, y en el móvil esa caja «no existe».
   - Con ratón: cursor de mano, efectos al pasar por encima (`@media (hover: hover)`, que en el móvil no se aplica) y borde visible al moverse con la tecla Tab.
   - `.tarjeta` no admite `lg:`: para eso, se escriben sus estilos.

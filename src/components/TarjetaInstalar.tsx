@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { abiertaComoApp, esIOS, esMovil, instalar, usePuedeInstalar, useRecienInstalada } from '../lib/instalar'
+import { abiertaComoApp, esIOS, esMovil, esTablet, instalar, usePuedeInstalar, useRecienInstalada } from '../lib/instalar'
 
 const CLAVE = 'tareas.instalar.oculto'
 
@@ -39,7 +39,7 @@ export function TarjetaInstalar({ siempre = false }: { siempre?: boolean }) {
         <div>
           {esMovil() ? (
             <>
-              <h2 className="font-semibold text-marca">Instala Tareas en tu móvil</h2>
+              <h2 className="font-semibold text-marca">Instala Tareas en tu {esTablet() ? 'tablet' : 'móvil'}</h2>
               <p className="text-sm text-stone-700">
                 Se abre a pantalla completa, como cualquier app, desde un icono en
                 tu pantalla de inicio.

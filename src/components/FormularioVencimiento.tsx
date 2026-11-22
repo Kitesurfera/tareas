@@ -66,7 +66,7 @@ export function PantallaEditarVencimiento({ id, ...comun }: Comun & { id: string
 
 function Aviso({ texto }: { texto: string }) {
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md items-center justify-center px-5 text-center text-stone-500 lg:max-w-xl lg:px-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md items-center justify-center px-5 text-center text-stone-500 md:max-w-2xl md:px-6 lg:max-w-xl lg:px-10">
       {texto}
     </main>
   )
@@ -164,7 +164,7 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 lg:max-w-xl lg:px-10 lg:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-xl lg:px-10 lg:py-10">
       <button
         type="button"
         onClick={() => volver('/vencimientos')}
