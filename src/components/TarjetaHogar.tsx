@@ -9,6 +9,8 @@ type Props = {
   miUserId: string
   // Se llama cuando sales del hogar, para volver a la pantalla de bienvenida.
   onSalir: () => void
+  // Título de la tarjeta (por defecto, el nombre del hogar).
+  titulo?: string
 }
 
 type Invitacion = {
@@ -17,7 +19,7 @@ type Invitacion = {
 }
 
 // Tarjeta con la gente del hogar y el botón para invitar a alguien.
-export function TarjetaHogar({ hogar, miUserId, onSalir }: Props) {
+export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
   const { miembros, error: errorMiembros, recargar } = useMiembros()
   const [ocupado, setOcupado] = useState(false)
   const yo = miembros?.find((m) => m.user_id === miUserId)
@@ -127,8 +129,14 @@ export function TarjetaHogar({ hogar, miUserId, onSalir }: Props) {
 
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">{hogar.nombre}</h2>
-      <p className="text-sm text-stone-500">Quién está en este hogar</p>
+      {titulo ? (
+        <h2 className="font-semibold">{titulo}</h2>
+      ) : (
+        <>
+          <h2 className="text-lg font-semibold">{hogar.nombre}</h2>
+          <p className="text-sm text-stone-500">Quién está en este hogar</p>
+        </>
+      )}
 
       <ul className="mt-4 flex flex-col gap-3">
         {errorMiembros && (

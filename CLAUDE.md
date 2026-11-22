@@ -24,7 +24,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ## Stack
 
 - **Frontend:** React + Vite + TypeScript, con Tailwind CSS.
-- **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas (`autoUpdate`). Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
+- **PWA:** instalable en móvil (vite-plugin-pwa, configurado en `vite.config.ts`). El service worker solo guarda los archivos de la app, nunca los datos del hogar (siempre se piden a Supabase). Las versiones nuevas se instalan solas: `src/lib/actualizaciones.ts` registra el service worker y, cuando llega una versión nueva, recarga la app si acabas de abrirla o enseña el aviso «Actualizar» si llevas un rato usándola. Iconos en `public/` (casa con ✓ sobre el verde `#0f766e`); el aviso «Instala Tareas en tu móvil» del inicio usa `src/lib/instalar.ts`.
 - **Backend:** Supabase (login, base de datos Postgres y almacenamiento de fotos).
 - **Servidor (Vercel Functions, carpeta `api/`):** `recordatorios.ts` (aviso diario; lo llama Vercel con `crons` de `vercel.json` a las 6:00 y 7:00 UTC y solo envía cuando son las 8:00 en España; protegido con `CRON_SECRET`) y `aviso-de-prueba.ts` (botón «Probar aviso»; comprueba la sesión y solo avisa a los móviles de quien lo pide). El código compartido va en `api/_lib/`. Usa la librería `web-push`.
 - **Despliegue:** Vercel. Se publica sola cada vez que algo llega a `main`, y cada pull request tiene su propio enlace de prueba.
@@ -61,6 +61,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **vencimientos**: id, hogar_id, tipo (seguro / suscripcion), nombre, fecha_renovacion, frecuencia_meses (vacío = no se repite), importe, aviso_dias (vacío = sin aviso), responsable_id, notas, revisado_para, creada_por
 - **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), participantes (miembros.id que se turnan; vacío = todo el hogar), notas, creada_por
 - **lista_compra**: id, hogar_id, nombre, cantidad, comprado, anadido_por, comprado_por, comprado_en (quién añade y quién compra lo pone la base de datos)
+- **actividad**: id, hogar_id, user_id, tipo (pensar / hacer), origen (tarea / tratamiento / rutina / vencimiento / compra), origen_id, titulo, creado_en. Diario de «En equipo» que rellenan solo los disparadores (`apuntar_actividad_*`): pensar = crear una tarea a mano, un tratamiento, una rutina o un vencimiento, o apuntar algo en la compra; hacer = completar una tarea o comprar algo. Reabrir o desmarcar quita ese «hacer». Nadie puede escribir en él a mano y **cada persona solo lee sus propias filas**. `resumen_carga_mental` da tus números (solo tuyos), `totales_del_hogar` lo de todas sin decir quién y `agradecimientos` lo que pensaron las demás personas (para dar las gracias).
 - **avisos_push**: id, user_id, endpoint, p256dh, auth, ultimo_envio (móviles con avisos activados; cada persona solo ve los suyos; `guardar_aviso_push` los guarda y `recordatorios_del_dia` —solo para el servidor— prepara el resumen: lo pendiente hasta hoy que es tuyo o no es de nadie)
 
 **Mismo hogar garantizado:** `responsable_id` apunta a `miembros.id`. Las relaciones entre tablas usan claves compuestas `(id, hogar_id)`, así la base de datos impide enlazar una mascota, un tratamiento o una persona de otro hogar.
@@ -92,7 +93,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Elegir quién participa** en los turnos de cada rutina.
 
 ### Fase 2
-- **Contador de carga mental**: por persona y mes, cuántas cosas ha *creado* (pensar) frente a cuántas ha *completado* (hacer). Tono neutro y amable, nunca de reproche.
+- ✅ **Carga mental «En equipo»** (tarjeta en Inicio y pantalla `#/carga` con meses anteriores). **Nunca compara a personas**: enseña lo pensado y hecho entre todas, «💚 Gracias por acordarte» con lo que pensaron las demás, y tus propios números, que solo ves tú. Sin porcentajes, sin barras por persona y sin frases que juzguen (la primera versión con marcador resultaba pasivo-agresiva).
+- ✅ **Ajustes** (botón ⚙️ arriba a la derecha del inicio, `#/ajustes`): tu nombre, avisos, nombre del hogar, quién está en el hogar (invitar, quitar, salir), instalar la app y cerrar sesión (solo en ese dispositivo).
 - Registro de peso con una gráfica sencilla.
 - ~~Recordatorios~~ ✅ Hechos con notificaciones push (aviso diario a las 8:00). En iPhone solo funcionan con la app instalada en la pantalla de inicio. Pendiente: avisos por email para quien no instale la app.
 
