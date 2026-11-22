@@ -18,6 +18,7 @@ export type Acceso = {
   tareas: string[]
   rutinas: string[]
   tratamientos: string[]
+  cuidados: string[]
 }
 
 export type NotaEncargo = {
@@ -39,7 +40,7 @@ export function useAccesos() {
     let vigente = true
     supabase
       .from('accesos')
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos')
+      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
       .order('desde', { ascending: false })
       .then(({ data, error }) => {
         if (!vigente) return
@@ -98,7 +99,8 @@ export function accesoCubre(acceso: Acceso, tarea: Tarea, dia: string): boolean 
     (acceso.categorias.includes(tarea.categoria) ||
       acceso.tareas.includes(tarea.id) ||
       (tarea.rutina_id !== null && acceso.rutinas.includes(tarea.rutina_id)) ||
-      (tarea.tratamiento_id !== null && acceso.tratamientos.includes(tarea.tratamiento_id)))
+      (tarea.tratamiento_id !== null && acceso.tratamientos.includes(tarea.tratamiento_id)) ||
+      (tarea.cuidado_id !== null && acceso.cuidados.includes(tarea.cuidado_id)))
   )
 }
 
@@ -117,6 +119,7 @@ export type EncargoTarea = {
   fecha_limite: string | null
   categoria: Categoria
   mascota: string | null
+  planta: string | null
   notas: string | null
 }
 
@@ -129,6 +132,7 @@ export type Encargo = {
   activo: boolean
   tareas: EncargoTarea[]
   mascotas: { nombre: string; especie: string; raza: string | null; fecha_nacimiento: string | null; notas: string | null }[]
+  plantas: { nombre: string; tipo: string | null; ubicacion: string | null; notas: string | null }[]
   hechas: { titulo: string; completada_en: string }[]
 }
 
