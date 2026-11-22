@@ -38,9 +38,14 @@ export function useNombres(miUserId: string) {
     miMiembroId,
     responsable,
     notaViaje,
-    // Lo que se enseña en una tarea: el aviso del viaje o quién se encarga.
-    encargada: (responsableId: string | null, fecha: string | null) =>
-      notaViaje(responsableId, fecha) ?? responsable(responsableId),
+    // Lo que se enseña en una tarea: quién se encarga, o quién la cubre si
+    // está de viaje. Sin nadie en casa: «Bea · 🏠 nadie en casa».
+    encargada: (responsableId: string | null, fecha: string | null) => {
+      if (quienCubre(responsableId, fecha)?.nadieEnCasa) {
+        return `${responsable(responsableId) ?? 'Sin responsable'} · 🏠 nadie en casa`
+      }
+      return notaViaje(responsableId, fecha) ?? responsable(responsableId)
+    },
     // ¿Te toca a ti? Lo tuyo si estás en casa, y lo de quien está de viaje
     // si tú te quedas. Si no hay nadie en casa, lo tuyo sigue siendo tuyo.
     esMia: (responsableId: string | null, fecha: string | null) => {

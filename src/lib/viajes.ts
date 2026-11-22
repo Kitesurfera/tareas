@@ -93,3 +93,24 @@ export function cobertura(
     nadieEnCasa: miembros.length > 0 && enCasa.length === 0,
   }
 }
+
+// «Tú», «Ana», «Ana y tú», «Ana, Bea y tú».
+export function textoPersonas(personas: string[], miembros: Miembro[], miMiembroId?: string): string {
+  const nombres = miembros
+    .filter((m) => personas.includes(m.id) && m.id !== miMiembroId)
+    .map((m) => m.nombre_visible)
+  if (miMiembroId && personas.includes(miMiembroId)) nombres.push(nombres.length ? 'tú' : 'Tú')
+  if (nombres.length <= 1) return nombres[0] ?? ''
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`
+}
+
+// «5 dic» (sin año, para frases cortas).
+export function diaMes(fecha: string): string {
+  const [anio, mes, dia] = fecha.split('-').map(Number)
+  return new Date(anio, mes - 1, dia).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+}
+
+export function estaEnCurso(grupo: GrupoViaje): boolean {
+  const hoy = hoyComoTexto()
+  return grupo.desde <= hoy && hoy <= grupo.hasta
+}

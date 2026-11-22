@@ -17,6 +17,8 @@ import { TarjetaInstalar } from './components/TarjetaInstalar'
 import { TarjetaCargaMental } from './components/TarjetaCargaMental'
 import { PantallaCargaMental } from './components/PantallaCargaMental'
 import { PantallaAjustes } from './components/PantallaAjustes'
+import { FormularioViaje, PantallaViajes } from './components/PantallaViajes'
+import { TarjetaViaje } from './components/TarjetaViaje'
 import { ConPestanas } from './components/BarraPestanas'
 import { PantallaVencimientos } from './components/PantallaVencimientos'
 import {
@@ -200,6 +202,8 @@ function App() {
   //   #/vencimientos                       → seguros y suscripciones
   //   #/vencimientos/nuevo/<seguro|suscripcion>
   //   #/vencimientos/<id>/editar
+  //   #/viajes                             → modo viaje
+  //   #/viajes/nuevo · #/viajes/<grupo>/editar
   const partes = ruta.split('/').filter(Boolean)
   const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
   if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
@@ -227,6 +231,15 @@ function App() {
         onCerrarSesion={salir}
       />
     )
+  }
+  if (partes[0] === 'viajes' && !partes[1]) {
+    return <PantallaViajes miUserId={yo.userId} />
+  }
+  if (partes[0] === 'viajes' && partes[1] === 'nuevo') {
+    return <FormularioViaje miUserId={yo.userId} />
+  }
+  if (partes[0] === 'viajes' && partes[1] && partes[2] === 'editar') {
+    return <FormularioViaje key={partes[1]} miUserId={yo.userId} grupo={partes[1]} />
   }
   if (partes[0] === 'carga') {
     return <PantallaCargaMental />
@@ -291,6 +304,8 @@ function App() {
         </header>
 
         <TarjetaInstalar />
+
+        <TarjetaViaje miUserId={yo.userId} />
 
         <TarjetaProximo miUserId={yo.userId} />
 
