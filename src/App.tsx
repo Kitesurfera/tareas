@@ -37,6 +37,10 @@ import { PantallaAccesos, FormularioAcceso } from './components/PantallaAccesos'
 import { PantallaEncargos } from './components/PantallaEncargos'
 import { TarjetaAyuda } from './components/TarjetaAyuda'
 import { PantallaLeerCartilla } from './components/PantallaLeerCartilla'
+import { PantallaPlanes } from './components/PantallaPlanes'
+import { FormularioPlan } from './components/FormularioPlan'
+import { PantallaCategoriasPlan } from './components/PantallaCategoriasPlan'
+import { TarjetaPlanes } from './components/TarjetaPlanes'
 import {
   borrarEncargoPendiente,
   guardarEncargoDeLaUrl,
@@ -276,7 +280,9 @@ function App() {
     //   #/casa/plantas/<id>/editar           → editar planta
     //   #/casa/plantas/<id>/cuidados/nuevo   → añadir cuidado
     //   #/cuidados/<id>/editar               → editar cuidado
-    //   #/vencimientos                       → seguros y suscripciones
+    //   #/planes                             → generador de planes y calendario
+  //   #/planes/nuevo · #/planes/<id>/editar · #/planes/categorias
+  //   #/vencimientos                       → seguros y suscripciones
     //   #/vencimientos/nuevo/<seguro|suscripcion>
     //   #/vencimientos/<id>/editar
     //   #/viajes                             → modo viaje
@@ -373,6 +379,18 @@ function App() {
     if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] && partes[3] === 'editar') {
       return <PantallaEditarRutina key={partes[2]} id={partes[2]} {...comun} />
     }
+    if (partes[0] === 'planes' && !partes[1]) {
+      return <PantallaPlanes hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'planes' && partes[1] === 'nuevo') {
+      return <FormularioPlan hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'planes' && partes[1] === 'categorias') {
+      return <PantallaCategoriasPlan hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'planes' && partes[1] && partes[2] === 'editar') {
+      return <FormularioPlan key={partes[1]} hogarId={yo.hogar.id} id={partes[1]} />
+    }
     if (partes[0] === 'vencimientos' && !partes[1]) {
       return <PantallaVencimientos miUserId={yo.userId} />
     }
@@ -440,6 +458,8 @@ function App() {
           </div>
 
           <div className="contents lg:flex lg:flex-col lg:gap-6">
+            <TarjetaPlanes />
+
             <TarjetaCargaMental />
 
             <TarjetaMascotas />
