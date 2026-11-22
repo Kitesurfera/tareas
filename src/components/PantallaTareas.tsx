@@ -65,7 +65,14 @@ export function PantallaTareas({ miUserId }: Props) {
   // Mientras cambia de pestaña no enseñamos la lista anterior.
   const lista =
     tareas?.pestana === pestana
-      ? tareas.lista.filter((t) => !soloMias || t.responsable_id === nombres.miMiembroId)
+      ? tareas.lista.filter(
+          (t) =>
+            !soloMias ||
+            // Pendientes: también lo que cubres de quien está de viaje.
+            (pestana === 'pendientes'
+              ? nombres.esMia(t.responsable_id, t.fecha_limite)
+              : t.responsable_id === nombres.miMiembroId),
+        )
       : null
   const error = errorCarga ?? acciones.error
 

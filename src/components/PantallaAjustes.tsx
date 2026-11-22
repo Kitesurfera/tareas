@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { mensajeDeError } from '../lib/errores'
 import { abiertaComoApp } from '../lib/instalar'
-import { volver } from '../lib/ruta'
+import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Yo } from '../lib/tipos'
-import { avisoError, campo } from './estilos'
+import { avisoError, botonSecundario, campo } from './estilos'
 import { TarjetaAvisos } from './TarjetaAvisos'
 import { TarjetaHogar } from './TarjetaHogar'
 import { TarjetaInstalar } from './TarjetaInstalar'
@@ -81,7 +81,7 @@ function CampoEditable({
   )
 }
 
-// Pantalla de ajustes: perfil, avisos, hogar, la app y cerrar sesión.
+// Pantalla de ajustes: perfil, avisos, viajes, hogar, la app y cerrar sesión.
 export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion }: Props) {
   async function guardarMiNombre(nombre: string): Promise<string | null> {
     if (!supabase) return 'Sin conexión'
@@ -127,6 +127,16 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
       </section>
 
       <TarjetaAvisos />
+
+      <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <h2 className="font-semibold">✈️ Modo viaje</h2>
+        <p className="mt-1 text-sm text-stone-600">
+          Si alguien se va de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa.
+        </p>
+        <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
+          Ver y añadir viajes
+        </button>
+      </section>
 
       <section className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm">
         <h2 className="font-semibold">🏡 Tu hogar</h2>

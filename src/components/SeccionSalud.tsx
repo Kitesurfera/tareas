@@ -4,12 +4,13 @@ import { cuandoToca, diasHasta, fechaCorta, textoFrecuencia } from '../lib/fecha
 import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { infoTipo, type Tarea, type Tratamiento } from '../lib/tipos'
-import { useMiembros } from '../lib/useMiembros'
+import { useNombres } from '../lib/useNombres'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { avisoError, botonSecundario } from './estilos'
 
 type Props = {
   mascotaId: string
+  miUserId: string
   nombreMascota: string
 }
 
@@ -28,8 +29,8 @@ function colorDeFecha(fecha: string): string {
 
 // Sección «Salud» de la ficha: tratamientos, cuándo toca cada uno y
 // botón para marcarlo como hecho.
-export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
-  const { miembros } = useMiembros()
+export function SeccionSalud({ mascotaId, miUserId, nombreMascota }: Props) {
+  const nombres = useNombres(miUserId)
   const [filas, setFilas] = useState<Fila[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recarga, setRecarga] = useState(0)
@@ -69,11 +70,6 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
       vigente = false
     }
   }, [mascotaId, recarga])
-
-  function nombreDe(miembroId: string | null): string | null {
-    if (!miembroId) return null
-    return miembros?.find((m) => m.id === miembroId)?.nombre_visible ?? null
-  }
 
   async function confirmarHecho(fila: Fila, fechaHecho: string) {
     if (!supabase || !fila.pendiente) return
@@ -118,7 +114,8 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
           {filas.map((fila) => {
             const { tratamiento, pendiente } = fila
             const tipo = infoTipo(tratamiento.tipo)
-            const encargada = nombreDe(tratamiento.responsable_id)
+            const encargada = nombres.responsable(tratamiento.responsable_id)
+            const notaViaje = pendiente ? nombres.notaViaje(pendiente.responsable_id, pendiente.fecha_limite) : null
             const abierto = pendiente && marcando === pendiente.id
             return (
               <li key={tratamiento.id} className="py-3">
@@ -143,8 +140,9 @@ export function SeccionSalud({ mascotaId, nombreMascota }: Props) {
                         </span>
                       )}
                       <span className="block text-sm text-stone-500">
-                        {encargada ? `Se encarga ${encargada}` : 'Sin responsable'}
+                        {encargada === 'Tú' ? 'Te encargas tú' : encargada ? `Se encarga ${encargada}` : 'Sin responsable'}
                       </span>
+                      {notaViaje && <span className="block text-sm text-stone-600">{notaViaje}</span>}
                     </span>
                   </button>
                   {pendiente && !abierto && (

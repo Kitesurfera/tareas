@@ -121,6 +121,11 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
                         Toca: {cuandoToca(pendiente.fecha_limite)}
                       </span>
                     )}
+                    {pendiente && nombres.notaViaje(pendiente.responsable_id, pendiente.fecha_limite) && (
+                      <span className="block text-sm text-stone-600">
+                        {nombres.notaViaje(pendiente.responsable_id, pendiente.fecha_limite)}
+                      </span>
+                    )}
                   </button>
                   {pendiente && !abierto && (
                     <button

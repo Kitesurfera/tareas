@@ -8,10 +8,11 @@ import { SeccionSalud } from './SeccionSalud'
 
 type Props = {
   id: string
+  miUserId: string
 }
 
 // Ficha de una mascota: foto, datos básicos y notas.
-export function PantallaFichaMascota({ id }: Props) {
+export function PantallaFichaMascota({ id, miUserId }: Props) {
   const { mascota, foto, error } = useMascota(id)
 
   return (
@@ -67,7 +68,7 @@ export function PantallaFichaMascota({ id }: Props) {
             </dl>
           </section>
 
-          <SeccionSalud mascotaId={mascota.id} nombreMascota={mascota.nombre} />
+          <SeccionSalud mascotaId={mascota.id} miUserId={miUserId} nombreMascota={mascota.nombre} />
 
           <SeccionPeso
             mascotaId={mascota.id}

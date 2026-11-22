@@ -17,6 +17,11 @@ const MENSAJES_PROPIOS = [
   'Esa persona no está',
   'Para irte tú',
   'No perteneces',
+  'Elige quién se va',
+  'Elige el día de ida',
+  'El día de vuelta',
+  'Un viaje puede durar',
+  'Solo puede irse',
 ]
 
 // Errores técnicos que sí sabemos explicar.

@@ -18,7 +18,7 @@ export function ListaTareas({ tareas, acciones, nombres }: Props) {
         <FilaTarea
           key={tarea.id}
           tarea={tarea}
-          nombreResponsable={nombres.responsable(tarea.responsable_id)}
+          nombreResponsable={nombres.encargada(tarea.responsable_id, tarea.fecha_limite)}
           nombreMascota={nombres.mascota(tarea.mascota_id)}
           nombreQuienLaHizo={nombres.porUsuario(tarea.completada_por)}
           onPulsarCirculo={() => acciones.pulsarCirculo(tarea)}
