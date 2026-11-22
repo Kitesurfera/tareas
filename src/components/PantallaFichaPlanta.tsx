@@ -77,7 +77,7 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
   const planta = datos?.planta
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver('/casa')} className="self-start text-sm font-medium text-marca">
         ← Casa
       </button>
@@ -87,23 +87,35 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
       {datos && !planta && <p className="text-center text-stone-500">No encontramos esta planta en tu hogar.</p>}
 
       {planta && datos && (
-        <>
-          <header className="flex flex-col items-center gap-2 text-center">
-            <span aria-hidden="true" className="flex h-24 w-24 items-center justify-center rounded-full bg-marca-suave text-5xl">
-              🪴
-            </span>
-            <div>
-              <h1 className="text-3xl font-extrabold text-marca">{planta.nombre}</h1>
-              <p className="text-stone-600">{[planta.tipo, planta.ubicacion].filter(Boolean).join(' · ')}</p>
-            </div>
-          </header>
+        // En el ordenador: la ficha a la izquierda; los cuidados a la derecha.
+        <div className="contents lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] lg:items-start lg:gap-6">
+          <div className="contents lg:sticky lg:top-6 lg:flex lg:flex-col lg:gap-6">
+            <header className="flex flex-col items-center gap-2 text-center lg:rounded-3xl lg:bg-white lg:p-6 lg:shadow-[0_1px_2px_rgb(60_40_20/0.04),0_10px_24px_-14px_rgb(60_40_20/0.22)] lg:ring-1 lg:ring-stone-900/5">
+              <span aria-hidden="true" className="flex h-24 w-24 items-center justify-center rounded-full bg-marca-suave text-5xl">
+                🪴
+              </span>
+              <div>
+                <h1 className="text-3xl font-extrabold text-marca">{planta.nombre}</h1>
+                <p className="text-stone-600">{[planta.tipo, planta.ubicacion].filter(Boolean).join(' · ')}</p>
+              </div>
+            </header>
 
-          {planta.notas && (
-            <section className="tarjeta">
-              <h2 className="text-sm text-stone-500">Notas</h2>
-              <p className="whitespace-pre-line">{planta.notas}</p>
-            </section>
-          )}
+            {planta.notas && (
+              <section className="tarjeta">
+                <h2 className="text-sm text-stone-500">Notas</h2>
+                <p className="whitespace-pre-line">{planta.notas}</p>
+              </section>
+            )}
+
+            <button
+              type="button"
+              onClick={() => ir(`/casa/plantas/${planta.id}/editar`)}
+              // En el móvil va al final de todo; en el ordenador, debajo de la ficha.
+              className={`order-last lg:order-none ${botonSecundario}`}
+            >
+              Editar planta
+            </button>
+          </div>
 
           <section className="tarjeta">
             <TituloSeccion dibujo="💧" titulo="Cuidados" subtitulo="Cada uno os avisa cuando toca" color="plantas" />
@@ -188,11 +200,7 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
               + Añadir cuidado
             </button>
           </section>
-
-          <button type="button" onClick={() => ir(`/casa/plantas/${planta.id}/editar`)} className={botonSecundario}>
-            Editar planta
-          </button>
-        </>
+        </div>
       )}
     </main>
   )

@@ -43,7 +43,7 @@ export function PantallaCargaMental() {
   const variasPersonas = (miembros?.length ?? 0) > 1
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-3xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver('/')} className="self-start text-sm font-medium text-marca">
         ← Inicio
       </button>

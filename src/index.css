@@ -27,6 +27,11 @@
   --color-plantas: #e4f4d6;
   --color-plantas-tinta: #3d6b1e;
 
+  /* Tamaños de pantalla: «md» empieza en 600 px para que TODAS las tablets
+     (también en vertical, como la Galaxy Tab o el iPad mini) tengan el
+     menú lateral del ordenador. «lg» (1024 px) es donde caben dos columnas. */
+  --breakpoint-md: 37.5rem;
+
   /* Letra redondeada para los títulos: en iPhone es la «SF Pro Rounded»
      del sistema (no se descarga nada); en otros móviles, la normal. */
   --font-redonda: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
@@ -83,6 +88,25 @@
     font-family: var(--font-redonda);
     letter-spacing: -0.01em;
   }
+
+  /* En el ordenador: la «mano» al pasar por encima de lo que se puede pulsar. */
+  button:not(:disabled),
+  [role="button"],
+  [role="tab"],
+  select,
+  summary,
+  label:has(> input[type="checkbox"]),
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="date"] {
+    cursor: pointer;
+  }
+
+  /* Al moverse con el teclado (tecla Tab), se ve bien dónde estás. */
+  :where(button, a, [role="button"], [role="tab"], summary):focus-visible {
+    outline: 3px solid var(--color-marca);
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
@@ -90,6 +114,21 @@
   .tarjeta {
     @apply rounded-3xl bg-white p-5 ring-1 ring-stone-900/5;
     @apply shadow-[0_1px_2px_rgb(60_40_20/0.04),0_10px_24px_-14px_rgb(60_40_20/0.22)];
+  }
+}
+
+/* Solo con ratón (en el móvil no existe «pasar por encima»):
+   - las tarjetas que se pueden pulsar se levantan un poco;
+   - en las listas, la fila se pone verde al pasar por encima. */
+@media (hover: hover) {
+  :is(button, a).tarjeta {
+    @apply transition-shadow;
+  }
+  :is(button, a).tarjeta:hover {
+    @apply shadow-[0_1px_2px_rgb(60_40_20/0.05),0_16px_32px_-14px_rgb(60_40_20/0.32)];
+  }
+  .tarjeta li button.text-left:hover {
+    color: var(--color-marca);
   }
 }
 

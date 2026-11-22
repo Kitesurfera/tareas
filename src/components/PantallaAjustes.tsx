@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { abiertaComoApp } from '../lib/instalar'
+import { abiertaComoApp, nombreDelDispositivo } from '../lib/instalar'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Yo } from '../lib/tipos'
@@ -118,7 +118,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-5xl lg:px-10 lg:py-10">
       <CabeceraPestana
         color="ajustes"
         titulo="Ajustes"
@@ -131,84 +131,89 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         }
       />
 
-      <section className="tarjeta flex flex-col gap-4">
-        <TituloSeccion dibujo="👤" titulo="Tu perfil" color="inicio" />
-        <CampoEditable
-          etiqueta="Tu nombre en la app"
-          valorInicial={yo.nombre}
-          maximo={40}
-          ayuda="Así te ve el resto del hogar."
-          onGuardar={guardarMiNombre}
-        />
-        {email && <p className="text-sm text-stone-500">Has entrado con Google como {email}.</p>}
-      </section>
-
-      <TarjetaAvisos />
-
-      <section className="tarjeta">
-        <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
-        <p className="mt-3 text-sm text-stone-600">
-          Si alguien se va de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa.
-        </p>
-        <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
-          Ver y añadir viajes
-        </button>
-      </section>
-
-      <section className="tarjeta">
-        <TituloSeccion dibujo="🔑" titulo="Acceso temporal" color="casa" />
-        <p className="mt-3 text-sm text-stone-600">
-          Deja que alguien de fuera (quien cuida la mascota, riega…) vea y haga solo las tareas que elijáis,
-          durante unos días.
-        </p>
-        <button type="button" onClick={() => ir('/accesos')} className={`mt-3 ${botonSecundario}`}>
-          Ver y dar accesos
-        </button>
-      </section>
-
-      <section className="tarjeta flex flex-col gap-4">
-        <TituloSeccion dibujo="🏡" titulo="Tu hogar" color="coral" />
-        <CampoEditable
-          etiqueta="Nombre del hogar"
-          valorInicial={yo.hogar.nombre}
-          maximo={60}
-          onGuardar={guardarNombreHogar}
-        />
-      </section>
-
-      <TarjetaHogar
-        // Al cambiar tu nombre o el del hogar, la lista se vuelve a cargar.
-        key={`${yo.nombre}|${yo.hogar.nombre}`}
-        hogar={yo.hogar}
-        miUserId={yo.userId}
-        onSalir={onSalirDelHogar}
-        titulo="Quién está en el hogar"
-      />
-
-      {abiertaComoApp() ? (
-        <section className="tarjeta">
-          <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
-          <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
+      {/* En el ordenador, las tarjetas en dos columnas. */}
+      <div className="contents lg:block lg:columns-2 lg:gap-6 lg:*:mb-6 lg:*:break-inside-avoid">
+        <section className="tarjeta flex flex-col gap-4">
+          <TituloSeccion dibujo="👤" titulo="Tu perfil" color="inicio" />
+          <CampoEditable
+            etiqueta="Tu nombre en la app"
+            valorInicial={yo.nombre}
+            maximo={40}
+            ayuda="Así te ve el resto del hogar."
+            onGuardar={guardarMiNombre}
+          />
+          {email && <p className="text-sm text-stone-500">Has entrado con Google como {email}.</p>}
         </section>
-      ) : (
-        <TarjetaInstalar siempre />
-      )}
 
-      <button
-        type="button"
-        onClick={cerrarSesion}
-        className="mt-2 w-full rounded-full px-5 py-3 font-semibold text-red-700 ring-1 ring-red-200 active:scale-[0.98]"
-      >
-        Cerrar sesión
-      </button>
-      <button
-        type="button"
-        onClick={cerrarSesionEnTodos}
-        className="-mt-2 w-full py-2 text-sm text-red-700 underline-offset-2 hover:underline"
-      >
-        Cerrar sesión en todos mis dispositivos
-      </button>
-      <p className="-mt-3 text-center text-xs text-stone-500">Por si pierdes el móvil o entraste en un sitio que no es tuyo.</p>
+        <TarjetaAvisos />
+
+        <section className="tarjeta">
+          <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
+          <p className="mt-3 text-sm text-stone-600">
+            Si alguien se va de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa.
+          </p>
+          <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
+            Ver y añadir viajes
+          </button>
+        </section>
+
+        <section className="tarjeta">
+          <TituloSeccion dibujo="🔑" titulo="Acceso temporal" color="casa" />
+          <p className="mt-3 text-sm text-stone-600">
+            Deja que alguien de fuera (quien cuida la mascota, riega…) vea y haga solo las tareas que elijáis,
+            durante unos días.
+          </p>
+          <button type="button" onClick={() => ir('/accesos')} className={`mt-3 ${botonSecundario}`}>
+            Ver y dar accesos
+          </button>
+        </section>
+
+        <section className="tarjeta flex flex-col gap-4">
+          <TituloSeccion dibujo="🏡" titulo="Tu hogar" color="coral" />
+          <CampoEditable
+            etiqueta="Nombre del hogar"
+            valorInicial={yo.hogar.nombre}
+            maximo={60}
+            onGuardar={guardarNombreHogar}
+          />
+        </section>
+
+        <TarjetaHogar
+          // Al cambiar tu nombre o el del hogar, la lista se vuelve a cargar.
+          key={`${yo.nombre}|${yo.hogar.nombre}`}
+          hogar={yo.hogar}
+          miUserId={yo.userId}
+          onSalir={onSalirDelHogar}
+          titulo="Quién está en el hogar"
+        />
+
+        {abiertaComoApp() ? (
+          <section className="tarjeta">
+            <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
+            <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en {nombreDelDispositivo() === 'tablet' ? 'esta' : 'este'} {nombreDelDispositivo()}. ✅</p>
+          </section>
+        ) : (
+          <TarjetaInstalar siempre />
+        )}
+      </div>
+
+      <div className="contents lg:mx-auto lg:flex lg:w-full lg:max-w-sm lg:flex-col lg:gap-5">
+        <button
+          type="button"
+          onClick={cerrarSesion}
+          className="mt-2 w-full rounded-full px-5 py-3 font-semibold text-red-700 ring-1 ring-red-200 active:scale-[0.98]"
+        >
+          Cerrar sesión
+        </button>
+        <button
+          type="button"
+          onClick={cerrarSesionEnTodos}
+          className="-mt-2 w-full py-2 text-sm text-red-700 underline-offset-2 hover:underline"
+        >
+          Cerrar sesión en todos mis dispositivos
+        </button>
+        <p className="-mt-3 text-center text-xs text-stone-500">Por si pierdes el móvil o entraste en un sitio que no es tuyo.</p>
+      </div>
     </main>
   )
 }

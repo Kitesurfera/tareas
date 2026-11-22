@@ -149,7 +149,7 @@ export function PantallaLeerCartilla({ mascotaId, hogarId, miUserId }: Props) {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-2xl lg:px-10 lg:py-10">
       <button type="button" onClick={() => volver(volverA)} className="self-start text-sm font-medium text-marca">
         ← {mascota?.nombre ?? 'Ficha'}
       </button>

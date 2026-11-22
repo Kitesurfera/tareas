@@ -84,46 +84,49 @@ export function PantallaTareas({ miUserId }: Props) {
     }`
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-4xl lg:px-10 lg:py-10">
       <CabeceraPestana color="tareas" titulo="Tareas" subtitulo="Todo lo que hay que recordar, sin que se quede en una sola cabeza." dibujo="📝" />
 
-      <button type="button" onClick={() => ir('/tareas/nueva')} className={botonPrincipal}>
-        + Nueva tarea
-      </button>
+      {/* En el ordenador, todo en una fila: pendientes/hechas, todas/mías y el botón. */}
+      <div className="contents lg:flex lg:items-center lg:gap-4">
+        <button type="button" onClick={() => ir('/tareas/nueva')} className={`${botonPrincipal} lg:order-last lg:ml-auto lg:w-auto lg:px-6`}>
+          + Nueva tarea
+        </button>
 
-      <div className="grid grid-cols-2 gap-1 rounded-full bg-stone-200 p-1" role="tablist">
-        {(
-          [
-            ['pendientes', 'Pendientes'],
-            ['hechas', 'Hechas'],
-          ] as const
-        ).map(([valor, texto]) => (
-          <button
-            key={valor}
-            type="button"
-            role="tab"
-            aria-selected={pestana === valor}
-            onClick={() => {
-              setPestana(valor)
-              acciones.cancelarMarcado()
-              acciones.olvidarRecienHecha()
-            }}
-            className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-              pestana === valor ? 'bg-white text-marca shadow-sm' : 'text-stone-600'
-            }`}
-          >
-            {texto}
+        <div className="grid grid-cols-2 gap-1 rounded-full bg-stone-200 p-1 lg:w-72" role="tablist">
+          {(
+            [
+              ['pendientes', 'Pendientes'],
+              ['hechas', 'Hechas'],
+            ] as const
+          ).map(([valor, texto]) => (
+            <button
+              key={valor}
+              type="button"
+              role="tab"
+              aria-selected={pestana === valor}
+              onClick={() => {
+                setPestana(valor)
+                acciones.cancelarMarcado()
+                acciones.olvidarRecienHecha()
+              }}
+              className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                pestana === valor ? 'bg-white text-marca shadow-sm' : 'text-stone-600'
+              }`}
+            >
+              {texto}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <button type="button" aria-pressed={!soloMias} onClick={() => setSoloMias(false)} className={chip(!soloMias)}>
+            Todas
           </button>
-        ))}
-      </div>
-
-      <div className="flex gap-2">
-        <button type="button" aria-pressed={!soloMias} onClick={() => setSoloMias(false)} className={chip(!soloMias)}>
-          Todas
-        </button>
-        <button type="button" aria-pressed={soloMias} onClick={() => setSoloMias(true)} className={chip(soloMias)}>
-          Mías
-        </button>
+          <button type="button" aria-pressed={soloMias} onClick={() => setSoloMias(true)} className={chip(soloMias)}>
+            Mías
+          </button>
+        </div>
       </div>
 
       <AvisoRecienHecha acciones={acciones} />

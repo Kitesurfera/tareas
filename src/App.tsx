@@ -19,7 +19,7 @@ import { PantallaCargaMental } from './components/PantallaCargaMental'
 import { PantallaAjustes } from './components/PantallaAjustes'
 import { FormularioViaje, PantallaViajes } from './components/PantallaViajes'
 import { TarjetaViaje } from './components/TarjetaViaje'
-import { ConPestanas } from './components/BarraPestanas'
+import { Marco } from './components/BarraPestanas'
 import { CabeceraPestana } from './components/CabeceraPestana'
 import { PantallaVencimientos } from './components/PantallaVencimientos'
 import {
@@ -90,7 +90,7 @@ async function buscarMiHogar(userId: string): Promise<Yo | null | 'error'> {
 
 function Mensaje({ children }: { children: ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-4 px-5 text-center text-stone-500">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col items-center justify-center gap-4 px-5 text-center text-stone-500 lg:max-w-xl">
       {children}
     </main>
   )
@@ -256,154 +256,143 @@ function App() {
     )
   }
 
-  // Pantallas según la dirección (lo que va detrás de «#»):
-  //   #/mascotas/nueva                     → añadir mascota
-  //   #/mascotas/<id>                      → ficha
-  //   #/mascotas/<id>/editar               → editar mascota
-  //   #/mascotas/<id>/tratamientos/nuevo   → añadir tratamiento
-  //   #/mascotas/<id>/cartilla             → leer la cartilla con fotos
-  //   #/tratamientos/<id>/editar           → editar tratamiento
-  //   #/tareas                             → lista de tareas
-  //   #/tareas/nueva                       → nueva tarea
-  //   #/tareas/<id>/editar                 → editar tarea
-  //   #/casa                               → rutinas y lista de la compra
-  //   #/casa/rutinas/nueva                 → nueva rutina
-  //   #/casa/rutinas/<id>/editar           → editar rutina
-  //   #/casa/plantas/nueva                 → añadir planta
-  //   #/casa/plantas/<id>                  → ficha de la planta
-  //   #/casa/plantas/<id>/editar           → editar planta
-  //   #/casa/plantas/<id>/cuidados/nuevo   → añadir cuidado
-  //   #/cuidados/<id>/editar               → editar cuidado
-  //   #/vencimientos                       → seguros y suscripciones
-  //   #/vencimientos/nuevo/<seguro|suscripcion>
-  //   #/vencimientos/<id>/editar
-  //   #/viajes                             → modo viaje
-  //   #/accesos · #/accesos/nuevo · #/accesos/<id>/editar → acceso temporal
-  //   #/encargos                           → lo que te han encargado en otro hogar
-  //   #/viajes/nuevo · #/viajes/<grupo>/editar
-  const partes = ruta.split('/').filter(Boolean)
-  const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
-  if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
-    return <PantallaNuevaMascota hogarId={yo.hogar.id} />
-  }
-  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'tratamientos' && partes[3] === 'nuevo') {
-    return <PantallaNuevoTratamiento key={partes[1]} mascotaId={partes[1]} {...comun} />
-  }
-  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'cartilla') {
-    return <PantallaLeerCartilla key={partes[1]} mascotaId={partes[1]} {...comun} />
-  }
-  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'editar') {
-    return <PantallaEditarMascota key={partes[1]} id={partes[1]} hogarId={yo.hogar.id} />
-  }
-  if (partes[0] === 'mascotas' && partes[1] && !partes[2]) {
-    return <PantallaFichaMascota key={partes[1]} id={partes[1]} miUserId={yo.userId} />
-  }
-  if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
-    return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
-  }
-  if (partes[0] === 'ajustes') {
-    return (
-      <PantallaAjustes
-        yo={yo}
-        email={sesion.user.email ?? null}
-        onCambio={refrescar}
-        onSalirDelHogar={despuesDeSalirDelHogar}
-        onCerrarSesion={salir}
-        onCerrarSesionEnTodos={salirDeTodos}
-      />
-    )
-  }
-  if (partes[0] === 'accesos' && !partes[1]) {
-    return <PantallaAccesos nombreHogar={yo.hogar.nombre} />
-  }
-  if (partes[0] === 'accesos' && partes[1] === 'nuevo') {
-    return <FormularioAcceso hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} />
-  }
-  if (partes[0] === 'accesos' && partes[1] && partes[2] === 'editar') {
-    return <FormularioAcceso key={partes[1]} hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} id={partes[1]} />
-  }
-  if (partes[0] === 'encargos') {
-    return (
-      <PantallaEncargos
-        encargos={misEncargos}
-        errorEnlace={errorEnlace}
-        recargar={recargarEncargos}
-        soloEncargos={false}
-      />
-    )
-  }
-  if (partes[0] === 'viajes' && !partes[1]) {
-    return <PantallaViajes miUserId={yo.userId} />
-  }
-  if (partes[0] === 'viajes' && partes[1] === 'nuevo') {
-    return <FormularioViaje miUserId={yo.userId} />
-  }
-  if (partes[0] === 'viajes' && partes[1] && partes[2] === 'editar') {
-    return <FormularioViaje key={partes[1]} miUserId={yo.userId} grupo={partes[1]} />
-  }
-  if (partes[0] === 'carga') {
-    return <PantallaCargaMental />
-  }
-  if (partes[0] === 'tareas' && !partes[1]) {
-    return (
-      <ConPestanas actual="tareas">
-        <PantallaTareas miUserId={yo.userId} />
-      </ConPestanas>
-    )
-  }
-  if (partes[0] === 'casa' && !partes[1]) {
-    return (
-      <ConPestanas actual="casa">
-        <PantallaCasa {...comun} />
-      </ConPestanas>
-    )
-  }
-  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] === 'nueva') {
-    return <PantallaNuevaPlanta {...comun} />
-  }
-  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'editar') {
-    return <PantallaEditarPlanta key={partes[2]} id={partes[2]} {...comun} />
-  }
-  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'cuidados' && partes[4] === 'nuevo') {
-    return <PantallaNuevoCuidado key={partes[2]} plantaId={partes[2]} {...comun} />
-  }
-  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && !partes[3]) {
-    return <PantallaFichaPlanta key={partes[2]} id={partes[2]} miUserId={yo.userId} />
-  }
-  if (partes[0] === 'cuidados' && partes[1] && partes[2] === 'editar') {
-    return <PantallaEditarCuidado key={partes[1]} id={partes[1]} {...comun} />
-  }
-  if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] === 'nueva') {
-    return <PantallaNuevaRutina {...comun} />
-  }
-  if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] && partes[3] === 'editar') {
-    return <PantallaEditarRutina key={partes[2]} id={partes[2]} {...comun} />
-  }
-  if (partes[0] === 'vencimientos' && !partes[1]) {
-    return (
-      <ConPestanas actual="vencimientos">
-        <PantallaVencimientos miUserId={yo.userId} />
-      </ConPestanas>
-    )
-  }
-  if (partes[0] === 'vencimientos' && partes[1] === 'nuevo' && (partes[2] === 'seguro' || partes[2] === 'suscripcion')) {
-    return <PantallaNuevoVencimiento key={partes[2]} tipo={partes[2]} {...comun} />
-  }
-  if (partes[0] === 'vencimientos' && partes[1] && partes[2] === 'editar') {
-    return <PantallaEditarVencimiento key={partes[1]} id={partes[1]} {...comun} />
-  }
-  if (partes[0] === 'tareas' && partes[1] === 'nueva') {
-    return <PantallaNuevaTarea {...comun} />
-  }
-  if (partes[0] === 'tareas' && partes[1] && partes[2] === 'editar') {
-    return <PantallaEditarTarea key={partes[1]} id={partes[1]} {...comun} />
-  }
+  // Lo que se ve dentro del marco (menú del ordenador y barra del móvil).
+  const contenido: ReactNode = (() => {
+    // Pantallas según la dirección (lo que va detrás de «#»):
+    //   #/mascotas/nueva                     → añadir mascota
+    //   #/mascotas/<id>                      → ficha
+    //   #/mascotas/<id>/editar               → editar mascota
+    //   #/mascotas/<id>/tratamientos/nuevo   → añadir tratamiento
+    //   #/mascotas/<id>/cartilla             → leer la cartilla con fotos
+    //   #/tratamientos/<id>/editar           → editar tratamiento
+    //   #/tareas                             → lista de tareas
+    //   #/tareas/nueva                       → nueva tarea
+    //   #/tareas/<id>/editar                 → editar tarea
+    //   #/casa                               → rutinas y lista de la compra
+    //   #/casa/rutinas/nueva                 → nueva rutina
+    //   #/casa/rutinas/<id>/editar           → editar rutina
+    //   #/casa/plantas/nueva                 → añadir planta
+    //   #/casa/plantas/<id>                  → ficha de la planta
+    //   #/casa/plantas/<id>/editar           → editar planta
+    //   #/casa/plantas/<id>/cuidados/nuevo   → añadir cuidado
+    //   #/cuidados/<id>/editar               → editar cuidado
+    //   #/vencimientos                       → seguros y suscripciones
+    //   #/vencimientos/nuevo/<seguro|suscripcion>
+    //   #/vencimientos/<id>/editar
+    //   #/viajes                             → modo viaje
+    //   #/accesos · #/accesos/nuevo · #/accesos/<id>/editar → acceso temporal
+    //   #/encargos                           → lo que te han encargado en otro hogar
+    //   #/viajes/nuevo · #/viajes/<grupo>/editar
+    const partes = ruta.split('/').filter(Boolean)
+    const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
+    if (partes[0] === 'mascotas' && partes[1] === 'nueva') {
+      return <PantallaNuevaMascota hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'tratamientos' && partes[3] === 'nuevo') {
+      return <PantallaNuevoTratamiento key={partes[1]} mascotaId={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'cartilla') {
+      return <PantallaLeerCartilla key={partes[1]} mascotaId={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'editar') {
+      return <PantallaEditarMascota key={partes[1]} id={partes[1]} hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'mascotas' && partes[1] && !partes[2]) {
+      return <PantallaFichaMascota key={partes[1]} id={partes[1]} miUserId={yo.userId} />
+    }
+    if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
+      return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'ajustes') {
+      return (
+        <PantallaAjustes
+          yo={yo}
+          email={sesion.user.email ?? null}
+          onCambio={refrescar}
+          onSalirDelHogar={despuesDeSalirDelHogar}
+          onCerrarSesion={salir}
+          onCerrarSesionEnTodos={salirDeTodos}
+        />
+      )
+    }
+    if (partes[0] === 'accesos' && !partes[1]) {
+      return <PantallaAccesos nombreHogar={yo.hogar.nombre} />
+    }
+    if (partes[0] === 'accesos' && partes[1] === 'nuevo') {
+      return <FormularioAcceso hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} />
+    }
+    if (partes[0] === 'accesos' && partes[1] && partes[2] === 'editar') {
+      return <FormularioAcceso key={partes[1]} hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} id={partes[1]} />
+    }
+    if (partes[0] === 'encargos') {
+      return (
+        <PantallaEncargos
+          encargos={misEncargos}
+          errorEnlace={errorEnlace}
+          recargar={recargarEncargos}
+          soloEncargos={false}
+        />
+      )
+    }
+    if (partes[0] === 'viajes' && !partes[1]) {
+      return <PantallaViajes miUserId={yo.userId} />
+    }
+    if (partes[0] === 'viajes' && partes[1] === 'nuevo') {
+      return <FormularioViaje miUserId={yo.userId} />
+    }
+    if (partes[0] === 'viajes' && partes[1] && partes[2] === 'editar') {
+      return <FormularioViaje key={partes[1]} miUserId={yo.userId} grupo={partes[1]} />
+    }
+    if (partes[0] === 'carga') {
+      return <PantallaCargaMental />
+    }
+    if (partes[0] === 'tareas' && !partes[1]) {
+      return <PantallaTareas miUserId={yo.userId} />
+    }
+    if (partes[0] === 'casa' && !partes[1]) {
+      return <PantallaCasa {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] === 'nueva') {
+      return <PantallaNuevaPlanta {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'editar') {
+      return <PantallaEditarPlanta key={partes[2]} id={partes[2]} {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'cuidados' && partes[4] === 'nuevo') {
+      return <PantallaNuevoCuidado key={partes[2]} plantaId={partes[2]} {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && !partes[3]) {
+      return <PantallaFichaPlanta key={partes[2]} id={partes[2]} miUserId={yo.userId} />
+    }
+    if (partes[0] === 'cuidados' && partes[1] && partes[2] === 'editar') {
+      return <PantallaEditarCuidado key={partes[1]} id={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] === 'nueva') {
+      return <PantallaNuevaRutina {...comun} />
+    }
+    if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] && partes[3] === 'editar') {
+      return <PantallaEditarRutina key={partes[2]} id={partes[2]} {...comun} />
+    }
+    if (partes[0] === 'vencimientos' && !partes[1]) {
+      return <PantallaVencimientos miUserId={yo.userId} />
+    }
+    if (partes[0] === 'vencimientos' && partes[1] === 'nuevo' && (partes[2] === 'seguro' || partes[2] === 'suscripcion')) {
+      return <PantallaNuevoVencimiento key={partes[2]} tipo={partes[2]} {...comun} />
+    }
+    if (partes[0] === 'vencimientos' && partes[1] && partes[2] === 'editar') {
+      return <PantallaEditarVencimiento key={partes[1]} id={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'tareas' && partes[1] === 'nueva') {
+      return <PantallaNuevaTarea {...comun} />
+    }
+    if (partes[0] === 'tareas' && partes[1] && partes[2] === 'editar') {
+      return <PantallaEditarTarea key={partes[1]} id={partes[1]} {...comun} />
+    }
 
-  const saludo = saludoDelMomento()
+    const saludo = saludoDelMomento()
 
-  return (
-    <ConPestanas actual="inicio">
-      <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-8">
+    return (
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
         <CabeceraPestana
           color="inicio"
           etiqueta={<>🏡 {yo.hogar.nombre}</>}
@@ -411,48 +400,68 @@ function App() {
           subtitulo="Esto es lo que se viene en casa."
           dibujo={saludo.dibujo}
           boton={
+            // En la tablet y el ordenador, Ajustes ya está en el menú de la izquierda.
             <button
               type="button"
               onClick={() => ir('/ajustes')}
               aria-label="Ajustes"
               title="Ajustes"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95 md:hidden"
             >
               <span aria-hidden="true">⚙️</span>
             </button>
           }
         />
 
-        <TarjetaInstalar />
+        {/* En el móvil, una sola columna (en este orden). En el ordenador, dos:
+            a la izquierda los avisos y «Próximo»; a la derecha, el resto. */}
+        <div className="contents lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start lg:gap-6">
+          <div className="contents lg:flex lg:flex-col lg:gap-6">
+            <TarjetaInstalar />
 
-        <TarjetaViaje miUserId={yo.userId} />
+            <TarjetaViaje miUserId={yo.userId} />
 
-        {misEncargos && misEncargos.length > 0 && (
-          <button
-            type="button"
-            onClick={() => ir('/encargos')}
-            className="tarjeta text-left ring-2 ring-marca/30"
-          >
-            <span className="block font-semibold">🔑 Tienes encargos</span>
-            <span className="block text-sm text-stone-600">
-              De {misEncargos.map((e) => `«${e.hogar}»`).join(' y ')}. Toca para verlos ›
-            </span>
-          </button>
-        )}
+            {misEncargos && misEncargos.length > 0 && (
+              <button
+                type="button"
+                onClick={() => ir('/encargos')}
+                className="tarjeta text-left ring-2 ring-marca/30"
+              >
+                <span className="block font-semibold">🔑 Tienes encargos</span>
+                <span className="block text-sm text-stone-600">
+                  De {misEncargos.map((e) => `«${e.hogar}»`).join(' y ')}. Toca para verlos ›
+                </span>
+              </button>
+            )}
 
-        <TarjetaAyuda />
+            <TarjetaAyuda />
 
-        <TarjetaProximo miUserId={yo.userId} />
+            <TarjetaProximo miUserId={yo.userId} />
+          </div>
 
-        <TarjetaCargaMental />
+          <div className="contents lg:flex lg:flex-col lg:gap-6">
+            <TarjetaCargaMental />
 
-        <TarjetaMascotas />
+            <TarjetaMascotas />
+          </div>
+        </div>
 
         <footer className="mt-auto text-center text-xs text-stone-400">
           Tareas · hecho en casa con 💚
         </footer>
       </main>
-    </ConPestanas>
+    )
+  })()
+
+  return (
+    <Marco
+      ruta={ruta}
+      hogar={yo.hogar.nombre}
+      nombre={yo.nombre}
+      conEncargos={(misEncargos?.length ?? 0) > 0}
+    >
+      {contenido}
+    </Marco>
   )
 }
 
