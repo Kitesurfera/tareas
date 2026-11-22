@@ -27,6 +27,9 @@ import {
 } from './components/FormularioVencimiento'
 import { PantallaCasa } from './components/PantallaCasa'
 import { PantallaEditarRutina, PantallaNuevaRutina } from './components/FormularioRutina'
+import { PantallaEditarPlanta, PantallaNuevaPlanta } from './components/FormularioPlanta'
+import { PantallaEditarCuidado, PantallaNuevoCuidado } from './components/FormularioCuidado'
+import { PantallaFichaPlanta } from './components/PantallaFichaPlanta'
 import { PantallaTareas } from './components/PantallaTareas'
 import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
 import { PantallaAccesos, FormularioAcceso } from './components/PantallaAccesos'
@@ -259,6 +262,11 @@ function App() {
   //   #/casa                               → rutinas y lista de la compra
   //   #/casa/rutinas/nueva                 → nueva rutina
   //   #/casa/rutinas/<id>/editar           → editar rutina
+  //   #/casa/plantas/nueva                 → añadir planta
+  //   #/casa/plantas/<id>                  → ficha de la planta
+  //   #/casa/plantas/<id>/editar           → editar planta
+  //   #/casa/plantas/<id>/cuidados/nuevo   → añadir cuidado
+  //   #/cuidados/<id>/editar               → editar cuidado
   //   #/vencimientos                       → seguros y suscripciones
   //   #/vencimientos/nuevo/<seguro|suscripcion>
   //   #/vencimientos/<id>/editar
@@ -338,6 +346,21 @@ function App() {
         <PantallaCasa {...comun} />
       </ConPestanas>
     )
+  }
+  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] === 'nueva') {
+    return <PantallaNuevaPlanta {...comun} />
+  }
+  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'editar') {
+    return <PantallaEditarPlanta key={partes[2]} id={partes[2]} {...comun} />
+  }
+  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && partes[3] === 'cuidados' && partes[4] === 'nuevo') {
+    return <PantallaNuevoCuidado key={partes[2]} plantaId={partes[2]} {...comun} />
+  }
+  if (partes[0] === 'casa' && partes[1] === 'plantas' && partes[2] && !partes[3]) {
+    return <PantallaFichaPlanta key={partes[2]} id={partes[2]} miUserId={yo.userId} />
+  }
+  if (partes[0] === 'cuidados' && partes[1] && partes[2] === 'editar') {
+    return <PantallaEditarCuidado key={partes[1]} id={partes[1]} {...comun} />
   }
   if (partes[0] === 'casa' && partes[1] === 'rutinas' && partes[2] === 'nueva') {
     return <PantallaNuevaRutina {...comun} />

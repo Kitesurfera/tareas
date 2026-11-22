@@ -68,18 +68,19 @@ export type Tratamiento = {
   notas: string | null
 }
 
-export type Categoria = 'mascota' | 'casa' | 'coche' | 'papeleo' | 'otros'
+export type Categoria = 'mascota' | 'casa' | 'plantas' | 'coche' | 'papeleo' | 'otros'
 
 export const CATEGORIAS: { valor: Categoria; texto: string; dibujo: string }[] = [
   { valor: 'casa', texto: 'Casa', dibujo: '🏠' },
   { valor: 'mascota', texto: 'Mascota', dibujo: '🐾' },
+  { valor: 'plantas', texto: 'Plantas', dibujo: '🪴' },
   { valor: 'coche', texto: 'Coche', dibujo: '🚗' },
   { valor: 'papeleo', texto: 'Papeleo', dibujo: '📄' },
   { valor: 'otros', texto: 'Otros', dibujo: '📌' },
 ]
 
 export function infoCategoria(categoria: Categoria) {
-  return CATEGORIAS.find((c) => c.valor === categoria) ?? CATEGORIAS[4]
+  return CATEGORIAS.find((c) => c.valor === categoria) ?? CATEGORIAS[CATEGORIAS.length - 1]
 }
 
 export type Tarea = {
@@ -94,16 +95,18 @@ export type Tarea = {
   tratamiento_id: string | null
   vencimiento_id: string | null
   rutina_id: string | null
+  planta_id: string | null
+  cuidado_id: string | null
   creada_por: string | null
   completada: boolean
   completada_por: string | null
   completada_en: string | null
 }
 
-// Las tareas automáticas vienen de un tratamiento, un vencimiento o una
-// rutina: no se editan ni se reabren a mano.
+// Las tareas automáticas vienen de un tratamiento, un vencimiento, una
+// rutina o un cuidado de una planta: no se editan ni se reabren a mano.
 export function esAutomatica(tarea: Tarea): boolean {
-  return Boolean(tarea.tratamiento_id || tarea.vencimiento_id || tarea.rutina_id)
+  return Boolean(tarea.tratamiento_id || tarea.vencimiento_id || tarea.rutina_id || tarea.cuidado_id)
 }
 
 // Dónde se edita una tarea automática.
@@ -111,6 +114,7 @@ export function rutaDeOrigen(tarea: Tarea): string | null {
   if (tarea.tratamiento_id) return `/tratamientos/${tarea.tratamiento_id}/editar`
   if (tarea.vencimiento_id) return `/vencimientos/${tarea.vencimiento_id}/editar`
   if (tarea.rutina_id) return `/casa/rutinas/${tarea.rutina_id}/editar`
+  if (tarea.cuidado_id) return `/cuidados/${tarea.cuidado_id}/editar`
   return null
 }
 
@@ -164,3 +168,52 @@ export type ArticuloCompra = {
   anadido_por: string | null
   comprado_por: string | null
 }
+
+// ---------------------------------------------------------------------
+// Plantas
+// ---------------------------------------------------------------------
+
+export type Planta = {
+  id: string
+  hogar_id: string
+  nombre: string
+  tipo: string | null
+  ubicacion: string | null
+  notas: string | null
+}
+
+export type TipoCuidado = 'riego' | 'abono' | 'trasplante' | 'poda' | 'otro'
+
+export type Cuidado = {
+  id: string
+  hogar_id: string
+  planta_id: string
+  tipo: TipoCuidado
+  // Solo para «otro» («Limpiar las hojas»).
+  nombre: string | null
+  fecha_ultima: string
+  frecuencia_dias: number
+  responsable_id: string | null
+  notas: string | null
+}
+
+// Cómo se enseña cada cuidado, su dibujo y cada cuánto suele tocar.
+export const TIPOS_CUIDADO: { valor: TipoCuidado; texto: string; verbo: string; dibujo: string; diasHabituales: number }[] = [
+  { valor: 'riego', texto: 'Riego', verbo: 'Regar', dibujo: '💧', diasHabituales: 7 },
+  { valor: 'abono', texto: 'Abono', verbo: 'Abonar', dibujo: '🌱', diasHabituales: 30 },
+  { valor: 'trasplante', texto: 'Trasplante', verbo: 'Trasplantar', dibujo: '🪴', diasHabituales: 365 },
+  { valor: 'poda', texto: 'Poda', verbo: 'Podar', dibujo: '✂️', diasHabituales: 180 },
+  { valor: 'otro', texto: 'Otro', verbo: '', dibujo: '✨', diasHabituales: 30 },
+]
+
+export function infoCuidado(tipo: TipoCuidado) {
+  return TIPOS_CUIDADO.find((t) => t.valor === tipo) ?? TIPOS_CUIDADO[TIPOS_CUIDADO.length - 1]
+}
+
+// «Riego», «Abono», o el nombre si es «otro».
+export function nombreDeCuidado(cuidado: Pick<Cuidado, 'tipo' | 'nombre'>): string {
+  return cuidado.tipo === 'otro' ? (cuidado.nombre ?? 'Cuidado') : infoCuidado(cuidado.tipo).texto
+}
+
+// Dónde suelen estar las plantas (para elegir rápido).
+export const UBICACIONES = ['Salón', 'Cocina', 'Dormitorio', 'Baño', 'Terraza', 'Jardín']

@@ -63,6 +63,7 @@ function FilaEncargo({ tarea, onHecha }: { tarea: EncargoTarea; onHecha: () => v
               <span className={`font-medium ${colorDeFecha(tarea.fecha_limite)}`}>{cuandoToca(tarea.fecha_limite)}</span>
             )}
             {tarea.mascota && <span className="text-stone-500"> · {tarea.mascota}</span>}
+            {tarea.planta && <span className="text-stone-500"> · {tarea.planta}</span>}
           </span>
           {(tarea.notas || tarea.descripcion) && (
             <span className="mt-1 block whitespace-pre-line text-sm text-stone-600">
@@ -218,6 +219,22 @@ export function PantallaEncargos({ encargos, errorEnlace, recargar, soloEncargos
                         <span className="font-normal text-stone-600"> · {[m.especie, m.raza].filter(Boolean).join(' · ')}</span>
                       </p>
                       {m.notas && <p className="mt-1 whitespace-pre-line text-sm text-stone-700">{m.notas}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {encargo.plantas?.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {encargo.plantas.map((p) => (
+                    <div key={p.nombre} className="rounded-xl bg-lime-50 p-3">
+                      <p className="font-medium">
+                        🪴 {p.nombre}
+                        {(p.tipo || p.ubicacion) && (
+                          <span className="font-normal text-stone-600"> · {[p.tipo, p.ubicacion].filter(Boolean).join(' · ')}</span>
+                        )}
+                      </p>
+                      {p.notas && <p className="mt-1 whitespace-pre-line text-sm text-stone-700">{p.notas}</p>}
                     </div>
                   ))}
                 </div>

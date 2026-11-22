@@ -12,7 +12,7 @@ import { mensajeDeError } from '../lib/errores'
 import { cuandoToca, diasHasta, hoyComoTexto, sumarDias } from '../lib/fechas'
 import { ir, reemplazar, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
-import { CATEGORIAS, type Categoria, type Tarea } from '../lib/tipos'
+import { CATEGORIAS, esAutomatica, nombreDeCuidado, type Categoria, type Tarea, type TipoCuidado } from '../lib/tipos'
 import { useMascotasDelHogar } from '../lib/useMascotasDelHogar'
 import { diaMes } from '../lib/viajes'
 import { avisoError, botonPrincipal, botonSecundario, campo, estiloChip } from './estilos'
@@ -39,7 +39,7 @@ function textoEstado(acceso: Acceso): { texto: string; color: string } {
 // «🐾 Mascota · 🏠 Casa · 3 cosas elegidas»
 function textoQueVe(acceso: Acceso): string {
   const tipos = CATEGORIAS.filter((c) => acceso.categorias.includes(c.valor)).map((c) => `${c.dibujo} ${c.texto}`)
-  const sueltas = acceso.tareas.length + acceso.rutinas.length + acceso.tratamientos.length
+  const sueltas = acceso.tareas.length + acceso.rutinas.length + acceso.tratamientos.length + acceso.cuidados.length
   if (sueltas > 0) tipos.push(sueltas === 1 ? '1 cosa elegida' : `${sueltas} cosas elegidas`)
   return tipos.join(' · ')
 }
@@ -214,9 +214,11 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
   const [tareas, setTareas] = useState<string[]>([])
   const [rutinas, setRutinas] = useState<string[]>([])
   const [tratamientos, setTratamientos] = useState<string[]>([])
+  const [cuidados, setCuidados] = useState<string[]>([])
   const [pendientes, setPendientes] = useState<Tarea[] | null>(null)
   const [listaRutinas, setListaRutinas] = useState<{ id: string; nombre: string }[]>([])
   const [listaTratamientos, setListaTratamientos] = useState<{ id: string; nombre: string; mascota_id: string }[]>([])
+  const [listaCuidados, setListaCuidados] = useState<{ id: string; texto: string }[]>([])
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Al crear un acceso, después de guardar sale el botón de compartir.
@@ -230,11 +232,18 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
       supabase.from('tareas').select('*').eq('completada', false).order('fecha_limite', { nullsFirst: false }),
       supabase.from('rutinas').select('id, nombre').order('nombre'),
       supabase.from('tratamientos').select('id, nombre, mascota_id').order('nombre'),
-    ]).then(([t, r, tr]) => {
+      supabase.from('cuidados').select('id, tipo, nombre, plantas(nombre)'),
+    ]).then(([t, r, tr, cu]) => {
       if (!vigente) return
       setPendientes((t.data ?? []) as Tarea[])
       setListaRutinas((r.data ?? []) as { id: string; nombre: string }[])
       setListaTratamientos((tr.data ?? []) as { id: string; nombre: string; mascota_id: string }[])
+      type FilaCuidado = { id: string; tipo: TipoCuidado; nombre: string | null; plantas: { nombre: string } | null }
+      setListaCuidados(
+        ((cu.data ?? []) as unknown as FilaCuidado[])
+          .map((c) => ({ id: c.id, texto: `${nombreDeCuidado(c)}: ${c.plantas?.nombre ?? ''}` }))
+          .sort((a, b) => a.texto.localeCompare(b.texto)),
+      )
     })
     return () => {
       vigente = false
@@ -247,7 +256,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     let vigente = true
     supabase
       .from('accesos')
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos')
+      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
       .eq('id', id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -263,6 +272,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
           setTareas(acceso.tareas)
           setRutinas(acceso.rutinas)
           setTratamientos(acceso.tratamientos)
+          setCuidados(acceso.cuidados ?? [])
         }
         setCargado(true)
       })
@@ -273,7 +283,8 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
 
   const nombreMascota = (mascotaId: string) => mascotas?.find((m) => m.id === mascotaId)?.nombre
   const sueltas: Cosa[] = (pendientes ?? [])
-    .filter((t) => !t.rutina_id && !t.tratamiento_id && !t.vencimiento_id)
+    // Solo las tareas a mano: las automáticas se eligen por su rutina, tratamiento o cuidado.
+    .filter((t) => !esAutomatica(t))
     .map((t) => ({ id: t.id, texto: t.titulo, categoria: t.categoria }))
   const grupos: { titulo: string; cosas: Cosa[]; elegidas: string[]; cambiar: (ids: string[]) => void }[] = [
     {
@@ -292,11 +303,17 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
       elegidas: tratamientos,
       cambiar: setTratamientos,
     },
+    {
+      titulo: '🪴 Cuidados de las plantas',
+      cosas: listaCuidados.map((c) => ({ id: c.id, texto: c.texto, categoria: 'plantas' })),
+      elegidas: cuidados,
+      cambiar: setCuidados,
+    },
     { titulo: '📝 Tareas sueltas', cosas: sueltas, elegidas: tareas, cambiar: setTareas },
   ]
 
   // Cuántas tareas pendientes vería con lo elegido (para que se vea el efecto).
-  const borrador: Acceso = { id: '', nombre, codigo: '', user_id: null, desde, hasta, categorias, tareas, rutinas, tratamientos }
+  const borrador: Acceso = { id: '', nombre, codigo: '', user_id: null, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados }
   const dia = desde > hoyComoTexto() ? desde : hoyComoTexto()
   const veria = pendientes?.filter((t) => accesoCubre(borrador, t, dia)).length ?? 0
 
@@ -313,12 +330,12 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     if (hasta < desde) return setError('El último día no puede ser antes que el primero.')
     if (diasHasta(hasta) < 0) return setError('Ese acceso ya habría terminado: elige un último día de hoy en adelante.')
     if (diasHasta(hasta) - diasHasta(desde) > DIAS_MAXIMOS) return setError('Un acceso temporal dura como mucho 3 meses.')
-    if (categorias.length + tareas.length + rutinas.length + tratamientos.length === 0) {
+    if (categorias.length + tareas.length + rutinas.length + tratamientos.length + cuidados.length === 0) {
       return setError('Elige qué tareas podrá ver: un tipo entero o alguna cosa suelta.')
     }
     setGuardando(true)
     setError(null)
-    const datos = { nombre: nombre.trim(), desde, hasta, categorias, tareas, rutinas, tratamientos }
+    const datos = { nombre: nombre.trim(), desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados }
     if (id) {
       const { error } = await supabase.from('accesos').update(datos).eq('id', id)
       setGuardando(false)
@@ -328,7 +345,7 @@ export function FormularioAcceso({ hogarId, nombreHogar, id }: PropsFormulario) 
     const { data, error } = await supabase
       .from('accesos')
       .insert({ ...datos, hogar_id: hogarId })
-      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos')
+      .select('id, nombre, codigo, user_id, desde, hasta, categorias, tareas, rutinas, tratamientos, cuidados')
       .single()
     setGuardando(false)
     if (error) return setError(mensajeDeError(error))
