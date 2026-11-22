@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { leerEncargoPendiente } from '../lib/accesos'
 import { supabase } from '../lib/supabase'
 import { BotonGoogle } from './BotonGoogle'
 
@@ -33,7 +34,9 @@ export function PantallaLogin({ errorInicial }: Props) {
       <header className="text-center">
         <h1 className="text-4xl font-bold text-marca">Tareas</h1>
         <p className="mt-2 text-stone-600">
-          Lo que hay que recordar en casa, repartido entre las dos.
+          {leerEncargoPendiente()
+            ? 'Te han dado acceso a unas tareas. Entra con tu cuenta de Google para verlas.'
+            : 'Lo que hay que recordar en casa, repartido entre las dos.'}
         </p>
       </header>
 
