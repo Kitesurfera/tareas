@@ -1,5 +1,6 @@
 import { useNombres } from '../lib/useNombres'
 import { ListaCompra } from './ListaCompra'
+import { SeccionPlantas } from './SeccionPlantas'
 import { SeccionRutinas } from './SeccionRutinas'
 
 type Props = {
@@ -7,7 +8,7 @@ type Props = {
   miUserId: string
 }
 
-// Pestaña «Casa»: rutinas de la casa y lista de la compra.
+// Pestaña «Casa»: rutinas de la casa, plantas y lista de la compra.
 export function PantallaCasa({ hogarId, miUserId }: Props) {
   const nombres = useNombres(miUserId)
   return (
@@ -17,6 +18,7 @@ export function PantallaCasa({ hogarId, miUserId }: Props) {
         <p className="text-stone-600">Las tareas de casa de siempre</p>
       </header>
       <SeccionRutinas nombres={nombres} />
+      <SeccionPlantas nombres={nombres} />
       <ListaCompra hogarId={hogarId} nombres={nombres} />
     </main>
   )
