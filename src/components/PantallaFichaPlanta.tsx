@@ -92,20 +92,20 @@ export function PantallaFichaPlanta({ id, miUserId }: Props) {
               🪴
             </span>
             <div>
-              <h1 className="text-3xl font-bold text-marca">{planta.nombre}</h1>
+              <h1 className="text-3xl font-extrabold text-marca">{planta.nombre}</h1>
               <p className="text-stone-600">{[planta.tipo, planta.ubicacion].filter(Boolean).join(' · ')}</p>
             </div>
           </header>
 
           {planta.notas && (
-            <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <section className="tarjeta">
               <h2 className="text-sm text-stone-500">Notas</h2>
               <p className="whitespace-pre-line">{planta.notas}</p>
             </section>
           )}
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold">Cuidados</h2>
+          <section className="tarjeta">
+            <h2 className="text-lg font-semibold">💧 Cuidados</h2>
             <p className="text-sm text-stone-500">Cada uno os avisa cuando toca</p>
 
             {mensaje && (

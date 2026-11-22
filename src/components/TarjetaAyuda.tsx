@@ -15,7 +15,7 @@ export function TarjetaAyuda() {
   if (activos.length === 0 && recientes.length === 0) return null
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       <h2 className="font-semibold">🔑 Quién os ayuda</h2>
       <ul className="mt-2 flex flex-col gap-1 text-stone-700">
         {activos.map((a) => (

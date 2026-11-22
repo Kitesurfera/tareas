@@ -90,8 +90,8 @@ export function SeccionSalud({ mascotaId, miUserId, nombreMascota }: Props) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Salud</h2>
+    <section className="tarjeta">
+      <h2 className="text-lg font-semibold">🩺 Salud</h2>
       <p className="text-sm text-stone-500">Vacunas, desparasitaciones y medicación</p>
 
       {mensaje && (

@@ -11,8 +11,8 @@ export function TarjetaCargaMental() {
   const variasPersonas = (miembros?.length ?? 0) > 1
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">En equipo</h2>
+    <section className="tarjeta">
+      <h2 className="text-lg font-semibold">💚 En equipo</h2>
       <p className="text-sm text-stone-500">Lo pensado y hecho en casa · {nombreDelMes(mes)}</p>
 
       {error && <p className="mt-3 text-sm text-red-700">No se ha podido cargar.</p>}

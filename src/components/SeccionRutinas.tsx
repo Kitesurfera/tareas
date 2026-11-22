@@ -83,8 +83,8 @@ export function SeccionRutinas({ nombres }: { nombres: Nombres }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Rutinas</h2>
+    <section className="tarjeta">
+      <h2 className="text-lg font-semibold">🔄 Rutinas</h2>
       <p className="text-sm text-stone-500">Lo que hay que hacer cada cierto tiempo</p>
 
       {filas === null && !error && <p className="mt-3 text-sm text-stone-400">Cargando…</p>}

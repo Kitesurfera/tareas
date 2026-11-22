@@ -146,9 +146,9 @@ function Formulario({ hogarId, miUserId, planta }: Comun & { planta?: Planta }) 
       <button type="button" onClick={() => volver(volverA)} className="self-start text-sm font-medium text-marca">
         ← Cancelar
       </button>
-      <h1 className="text-2xl font-bold text-marca">{editando ? 'Editar planta' : 'Nueva planta'}</h1>
+      <h1 className="text-2xl font-extrabold text-marca">{editando ? 'Editar planta' : 'Nueva planta'}</h1>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-stone-700">Nombre</span>
           <input

@@ -205,13 +205,13 @@ function Formulario({ hogarId, miUserId, mascotaId, tratamiento }: Props) {
       </button>
 
       <header>
-        <h1 className="text-2xl font-bold text-marca">
+        <h1 className="text-2xl font-extrabold text-marca">
           {editando ? 'Editar tratamiento' : 'Nuevo tratamiento'}
         </h1>
         {mascota && <p className="text-stone-600">de {mascota.nombre}</p>}
       </header>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 text-sm font-medium text-stone-700">Tipo</legend>
           <div className="flex flex-wrap gap-2">

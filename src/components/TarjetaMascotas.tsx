@@ -40,8 +40,8 @@ export function TarjetaMascotas() {
   }, [])
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Mascotas</h2>
+    <section className="tarjeta">
+      <h2 className="text-lg font-semibold">🐾 Mascotas</h2>
 
       {mascotas === null && !error && (
         <p className="mt-2 text-sm text-stone-400">Cargando…</p>

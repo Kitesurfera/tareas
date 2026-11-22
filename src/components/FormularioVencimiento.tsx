@@ -173,11 +173,11 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
         ← Cancelar
       </button>
 
-      <h1 className="text-2xl font-bold text-marca">
+      <h1 className="text-2xl font-extrabold text-marca">
         {editando ? `Editar ${tipo === 'seguro' ? 'seguro' : 'suscripción'}` : tipo === 'seguro' ? 'Nuevo seguro' : 'Nueva suscripción'}
       </h1>
 
-      <form onSubmit={guardar} className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm">
+      <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <div className="flex gap-2">
           {(
             [

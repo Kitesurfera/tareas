@@ -72,7 +72,7 @@ export function SeccionPlantas({ nombres }: { nombres: Nombres }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       <h2 className="text-lg font-semibold">🪴 Plantas</h2>
       <p className="text-sm text-stone-500">Riego, abono, trasplantes…</p>
 

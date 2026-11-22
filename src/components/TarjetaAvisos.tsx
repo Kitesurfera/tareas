@@ -40,7 +40,7 @@ export function TarjetaAvisos() {
   if (!soportados) {
     if (!esIOS() || abiertaComoApp()) return null
     return (
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
+      <section className="tarjeta">
         <h2 className="font-semibold">🔔 Avisos en el iPhone</h2>
         <p className="mt-1 text-sm text-stone-600">
           Para recibir avisos, primero instala la app (Compartir → «Añadir a
@@ -84,7 +84,7 @@ export function TarjetaAvisos() {
     })
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       <h2 className="font-semibold">🔔 Avisos</h2>
 
       {estado === 'comprobando' && <p className="mt-1 text-sm text-stone-400">Comprobando…</p>}

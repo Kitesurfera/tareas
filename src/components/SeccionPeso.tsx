@@ -115,7 +115,7 @@ export function SeccionPeso({ mascotaId, hogarId, nombreMascota, fechaNacimiento
   const historial = pesos ? [...pesos].reverse() : []
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       <h2 className="font-semibold">⚖️ Peso</h2>
 
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}

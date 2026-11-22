@@ -150,9 +150,9 @@ export function ListaCompra({ hogarId, nombres }: Props) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Lista de la compra</h2>
+        <h2 className="text-lg font-semibold">🛒 Lista de la compra</h2>
         {enDirecto && (
           <span className="flex items-center gap-1.5 text-xs font-medium text-marca" title="Los cambios del resto del hogar aparecen al momento">
             <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-marca" />

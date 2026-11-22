@@ -55,8 +55,8 @@ export function TarjetaProximo({ miUserId }: Props) {
   const error = errorCarga ?? acciones.error
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Próximo</h2>
+    <section className="tarjeta">
+      <h2 className="text-lg font-semibold">⏰ Próximo</h2>
       <p className="text-sm text-stone-500">
         Los próximos {DIAS} días
         {proximas.length > 0 && ` · ${tuyas} ${tuyas === 1 ? 'es tuya' : 'son tuyas'}`}

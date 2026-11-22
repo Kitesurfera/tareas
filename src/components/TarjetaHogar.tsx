@@ -128,7 +128,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
     : ''
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
+    <section className="tarjeta">
       {titulo ? (
         <h2 className="font-semibold">{titulo}</h2>
       ) : (

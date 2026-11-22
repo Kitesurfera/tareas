@@ -177,18 +177,18 @@ export function PantallaEncargos({ encargos, errorEnlace, recargar, soloEncargos
           ← Inicio
         </button>
       )}
-      <h1 className="text-2xl font-bold text-marca">🔑 Tus encargos</h1>
+      <h1 className="text-2xl font-extrabold text-marca">🔑 Tus encargos</h1>
 
       {errorEnlace && <p role="alert" className={avisoError}>{errorEnlace}</p>}
       {encargos === null && <p className="text-center text-stone-400">Cargando…</p>}
       {encargos?.length === 0 && (
-        <p className="rounded-2xl bg-white p-5 text-center text-stone-500 shadow-sm">
+        <p className="tarjeta text-center text-stone-500">
           Ahora mismo no tienes ningún encargo. Si alguien te ha mandado un enlace, ábrelo desde este móvil.
         </p>
       )}
 
       {encargos?.map((encargo) => (
-        <section key={encargo.id} className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm">
+        <section key={encargo.id} className="tarjeta flex flex-col gap-4">
           <div>
             <h2 className="text-lg font-semibold">De «{encargo.hogar}»</h2>
             <p className="text-sm text-stone-500">

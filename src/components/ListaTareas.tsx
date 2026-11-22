@@ -39,16 +39,24 @@ export function ListaTareas({ tareas, acciones, nombres }: Props) {
   )
 }
 
+const FRASES_DE_HECHO = ['¡Hecho!', '¡Una menos!', '¡Bien hecho!', '¡Genial!', '¡Listo!']
+
 // Aviso «¡Hecho!» con botón de deshacer (solo en tareas a mano).
 export function AvisoRecienHecha({ acciones }: { acciones: AccionesTarea }) {
   const tarea = acciones.recienHecha
   if (!tarea) return null
+  // Siempre la misma frase para la misma tarea (sin azar al pintar).
+  const suma = [...tarea.id].reduce((total, letra) => total + letra.charCodeAt(0), 0)
+  const frase = FRASES_DE_HECHO[suma % FRASES_DE_HECHO.length]
   return (
     <div
       role="status"
-      className="flex items-center justify-between gap-3 rounded-xl bg-marca-suave p-3 text-sm text-marca"
+      className="flex animate-aparecer items-center justify-between gap-3 rounded-2xl bg-coral-suave p-3 text-sm text-coral-tinta"
     >
-      <span>¡Hecho! «{tarea.titulo}»</span>
+      <span>
+        <span aria-hidden="true" className="mr-1 inline-block text-base">🎉</span>
+        <strong>{frase}</strong> «{tarea.titulo}»
+      </span>
       {!esAutomatica(tarea) && (
         <button
           type="button"

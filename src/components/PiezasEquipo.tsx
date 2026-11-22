@@ -5,11 +5,11 @@ export function CifrasEquipo({ pensar, hacer }: { pensar: number; hacer: number 
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="rounded-xl bg-marca-suave p-3">
-        <p className="text-2xl font-bold text-marca">{pensar}</p>
+        <p className="text-2xl font-extrabold text-marca">{pensar}</p>
         <p className="text-sm text-stone-700">💭 {pensar === 1 ? 'cosa pensada' : 'cosas pensadas'}</p>
       </div>
       <div className="rounded-xl bg-marca-suave p-3">
-        <p className="text-2xl font-bold text-marca">{hacer}</p>
+        <p className="text-2xl font-extrabold text-marca">{hacer}</p>
         <p className="text-sm text-stone-700">✋ {hacer === 1 ? 'cosa hecha' : 'cosas hechas'}</p>
       </div>
     </div>
