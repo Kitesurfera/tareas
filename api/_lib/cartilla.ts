@@ -87,26 +87,6 @@ function leerTipo(valor: unknown): Tipo | null {
   return TIPOS.find((t) => t === limpio) ?? null
 }
 
-// La respuesta de la IA → objeto. Acepta que venga ya como objeto, o como
-// texto con el JSON (aunque lo envuelva entre ``` o le añada algo antes).
-export function leerJson(respuesta: unknown): unknown {
-  if (respuesta && typeof respuesta === 'object') return respuesta
-  if (typeof respuesta !== 'string') return null
-  const texto = respuesta.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim()
-  try {
-    return JSON.parse(texto)
-  } catch {
-    const desde = texto.indexOf('{')
-    const hasta = texto.lastIndexOf('}')
-    if (desde === -1 || hasta <= desde) return null
-    try {
-      return JSON.parse(texto.slice(desde, hasta + 1))
-    } catch {
-      return null
-    }
-  }
-}
-
 function texto(valor: unknown, maximo: number): string | null {
   if (typeof valor !== 'string') return null
   const limpio = valor.trim().slice(0, maximo)

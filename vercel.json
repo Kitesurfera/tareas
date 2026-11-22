@@ -22,7 +22,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+          "value": "camera=(), microphone=(self), geolocation=(), payment=(), usb=()"
         }
       ]
     }
@@ -39,6 +39,9 @@
   ],
   "functions": {
     "api/leer-cartilla.ts": {
+      "maxDuration": 60
+    },
+    "api/entender-tarea.ts": {
       "maxDuration": 60
     }
   }

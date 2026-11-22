@@ -6,7 +6,9 @@ import { supabase } from '../lib/supabase'
 import { CATEGORIAS, rutaDeOrigen, type Categoria, type Tarea } from '../lib/tipos'
 import { useMascotasDelHogar } from '../lib/useMascotasDelHogar'
 import { useMiembros } from '../lib/useMiembros'
+import type { TareaEntendida } from '../lib/tareaNatural'
 import { avisoError, botonPrincipal, campo } from './estilos'
+import { RellenarConPalabras } from './RellenarConPalabras'
 
 type Comun = {
   hogarId: string
@@ -127,6 +129,17 @@ function Formulario({ hogarId, miUserId, tarea }: Comun & { tarea?: Tarea }) {
     volver('/tareas')
   }
 
+  // Lo que ha entendido la IA de «✨ Dímelo con tus palabras» rellena el formulario.
+  function rellenarCon(entendida: TareaEntendida) {
+    setTitulo(entendida.titulo)
+    setCategoria(entendida.categoria)
+    setMascotaId(entendida.mascota_id)
+    setFecha(entendida.fecha ?? '')
+    // Si no dice quién, se queda quien estaba elegido (al empezar, tú).
+    if (entendida.responsable) setResponsable(entendida.responsable.id)
+    if (entendida.detalles) setDescripcion(entendida.detalles)
+  }
+
   const chip = (activo: boolean) =>
     `rounded-full px-4 py-2 text-sm font-medium ring-1 transition ${
       activo ? 'bg-marca text-white ring-marca' : 'bg-white text-stone-700 ring-stone-300'
@@ -143,6 +156,15 @@ function Formulario({ hogarId, miUserId, tarea }: Comun & { tarea?: Tarea }) {
       </button>
 
       <h1 className="text-2xl font-extrabold text-marca">{editando ? 'Editar tarea' : 'Nueva tarea'}</h1>
+
+      {!editando && (
+        <RellenarConPalabras
+          // Solo id y nombre: es lo único que necesita la IA para entender «Bea» o «Luna».
+          personas={miembros?.map((m) => ({ id: m.id, nombre: m.nombre_visible, yo: m.user_id === miUserId })) ?? null}
+          mascotas={mascotas?.map((m) => ({ id: m.id, nombre: m.nombre })) ?? null}
+          onEntendida={rellenarCon}
+        />
+      )}
 
       <form onSubmit={guardar} className="tarjeta flex flex-col gap-5">
         <label className="flex flex-col gap-1.5">
