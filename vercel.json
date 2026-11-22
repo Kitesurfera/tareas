@@ -36,5 +36,10 @@
       "path": "/api/recordatorios",
       "schedule": "0 7 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/leer-cartilla.ts": {
+      "maxDuration": 60
+    }
+  }
 }
