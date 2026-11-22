@@ -20,6 +20,7 @@ import { PantallaAjustes } from './components/PantallaAjustes'
 import { FormularioViaje, PantallaViajes } from './components/PantallaViajes'
 import { TarjetaViaje } from './components/TarjetaViaje'
 import { ConPestanas } from './components/BarraPestanas'
+import { CabeceraPestana } from './components/CabeceraPestana'
 import { PantallaVencimientos } from './components/PantallaVencimientos'
 import {
   PantallaEditarVencimiento,
@@ -43,6 +44,7 @@ import {
 } from './lib/accesos'
 import { mensajeDeError } from './lib/errores'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
+import { saludoDelMomento } from './lib/fechas'
 import { ir, reemplazar, useRuta } from './lib/ruta'
 import { supabase } from './lib/supabase'
 import type { Hogar, Yo } from './lib/tipos'
@@ -392,24 +394,29 @@ function App() {
     return <PantallaEditarTarea key={partes[1]} id={partes[1]} {...comun} />
   }
 
+  const saludo = saludoDelMomento()
+
   return (
     <ConPestanas actual="inicio">
-      <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-marca">Tareas</h1>
-            <p className="mt-1 text-stone-600">Hola, {yo.nombre} 👋</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => ir('/ajustes')}
-            aria-label="Ajustes"
-            title="Ajustes"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-xl shadow-sm ring-1 ring-stone-200 active:scale-95"
-          >
-            <span aria-hidden="true">⚙️</span>
-          </button>
-        </header>
+      <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-8">
+        <CabeceraPestana
+          color="inicio"
+          etiqueta={<>🏡 {yo.hogar.nombre}</>}
+          titulo={`${saludo.texto}, ${yo.nombre}`}
+          subtitulo="Esto es lo que se viene en casa."
+          dibujo={saludo.dibujo}
+          boton={
+            <button
+              type="button"
+              onClick={() => ir('/ajustes')}
+              aria-label="Ajustes"
+              title="Ajustes"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95"
+            >
+              <span aria-hidden="true">⚙️</span>
+            </button>
+          }
+        />
 
         <TarjetaInstalar />
 
@@ -419,7 +426,7 @@ function App() {
           <button
             type="button"
             onClick={() => ir('/encargos')}
-            className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-marca/30"
+            className="tarjeta text-left ring-2 ring-marca/30"
           >
             <span className="block font-semibold">🔑 Tienes encargos</span>
             <span className="block text-sm text-stone-600">
@@ -437,7 +444,7 @@ function App() {
         <TarjetaMascotas />
 
         <footer className="mt-auto text-center text-xs text-stone-400">
-          Tareas · Fase 2
+          Tareas · hecho en casa con 💚
         </footer>
       </main>
     </ConPestanas>
