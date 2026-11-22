@@ -24,6 +24,8 @@
   --color-vencimientos-tinta: #1f5a99;
   --color-ajustes: #efebe5;
   --color-ajustes-tinta: #44403c;
+  --color-plantas: #e4f4d6;
+  --color-plantas-tinta: #3d6b1e;
 
   /* Letra redondeada para los títulos: en iPhone es la «SF Pro Rounded»
      del sistema (no se descarga nada); en otros móviles, la normal. */
@@ -31,6 +33,7 @@
 
   --animate-flotar: flotar 6s ease-in-out infinite;
   --animate-aparecer: aparecer 0.35s ease-out both;
+  --animate-estallar: estallar 0.9s ease-out forwards;
 
   @keyframes flotar {
     0%,
@@ -39,6 +42,21 @@
     }
     50% {
       transform: translateY(-5px) rotate(3deg);
+    }
+  }
+
+  /* Confeti: cada trocito sale hacia su sitio (--x, --y) y se desvanece. */
+  @keyframes estallar {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(0.6);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--x), var(--y)) scale(1) rotate(var(--giro));
     }
   }
 
