@@ -11,14 +11,15 @@ function leerOculto(): boolean {
   }
 }
 
-// Tarjeta del inicio que invita a instalar la app en el móvil.
-export function TarjetaInstalar() {
+// Tarjeta que invita a instalar la app en el móvil. En el inicio se puede
+// ocultar con «Ahora no»; en Ajustes («siempre») se enseña igualmente.
+export function TarjetaInstalar({ siempre = false }: { siempre?: boolean }) {
   const puedeInstalar = usePuedeInstalar()
   const recienInstalada = useRecienInstalada()
   const [oculto, setOculto] = useState(leerOculto)
   const ios = esIOS()
 
-  if (abiertaComoApp() || recienInstalada || oculto) return null
+  if (abiertaComoApp() || recienInstalada || (oculto && !siempre)) return null
   // Solo la mostramos donde sabemos explicar cómo instalarla.
   if (!puedeInstalar && !ios) return null
 
@@ -65,9 +66,11 @@ export function TarjetaInstalar() {
         </ol>
       )}
 
-      <button type="button" onClick={ocultar} className="mt-3 w-full text-sm text-stone-500">
-        Ahora no
-      </button>
+      {!siempre && (
+        <button type="button" onClick={ocultar} className="mt-3 w-full text-sm text-stone-500">
+          Ahora no
+        </button>
+      )}
     </section>
   )
 }
