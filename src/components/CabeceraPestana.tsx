@@ -24,30 +24,31 @@ type Props = {
 }
 
 // Cabecera de color de cada pestaña: título, subtítulo y un dibujo que flota.
-// Va pegada arriba y a los lados de la pantalla (por eso los márgenes negativos).
+// En el móvil va pegada arriba y a los lados de la pantalla (por eso los
+// márgenes negativos); en el ordenador es una tarjeta grande redondeada.
 export function CabeceraPestana({ color, titulo, subtitulo, etiqueta, dibujo, boton }: Props) {
   const { fondo, tinta } = COLORES[color]
   return (
-    <header className={`relative -mx-5 -mt-8 overflow-hidden rounded-b-[2.25rem] px-5 pt-8 pb-7 ${fondo}`}>
+    <header className={`relative -mx-5 -mt-8 overflow-hidden rounded-b-[2.25rem] px-5 pt-8 pb-7 lg:mx-0 lg:mt-0 lg:rounded-[2.25rem] lg:px-10 lg:py-10 ${fondo}`}>
       {/* Burbujas de adorno */}
-      <span aria-hidden="true" className="absolute -top-12 -right-10 h-44 w-44 rounded-full bg-white/35" />
-      <span aria-hidden="true" className="absolute top-24 right-36 h-6 w-6 rounded-full bg-white/50" />
+      <span aria-hidden="true" className="absolute -top-12 -right-10 h-44 w-44 rounded-full bg-white/35 lg:-top-20 lg:h-72 lg:w-72" />
+      <span aria-hidden="true" className="absolute top-24 right-36 h-6 w-6 rounded-full bg-white/50 lg:right-72" />
       <span
         aria-hidden="true"
-        className="absolute right-5 bottom-5 inline-block animate-flotar text-5xl leading-none drop-shadow-sm select-none"
+        className="absolute right-5 bottom-5 inline-block animate-flotar text-5xl leading-none drop-shadow-sm select-none lg:right-14 lg:bottom-7 lg:text-7xl"
       >
         {dibujo}
       </span>
 
       <div className="relative flex items-start justify-between gap-4">
-        <div className="min-w-0 pr-14">
+        <div className="min-w-0 pr-14 lg:pr-32">
           {etiqueta && (
             <p className={`mb-2 inline-flex items-center gap-1 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold ${tinta}`}>
               {etiqueta}
             </p>
           )}
-          <h1 className={`text-[1.75rem] leading-tight font-extrabold ${tinta}`}>{titulo}</h1>
-          {subtitulo && <p className="mt-1 pr-6 text-stone-700">{subtitulo}</p>}
+          <h1 className={`text-[1.75rem] leading-tight font-extrabold lg:text-4xl ${tinta}`}>{titulo}</h1>
+          {subtitulo && <p className="mt-1 pr-6 text-stone-700 lg:mt-2 lg:text-lg">{subtitulo}</p>}
         </div>
         {boton}
       </div>
