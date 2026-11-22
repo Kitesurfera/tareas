@@ -1,28 +1,26 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
-import type { Miembro } from './tipos'
 
-// Contador de carga mental: quién PIENSA las cosas (las apunta, las
-// organiza) y quién las HACE, mes a mes. Los datos los apunta la propia
-// base de datos (tabla «actividad»); aquí solo se suman.
+// Carga mental EN EQUIPO: no compara a nadie. Enseña lo que habéis pensado
+// y hecho entre todas, da las gracias por lo que pensaron las demás
+// personas y te enseña TUS números (que solo ves tú). Los datos los apunta
+// la propia base de datos (tabla «actividad»).
 
 export type Origen = 'tarea' | 'tratamiento' | 'rutina' | 'vencimiento' | 'compra'
 
-export type Persona = {
-  clave: string // user_id, o «otras» para quien ya no está en el hogar
-  nombre: string
-  color: string
+export type Gracia = {
+  quien: string
+  origen: Origen
+  titulo: string
+  creado_en: string
+}
+
+export type Mio = {
   pensar: number
   hacer: number
-  // Desglose: de dónde salen los números.
   pensarPor: Partial<Record<Origen, number>>
   hacerPor: Partial<Record<Origen, number>>
 }
-
-// Colores fijos por persona, por orden de llegada al hogar (paleta
-// comprobada para daltonismo; cada persona conserva su color siempre).
-const COLORES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948']
-const COLOR_OTRAS = '#a8a29e'
 
 // «2026-11» → primer día de ese mes y del siguiente.
 export function limitesDelMes(mes: string): { desde: string; hasta: string } {
@@ -47,81 +45,67 @@ export function nombreDelMes(mes: string): string {
   return new Date(anio, m - 1, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
 }
 
-type Fila = { user_id: string | null; tipo: 'pensar' | 'hacer'; origen: Origen; cuantas: number }
+// «Bea» + «se acordó de «Vacuna de Luna»»…
+export function fraseDeGracias(g: Gracia): string {
+  switch (g.origen) {
+    case 'compra':
+      return `apuntó «${g.titulo}» en la compra`
+    case 'tratamiento':
+      return `apuntó el tratamiento «${g.titulo}»`
+    case 'rutina':
+      return `organizó la rutina «${g.titulo}»`
+    case 'vencimiento':
+      return `apuntó cuándo vence «${g.titulo}»`
+    default:
+      return `se acordó de «${g.titulo}»`
+  }
+}
 
-// Suma lo de cada persona en un mes. null = cargando.
-export function useCargaMental(mes: string, miembros: Miembro[] | null, miUserId: string) {
-  const [filas, setFilas] = useState<{ mes: string; datos: Fila[] } | null>(null)
+export function cosas(n: number): string {
+  return n === 1 ? '1 cosa' : `${n} cosas`
+}
+
+type Datos = {
+  mes: string
+  equipo: { pensar: number; hacer: number }
+  gracias: Gracia[]
+  mio: Mio
+}
+
+// Todo lo del mes. null = cargando.
+export function useEquipo(mes: string, cuantasGracias: number) {
+  const [datos, setDatos] = useState<Datos | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    if (!supabase) return
+    const cliente = supabase
+    if (!cliente) return
     let vigente = true
     const { desde, hasta } = limitesDelMes(mes)
-    // Gracias a RLS, solo cuenta la actividad de tu hogar.
-    supabase.rpc('resumen_carga_mental', { desde, hasta }).then(({ data, error }) => {
+    Promise.all([
+      cliente.rpc('totales_del_hogar', { desde, hasta }),
+      cliente.rpc('agradecimientos', { desde, hasta, cuantos: cuantasGracias }),
+      // Gracias a RLS, esta solo devuelve TUS números.
+      cliente.rpc('resumen_carga_mental', { desde, hasta }),
+    ]).then(([totales, gracias, mios]) => {
       if (!vigente) return
-      if (error) setError(true)
-      else setFilas({ mes, datos: (data ?? []) as Fila[] })
+      if (totales.error || gracias.error || mios.error) {
+        setError(true)
+        return
+      }
+      const fila = ((totales.data ?? []) as { pensar: number; hacer: number }[])[0] ?? { pensar: 0, hacer: 0 }
+      const mio: Mio = { pensar: 0, hacer: 0, pensarPor: {}, hacerPor: {} }
+      for (const f of (mios.data ?? []) as { tipo: 'pensar' | 'hacer'; origen: Origen; cuantas: number }[]) {
+        mio[f.tipo] += f.cuantas
+        const desglose = f.tipo === 'pensar' ? mio.pensarPor : mio.hacerPor
+        desglose[f.origen] = (desglose[f.origen] ?? 0) + f.cuantas
+      }
+      setDatos({ mes, equipo: fila, gracias: (gracias.data ?? []) as Gracia[], mio })
     })
     return () => {
       vigente = false
     }
-  }, [mes])
+  }, [mes, cuantasGracias])
 
-  if (!miembros || filas?.mes !== mes) return { personas: null, error }
-
-  const personas: Persona[] = miembros.map((m, i) => ({
-    clave: m.user_id,
-    nombre: m.user_id === miUserId ? 'Tú' : m.nombre_visible,
-    color: COLORES[i % COLORES.length],
-    pensar: 0,
-    hacer: 0,
-    pensarPor: {},
-    hacerPor: {},
-  }))
-  for (const fila of filas.datos) {
-    let persona = personas.find((p) => p.clave === fila.user_id)
-    if (!persona) {
-      // Alguien que ya no está en el hogar.
-      persona = personas.find((p) => p.clave === 'otras')
-      if (!persona) {
-        persona = { clave: 'otras', nombre: 'Quien ya no está', color: COLOR_OTRAS, pensar: 0, hacer: 0, pensarPor: {}, hacerPor: {} }
-        personas.push(persona)
-      }
-    }
-    persona[fila.tipo] += fila.cuantas
-    const desglose = fila.tipo === 'pensar' ? persona.pensarPor : persona.hacerPor
-    desglose[fila.origen] = (desglose[fila.origen] ?? 0) + fila.cuantas
-  }
-  return { personas, error }
-}
-
-// Frase neutra y amable sobre el reparto. Nunca reprocha: describe.
-export function fraseDelReparto(personas: Persona[]): string {
-  const totalPensar = personas.reduce((s, p) => s + p.pensar, 0)
-  const totalHacer = personas.reduce((s, p) => s + p.hacer, 0)
-  if (totalPensar + totalHacer === 0) return 'Todavía no hay nada apuntado este mes.'
-  const conActividad = personas.filter((p) => p.pensar + p.hacer > 0)
-  if (personas.filter((p) => p.clave !== 'otras').length < 2) {
-    return 'Cuando seáis más en el hogar, aquí veréis cómo os repartís pensar y hacer.'
-  }
-  if (conActividad.length === 1) {
-    const sujeto = conActividad[0].nombre === 'Tú' ? 'Este mes, de momento, todo lo has movido tú' : `Este mes, de momento, todo lo ha movido ${conActividad[0].nombre}`
-    return `${sujeto}.`
-  }
-  const quienMas = (clave: 'pensar' | 'hacer', total: number) => {
-    if (total < 4) return null
-    const mayor = [...personas].sort((a, b) => b[clave] - a[clave])[0]
-    return mayor[clave] / total >= 0.65 ? mayor : null
-  }
-  const piensa = quienMas('pensar', totalPensar)
-  const hace = quienMas('hacer', totalHacer)
-  const conVerbo = (p: Persona, resto: string) => (p.nombre === 'Tú' ? `tú has llevado ${resto}` : `${p.nombre} ha llevado ${resto}`)
-  if (piensa && hace && piensa.clave !== hace.clave) {
-    return `Este mes, ${conVerbo(piensa, 'más la parte de pensar')} y ${hace.nombre === 'Tú' ? 'tú' : hace.nombre}, la de hacer.`
-  }
-  if (piensa) return `Este mes, ${conVerbo(piensa, 'más la parte de pensar')}. Pensar también es trabajo: apuntar, organizar, acordarse.`
-  if (hace) return `Este mes, ${conVerbo(hace, 'más la parte de hacer')}.`
-  return 'Este mes el reparto está bastante equilibrado. 🌿'
+  return { datos: datos?.mes === mes ? datos : null, error }
 }

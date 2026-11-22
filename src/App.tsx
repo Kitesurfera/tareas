@@ -229,7 +229,7 @@ function App() {
     )
   }
   if (partes[0] === 'carga') {
-    return <PantallaCargaMental miUserId={yo.userId} />
+    return <PantallaCargaMental />
   }
   if (partes[0] === 'tareas' && !partes[1]) {
     return (
@@ -294,7 +294,7 @@ function App() {
 
         <TarjetaProximo miUserId={yo.userId} />
 
-        <TarjetaCargaMental miUserId={yo.userId} />
+        <TarjetaCargaMental />
 
         <TarjetaMascotas />
 

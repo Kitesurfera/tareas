@@ -1,16 +1,8 @@
 import { useState } from 'react'
-import {
-  fraseDelReparto,
-  mesActual,
-  moverMes,
-  nombreDelMes,
-  useCargaMental,
-  type Origen,
-  type Persona,
-} from '../lib/cargaMental'
+import { mesActual, moverMes, nombreDelMes, useEquipo, type Mio, type Origen } from '../lib/cargaMental'
 import { volver } from '../lib/ruta'
 import { useMiembros } from '../lib/useMiembros'
-import { GraficaReparto } from './GraficaReparto'
+import { CifrasEquipo, ListaGracias, TusNumeros } from './PiezasEquipo'
 
 // [singular, plural]
 const TEXTOS_PENSAR: Record<Origen, [string, string]> = {
@@ -27,32 +19,27 @@ const TEXTOS_HACER: Partial<Record<Origen, [string, string]>> = {
 
 const mayuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
 
-function Desglose({ persona }: { persona: Persona }) {
+function TuDesglose({ mio }: { mio: Mio }) {
   const linea = (desglose: Partial<Record<Origen, number>>, textos: Partial<Record<Origen, [string, string]>>) =>
     (Object.entries(desglose) as [Origen, number][])
       .filter(([, n]) => n > 0)
       .map(([origen, n]) => `${n} ${textos[origen]?.[n === 1 ? 0 : 1] ?? origen}`)
       .join(' · ')
-  const pensar = linea(persona.pensarPor, TEXTOS_PENSAR)
-  const hacer = linea(persona.hacerPor, TEXTOS_HACER)
   return (
-    <li className="py-3">
-      <p className="flex items-center gap-2 font-medium text-stone-800">
-        <span aria-hidden="true" className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: persona.color }} />
-        {persona.nombre}
-      </p>
-      <p className="mt-1 text-sm text-stone-600">💭 Pensado: {pensar || 'nada'}</p>
-      <p className="text-sm text-stone-600">✋ Hecho: {hacer || 'nada'}</p>
-    </li>
+    <div className="mt-3 text-sm text-stone-600">
+      <p>💭 Pensado: {linea(mio.pensarPor, TEXTOS_PENSAR) || 'nada todavía'}</p>
+      <p>✋ Hecho: {linea(mio.hacerPor, TEXTOS_HACER) || 'nada todavía'}</p>
+    </div>
   )
 }
 
-// Pantalla de detalle del contador de carga mental, mes a mes.
-export function PantallaCargaMental({ miUserId }: { miUserId: string }) {
+// Pantalla «En equipo», mes a mes.
+export function PantallaCargaMental() {
   const { miembros } = useMiembros()
   const [mes, setMes] = useState(mesActual())
-  const { personas, error } = useCargaMental(mes, miembros, miUserId)
+  const { datos, error } = useEquipo(mes, 50)
   const esEsteMes = mes === mesActual()
+  const variasPersonas = (miembros?.length ?? 0) > 1
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
@@ -61,8 +48,8 @@ export function PantallaCargaMental({ miUserId }: { miUserId: string }) {
       </button>
 
       <header>
-        <h1 className="text-2xl font-bold text-marca">Carga mental</h1>
-        <p className="text-stone-600">Quién piensa las cosas y quién las hace</p>
+        <h1 className="text-2xl font-bold text-marca">En equipo</h1>
+        <p className="text-stone-600">Lo que hay que recordar, entre todas</p>
       </header>
 
       <div className="flex items-center justify-between rounded-full bg-white px-2 py-1 shadow-sm">
@@ -86,40 +73,50 @@ export function PantallaCargaMental({ miUserId }: { miUserId: string }) {
         </button>
       </div>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        {error && <p className="text-sm text-red-700">No se ha podido cargar el reparto.</p>}
-        {!personas && !error && <p className="text-sm text-stone-400">Cargando…</p>}
-        {personas && (
-          <>
-            <GraficaReparto personas={personas} />
-            <p className="mt-3 text-sm text-stone-600">{fraseDelReparto(personas)}</p>
-          </>
-        )}
-      </section>
+      {error && <p className="text-sm text-red-700">No se ha podido cargar.</p>}
+      {!datos && !error && <p className="text-center text-sm text-stone-400">Cargando…</p>}
 
-      {personas && personas.some((p) => p.pensar + p.hacer > 0) && (
-        <section className="rounded-2xl bg-white px-5 py-2 shadow-sm">
-          <h2 className="pt-3 text-lg font-semibold">De dónde salen los números</h2>
-          <ul className="divide-y divide-stone-100">
-            {personas.map((p) => (
-              <Desglose key={p.clave} persona={p} />
-            ))}
-          </ul>
-        </section>
+      {datos && (
+        <>
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <h2 className="mb-3 font-semibold">Entre todas</h2>
+            <CifrasEquipo pensar={datos.equipo.pensar} hacer={datos.equipo.hacer} />
+          </section>
+
+          {variasPersonas && (
+            <section className="rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="mb-3 font-semibold">💚 Gracias por acordarte</h2>
+              {datos.gracias.length > 0 ? (
+                <ListaGracias gracias={datos.gracias} />
+              ) : (
+                <p className="text-sm text-stone-500">
+                  {esEsteMes
+                    ? 'Este mes aún no hay nada por aquí. Cuando alguien más apunte algo, aparecerá para darle las gracias.'
+                    : 'Ese mes no hubo nada por aquí.'}
+                </p>
+              )}
+            </section>
+          )}
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <h2 className="mb-3 font-semibold">{esEsteMes ? 'Tú este mes' : 'Tú ese mes'}</h2>
+            <TusNumeros mio={datos.mio} esteMes={esEsteMes} />
+            {datos.mio.pensar + datos.mio.hacer > 0 && <TuDesglose mio={datos.mio} />}
+          </section>
+        </>
       )}
 
       <section className="rounded-2xl bg-marca-suave p-5 text-sm text-stone-700">
-        <h2 className="mb-2 font-semibold text-marca">¿Qué cuenta?</h2>
+        <h2 className="mb-2 font-semibold text-marca">¿Para qué sirve esto?</h2>
         <p>
           <strong>💭 Pensar</strong> es la parte invisible: darse cuenta de que algo
-          hay que hacer y apuntarlo. Cuenta crear una tarea, un tratamiento, una
-          rutina o un vencimiento, y apuntar algo en la lista de la compra.
+          hay que hacer y apuntarlo. <strong>✋ Hacer</strong> es completar tareas y
+          comprar lo de la lista. Las dos cuentan.
         </p>
         <p className="mt-2">
-          <strong>✋ Hacer</strong> es completar tareas y comprar lo de la lista.
-        </p>
-        <p className="mt-2">
-          No es una competición: sirve para ver el reparto y hablarlo si os apetece.
+          No es una competición: aquí nadie ve los números de nadie. Lo importante
+          es que nada se quede solo en la cabeza de una persona, y dar las gracias
+          por lo que no se ve.
         </p>
       </section>
     </main>
