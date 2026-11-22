@@ -40,6 +40,8 @@ export function useNombres(miUserId: string) {
   return {
     miMiembroId,
     responsable,
+    // Su nombre de verdad (también si eres tú), para la inicial del círculo.
+    nombreDe: (miembroId: string | null) => miembros?.find((m) => m.id === miembroId)?.nombre_visible ?? null,
     notaViaje,
     // Lo que se enseña en una tarea: quién se encarga, o quién la cubre si
     // está de viaje. Sin nadie en casa: «Bea · 🏠 nadie en casa», o «Bea ·

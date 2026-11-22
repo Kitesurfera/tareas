@@ -3,6 +3,7 @@ import type { Nombres } from '../lib/useNombres'
 import { esAutomatica, type Tarea } from '../lib/tipos'
 import { ConfirmarHecho } from './ConfirmarHecho'
 import { FilaTarea } from './FilaTarea'
+import { Confeti } from './Piezas'
 
 type Props = {
   tareas: Tarea[]
@@ -12,13 +13,20 @@ type Props = {
 
 // Lista de tareas con su círculo para marcarlas como hechas.
 export function ListaTareas({ tareas, acciones, nombres }: Props) {
+  // El aviso del viaje (o «nadie en casa»), si cambia quién se encarga.
+  const notaDe = (tarea: Tarea) => {
+    const encargada = nombres.encargada(tarea.responsable_id, tarea.fecha_limite, tarea)
+    return encargada !== nombres.responsable(tarea.responsable_id) ? encargada : null
+  }
   return (
     <ul className="divide-y divide-stone-100">
       {tareas.map((tarea) => (
         <FilaTarea
           key={tarea.id}
           tarea={tarea}
-          nombreResponsable={nombres.encargada(tarea.responsable_id, tarea.fecha_limite, tarea)}
+          nombreResponsable={nombres.responsable(tarea.responsable_id)}
+          nombreReal={nombres.nombreDe(tarea.responsable_id)}
+          notaViaje={notaDe(tarea)}
           nombreMascota={nombres.mascota(tarea.mascota_id)}
           nombreQuienLaHizo={nombres.porUsuario(tarea.completada_por)}
           onPulsarCirculo={() => acciones.pulsarCirculo(tarea)}
@@ -51,8 +59,9 @@ export function AvisoRecienHecha({ acciones }: { acciones: AccionesTarea }) {
   return (
     <div
       role="status"
-      className="flex animate-aparecer items-center justify-between gap-3 rounded-2xl bg-coral-suave p-3 text-sm text-coral-tinta"
+      className="relative flex animate-aparecer items-center justify-between gap-3 rounded-2xl bg-coral-suave p-3 text-sm text-coral-tinta"
     >
+      <Confeti key={tarea.id} />
       <span>
         <span aria-hidden="true" className="mr-1 inline-block text-base">🎉</span>
         <strong>{frase}</strong> «{tarea.titulo}»
