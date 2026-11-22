@@ -40,6 +40,9 @@
   "functions": {
     "api/leer-cartilla.ts": {
       "maxDuration": 60
+    },
+    "api/entender-tarea.ts": {
+      "maxDuration": 60
     }
   }
 }
