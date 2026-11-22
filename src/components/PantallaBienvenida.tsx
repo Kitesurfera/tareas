@@ -53,7 +53,7 @@ export function PantallaBienvenida({ nombreSugerido, onListo, onSalir }: Props) 
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-10 lg:max-w-xl lg:px-10 lg:py-10">
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-marca">¡Hola!</h1>

@@ -62,7 +62,7 @@ export function PantallaEditarTarea({ id, ...comun }: Comun & { id: string }) {
 
 function Aviso({ texto, children }: { texto: string; children?: ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-4 px-5 text-center text-stone-500">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col items-center justify-center gap-4 px-5 text-center text-stone-500 lg:max-w-xl lg:px-10">
       <p>{texto}</p>
       {children}
     </main>
@@ -133,7 +133,7 @@ function Formulario({ hogarId, miUserId, tarea }: Comun & { tarea?: Tarea }) {
     }`
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-6 px-5 py-8">
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-5 py-8 lg:max-w-xl lg:px-10 lg:py-10">
       <button
         type="button"
         onClick={() => volver('/tareas')}
