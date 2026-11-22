@@ -61,6 +61,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **vencimientos**: id, hogar_id, tipo (seguro / suscripcion), nombre, fecha_renovacion, frecuencia_meses (vacío = no se repite), importe, aviso_dias (vacío = sin aviso), responsable_id, notas, revisado_para, creada_por
 - **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), participantes (miembros.id que se turnan; vacío = todo el hogar), notas, creada_por
 - **lista_compra**: id, hogar_id, nombre, cantidad, comprado, anadido_por, comprado_por, comprado_en (quién añade y quién compra lo pone la base de datos)
+- **actividad**: id, hogar_id, user_id, tipo (pensar / hacer), origen (tarea / tratamiento / rutina / vencimiento / compra), origen_id, creado_en. Diario del contador de carga mental que rellenan solo los disparadores (`apuntar_actividad_*`): pensar = crear una tarea a mano, un tratamiento, una rutina o un vencimiento, o apuntar algo en la compra; hacer = completar una tarea o comprar algo. Reabrir o desmarcar quita ese «hacer». Nadie puede escribir en él a mano. `resumen_carga_mental(desde, hasta)` lo suma por persona (en hora de España).
 - **avisos_push**: id, user_id, endpoint, p256dh, auth, ultimo_envio (móviles con avisos activados; cada persona solo ve los suyos; `guardar_aviso_push` los guarda y `recordatorios_del_dia` —solo para el servidor— prepara el resumen: lo pendiente hasta hoy que es tuyo o no es de nadie)
 
 **Mismo hogar garantizado:** `responsable_id` apunta a `miembros.id`. Las relaciones entre tablas usan claves compuestas `(id, hogar_id)`, así la base de datos impide enlazar una mascota, un tratamiento o una persona de otro hogar.
@@ -92,7 +93,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **Elegir quién participa** en los turnos de cada rutina.
 
 ### Fase 2
-- **Contador de carga mental**: por persona y mes, cuántas cosas ha *creado* (pensar) frente a cuántas ha *completado* (hacer). Tono neutro y amable, nunca de reproche.
+- ✅ **Contador de carga mental**: por persona y mes, cuántas cosas ha *pensado* frente a cuántas ha *hecho* (tarjeta en Inicio y pantalla `#/carga` con meses anteriores). Tono neutro y amable, nunca de reproche.
+- ✅ **Ajustes** (botón ⚙️ arriba a la derecha del inicio, `#/ajustes`): tu nombre, avisos, nombre del hogar, quién está en el hogar (invitar, quitar, salir), instalar la app y cerrar sesión (solo en ese dispositivo).
 - Registro de peso con una gráfica sencilla.
 - ~~Recordatorios~~ ✅ Hechos con notificaciones push (aviso diario a las 8:00). En iPhone solo funcionan con la app instalada en la pantalla de inicio. Pendiente: avisos por email para quien no instale la app.
 
