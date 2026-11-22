@@ -62,3 +62,8 @@ export function esIOS(): boolean {
   const ua = navigator.userAgent
   return /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
 }
+
+// ¿Móvil o tablet? (Para hablar de «tu móvil» o de «este ordenador».)
+export function esMovil(): boolean {
+  return esIOS() || /android|mobi/i.test(navigator.userAgent)
+}

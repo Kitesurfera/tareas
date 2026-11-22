@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { mensajeDeError } from '../lib/errores'
-import { abiertaComoApp } from '../lib/instalar'
+import { abiertaComoApp, esMovil } from '../lib/instalar'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Yo } from '../lib/tipos'
@@ -190,7 +190,7 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         {abiertaComoApp() ? (
           <section className="tarjeta">
             <TituloSeccion dibujo="📲" titulo="La app" color="tareas" />
-            <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este móvil. ✅</p>
+            <p className="mt-3 text-sm text-stone-600">Tienes Tareas instalada en este {esMovil() ? 'móvil' : 'ordenador'}. ✅</p>
           </section>
         ) : (
           <TarjetaInstalar siempre />

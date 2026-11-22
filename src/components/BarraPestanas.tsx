@@ -65,7 +65,7 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
   return (
     <div className={enPestana ? 'pb-28 lg:pb-0' : undefined}>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 overflow-y-auto border-r border-stone-900/5 bg-white/75 px-4 py-6 backdrop-blur-md lg:flex">
-        <a href="#/" onClick={alPulsar('/', true)} className="flex items-center gap-3 rounded-2xl px-2 py-1">
+        <a href="#/" onClick={alPulsar('/', true)} aria-label={`Tareas · ${hogar} · ir al inicio`} className="flex items-center gap-3 rounded-2xl px-2 py-1">
           <img src="/pwa-192x192.png" alt="" className="h-11 w-11 rounded-2xl shadow-sm" />
           <span className="min-w-0">
             <span className="block font-redonda text-xl leading-tight font-extrabold text-marca">Tareas</span>

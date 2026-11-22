@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { abiertaComoApp, esIOS, instalar, usePuedeInstalar, useRecienInstalada } from '../lib/instalar'
+import { abiertaComoApp, esIOS, esMovil, instalar, usePuedeInstalar, useRecienInstalada } from '../lib/instalar'
 
 const CLAVE = 'tareas.instalar.oculto'
 
@@ -37,11 +37,23 @@ export function TarjetaInstalar({ siempre = false }: { siempre?: boolean }) {
       <div className="flex items-start gap-3">
         <img src="/apple-touch-icon.png" alt="" className="h-12 w-12 shrink-0 rounded-xl" />
         <div>
-          <h2 className="font-semibold text-marca">Instala Tareas en tu móvil</h2>
-          <p className="text-sm text-stone-700">
-            Se abre a pantalla completa, como cualquier app, desde un icono en
-            tu pantalla de inicio.
-          </p>
+          {esMovil() ? (
+            <>
+              <h2 className="font-semibold text-marca">Instala Tareas en tu móvil</h2>
+              <p className="text-sm text-stone-700">
+                Se abre a pantalla completa, como cualquier app, desde un icono en
+                tu pantalla de inicio.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="font-semibold text-marca">Instala Tareas en este ordenador</h2>
+              <p className="text-sm text-stone-700">
+                Se abre en su propia ventana, como un programa, y la tienes a mano en el
+                escritorio o en la barra de tareas.
+              </p>
+            </>
+          )}
         </div>
       </div>
 

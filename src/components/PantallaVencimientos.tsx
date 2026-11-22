@@ -92,16 +92,16 @@ export function PantallaVencimientos({ miUserId }: Props) {
       {(suscripcionesAlMes > 0 || segurosAlAnio > 0) && (
         <section className="flex gap-3">
           {suscripcionesAlMes > 0 && (
-            <div className="tarjeta flex-1 p-4">
+            <div className="tarjeta flex-1 p-4 lg:p-6">
               <p className="text-xs font-medium text-vencimientos-tinta">🔁 Suscripciones</p>
-              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta">{euros(suscripcionesAlMes)}</p>
+              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta lg:text-3xl">{euros(suscripcionesAlMes)}</p>
               <p className="text-xs text-stone-600">al mes · {euros(suscripcionesAlMes * 12)} al año</p>
             </div>
           )}
           {segurosAlAnio > 0 && (
-            <div className="tarjeta flex-1 p-4">
+            <div className="tarjeta flex-1 p-4 lg:p-6">
               <p className="text-xs font-medium text-vencimientos-tinta">🛡️ Seguros</p>
-              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta">{euros(segurosAlAnio)}</p>
+              <p className="font-redonda text-xl font-extrabold text-vencimientos-tinta lg:text-3xl">{euros(segurosAlAnio)}</p>
               <p className="text-xs text-stone-600">al año</p>
             </div>
           )}
