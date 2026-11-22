@@ -1,3 +1,5 @@
+import { accesoCubre, useAccesos } from './accesos'
+import type { Tarea } from './tipos'
 import { useMascotasDelHogar } from './useMascotasDelHogar'
 import { useMiembros } from './useMiembros'
 import { cobertura, diaQueCuenta, useViajes } from './viajes'
@@ -7,6 +9,7 @@ import { cobertura, diaQueCuenta, useViajes } from './viajes'
 export function useNombres(miUserId: string) {
   const { miembros } = useMiembros()
   const { viajes } = useViajes()
+  const { accesos } = useAccesos()
   const mascotas = useMascotasDelHogar()
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id
 
@@ -39,10 +42,12 @@ export function useNombres(miUserId: string) {
     responsable,
     notaViaje,
     // Lo que se enseña en una tarea: quién se encarga, o quién la cubre si
-    // está de viaje. Sin nadie en casa: «Bea · 🏠 nadie en casa».
-    encargada: (responsableId: string | null, fecha: string | null) => {
+    // está de viaje. Sin nadie en casa: «Bea · 🏠 nadie en casa», o «Bea ·
+    // 🏠 lo cubre Marta» si alguien con acceso temporal se ocupa de ella.
+    encargada: (responsableId: string | null, fecha: string | null, tarea?: Tarea) => {
       if (quienCubre(responsableId, fecha)?.nadieEnCasa) {
-        return `${responsable(responsableId) ?? 'Sin responsable'} · 🏠 nadie en casa`
+        const ayuda = tarea && accesos?.find((a) => a.user_id && accesoCubre(a, tarea, diaQueCuenta(fecha)))
+        return `${responsable(responsableId) ?? 'Sin responsable'} · 🏠 ${ayuda ? `lo cubre ${ayuda.nombre}` : 'nadie en casa'}`
       }
       return notaViaje(responsableId, fecha) ?? responsable(responsableId)
     },
@@ -54,10 +59,13 @@ export function useNombres(miUserId: string) {
       if (!c || c.nadieEnCasa || !c.fuera) return responsableId === miMiembroId
       return c.enCasa.some((m) => m.id === miMiembroId)
     },
+    // Quién hizo algo: alguien del hogar o quien os ayuda con un acceso.
     porUsuario: (userId: string | null) =>
       userId === miUserId
         ? 'ti'
-        : (miembros?.find((m) => m.user_id === userId)?.nombre_visible ?? null),
+        : (miembros?.find((m) => m.user_id === userId)?.nombre_visible ??
+          accesos?.find((a) => a.user_id === userId)?.nombre ??
+          null),
     mascota: (mascotaId: string | null) =>
       mascotas?.find((m) => m.id === mascotaId)?.nombre ?? null,
   }

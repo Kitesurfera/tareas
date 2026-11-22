@@ -81,7 +81,7 @@ function CampoEditable({
   )
 }
 
-// Pantalla de ajustes: perfil, avisos, viajes, hogar, la app y cerrar sesión.
+// Pantalla de ajustes: perfil, avisos, viajes, accesos, hogar, la app y cerrar sesión.
 export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrarSesion }: Props) {
   async function guardarMiNombre(nombre: string): Promise<string | null> {
     if (!supabase) return 'Sin conexión'
@@ -135,6 +135,17 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         </p>
         <button type="button" onClick={() => ir('/viajes')} className={`mt-3 ${botonSecundario}`}>
           Ver y añadir viajes
+        </button>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <h2 className="font-semibold">🔑 Acceso temporal</h2>
+        <p className="mt-1 text-sm text-stone-600">
+          Deja que alguien de fuera (quien cuida la mascota, riega…) vea y haga solo las tareas que elijáis,
+          durante unos días.
+        </p>
+        <button type="button" onClick={() => ir('/accesos')} className={`mt-3 ${botonSecundario}`}>
+          Ver y dar accesos
         </button>
       </section>
 
