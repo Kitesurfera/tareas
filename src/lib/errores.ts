@@ -23,6 +23,7 @@ const MENSAJES_PROPIOS = [
 const TRADUCCIONES: [string, string][] = [
   ['Payload too large', 'La foto es demasiado grande.'],
   ['mime type', 'Ese tipo de archivo no vale: elige una foto.'],
+  ['un_peso_por_dia', 'Ya hay un peso apuntado ese día. Recarga la ficha para verlo.'],
 ]
 
 export function mensajeDeError(error: { message?: string } | null): string {

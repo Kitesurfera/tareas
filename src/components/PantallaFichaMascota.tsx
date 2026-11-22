@@ -3,6 +3,7 @@ import { ir, volver } from '../lib/ruta'
 import { useMascota } from '../lib/useMascota'
 import { avisoError, botonSecundario } from './estilos'
 import { FotoMascota } from './FotoMascota'
+import { SeccionPeso } from './SeccionPeso'
 import { SeccionSalud } from './SeccionSalud'
 
 type Props = {
@@ -67,6 +68,13 @@ export function PantallaFichaMascota({ id }: Props) {
           </section>
 
           <SeccionSalud mascotaId={mascota.id} nombreMascota={mascota.nombre} />
+
+          <SeccionPeso
+            mascotaId={mascota.id}
+            hogarId={mascota.hogar_id}
+            nombreMascota={mascota.nombre}
+            fechaNacimiento={mascota.fecha_nacimiento}
+          />
 
           <button
             type="button"
