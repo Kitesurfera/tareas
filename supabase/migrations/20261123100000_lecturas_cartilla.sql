@@ -9,8 +9,8 @@
 -- Qué hace:
 --   * lecturas_cartilla: apunta cada vez que un hogar pide leer una
 --     cartilla con IA (solo cuándo y cuántas páginas; NUNCA las fotos ni lo
---     que pone). Sirve para poner un límite al día, porque cada lectura
---     cuesta dinero en la cuenta de Anthropic.
+--     que pone). Sirve para poner un límite al día, para no gastar el
+--     cupo gratuito diario de la IA (Cloudflare).
 --
 -- Seguridad:
 --   * Desde la app no se puede leer ni escribir: solo el servidor de la
