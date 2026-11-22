@@ -175,13 +175,22 @@ export function SeccionSalud({ mascotaId, miUserId, nombreMascota }: Props) {
 
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
 
-      <button
-        type="button"
-        onClick={() => ir(`/mascotas/${mascotaId}/tratamientos/nuevo`)}
-        className={`mt-4 ${botonSecundario}`}
-      >
-        + Añadir tratamiento
-      </button>
+      <div className="mt-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => ir(`/mascotas/${mascotaId}/tratamientos/nuevo`)}
+          className={`flex-1 ${botonSecundario}`}
+        >
+          + Añadir tratamiento
+        </button>
+        <button
+          type="button"
+          onClick={() => ir(`/mascotas/${mascotaId}/cartilla`)}
+          className={`flex-1 ${botonSecundario}`}
+        >
+          📷 Leer la cartilla
+        </button>
+      </div>
     </section>
   )
 }
