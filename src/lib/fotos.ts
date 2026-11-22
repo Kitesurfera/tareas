@@ -6,9 +6,10 @@ const LADO_MAXIMO = 1024
 // Reduce la foto antes de subirla: las del móvil pesan varios MB.
 // Además, al redibujarla se pierden los datos ocultos de la foto (EXIF),
 // como el lugar GPS donde se hizo, que podría revelar dónde vivís.
-export async function prepararFoto(archivo: File): Promise<Blob> {
+// (Para leer la cartilla se usa un tamaño mayor, para que se lea la letra.)
+export async function prepararFoto(archivo: File, ladoMaximo = LADO_MAXIMO, calidad = 0.85): Promise<Blob> {
   const imagen = await createImageBitmap(archivo)
-  const escala = Math.min(1, LADO_MAXIMO / Math.max(imagen.width, imagen.height))
+  const escala = Math.min(1, ladoMaximo / Math.max(imagen.width, imagen.height))
   const lienzo = document.createElement('canvas')
   lienzo.width = Math.round(imagen.width * escala)
   lienzo.height = Math.round(imagen.height * escala)
@@ -18,7 +19,7 @@ export async function prepararFoto(archivo: File): Promise<Blob> {
     lienzo.toBlob(
       (blob) => (blob ? resolver(blob) : fallar(new Error('No se pudo preparar la foto'))),
       'image/jpeg',
-      0.85,
+      calidad,
     ),
   )
 }

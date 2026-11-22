@@ -36,6 +36,7 @@ import { PantallaEditarTarea, PantallaNuevaTarea } from './components/Formulario
 import { PantallaAccesos, FormularioAcceso } from './components/PantallaAccesos'
 import { PantallaEncargos } from './components/PantallaEncargos'
 import { TarjetaAyuda } from './components/TarjetaAyuda'
+import { PantallaLeerCartilla } from './components/PantallaLeerCartilla'
 import {
   borrarEncargoPendiente,
   guardarEncargoDeLaUrl,
@@ -260,6 +261,7 @@ function App() {
   //   #/mascotas/<id>                      → ficha
   //   #/mascotas/<id>/editar               → editar mascota
   //   #/mascotas/<id>/tratamientos/nuevo   → añadir tratamiento
+  //   #/mascotas/<id>/cartilla             → leer la cartilla con fotos
   //   #/tratamientos/<id>/editar           → editar tratamiento
   //   #/tareas                             → lista de tareas
   //   #/tareas/nueva                       → nueva tarea
@@ -286,6 +288,9 @@ function App() {
   }
   if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'tratamientos' && partes[3] === 'nuevo') {
     return <PantallaNuevoTratamiento key={partes[1]} mascotaId={partes[1]} {...comun} />
+  }
+  if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'cartilla') {
+    return <PantallaLeerCartilla key={partes[1]} mascotaId={partes[1]} {...comun} />
   }
   if (partes[0] === 'mascotas' && partes[1] && partes[2] === 'editar') {
     return <PantallaEditarMascota key={partes[1]} id={partes[1]} hogarId={yo.hogar.id} />
