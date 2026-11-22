@@ -29,6 +29,16 @@ import { PantallaCasa } from './components/PantallaCasa'
 import { PantallaEditarRutina, PantallaNuevaRutina } from './components/FormularioRutina'
 import { PantallaTareas } from './components/PantallaTareas'
 import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
+import { PantallaAccesos, FormularioAcceso } from './components/PantallaAccesos'
+import { PantallaEncargos } from './components/PantallaEncargos'
+import { TarjetaAyuda } from './components/TarjetaAyuda'
+import {
+  borrarEncargoPendiente,
+  guardarEncargoDeLaUrl,
+  leerEncargoPendiente,
+  type Encargo,
+} from './lib/accesos'
+import { mensajeDeError } from './lib/errores'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
 import { ir, reemplazar, useRuta } from './lib/ruta'
 import { supabase } from './lib/supabase'
@@ -50,6 +60,7 @@ function leerErrorDeLogin(): string | null {
 
 // Se ejecuta una sola vez al abrir la app.
 guardarInvitacionDeLaUrl()
+guardarEncargoDeLaUrl()
 
 function primerNombre(sesion: Session): string {
   const datos = sesion.user.user_metadata
@@ -132,6 +143,35 @@ function App() {
     setIntento((n) => n + 1)
   }
 
+  // Encargos de un acceso temporal que te han dado en otro hogar. Al entrar,
+  // si venías de un enlace (…/?encargo=CODIGO), primero lo aceptamos.
+  const [encargos, setEncargos] = useState<{ userId: string; lista: Encargo[] } | null>(null)
+  const [errorEnlace, setErrorEnlace] = useState<string | null>(null)
+  const [quiereCrearHogar, setQuiereCrearHogar] = useState(false)
+  const [intentoEncargos, setIntentoEncargos] = useState(0)
+  useEffect(() => {
+    const cliente = supabase
+    if (!userId || !cliente) return
+    let vigente = true
+    ;(async () => {
+      const codigo = leerEncargoPendiente()
+      if (codigo) {
+        const { error } = await cliente.rpc('aceptar_acceso', { codigo_acceso: codigo })
+        borrarEncargoPendiente()
+        if (!vigente) return
+        setErrorEnlace(error ? mensajeDeError(error) : null)
+        if (!error) reemplazar('/encargos')
+      }
+      const { data } = await cliente.rpc('mis_encargos')
+      if (vigente) setEncargos({ userId, lista: (data ?? []) as Encargo[] })
+    })()
+    return () => {
+      vigente = false
+    }
+  }, [userId, intentoEncargos])
+  const misEncargos = encargos && encargos.userId === userId ? encargos.lista : null
+  const recargarEncargos = () => setIntentoEncargos((n) => n + 1)
+
   // Al salir del hogar, de vuelta a la bienvenida.
   function despuesDeSalirDelHogar() {
     reemplazar('/')
@@ -177,6 +217,26 @@ function App() {
 
   if (yo === undefined) return <Mensaje>Cargando…</Mensaje>
 
+  // Sin hogar propio pero con encargos (acceso temporal): solo sus encargos.
+  if (yo === null && !quiereCrearHogar) {
+    if (misEncargos === null) return <Mensaje>Cargando…</Mensaje>
+    if (misEncargos.length > 0 || errorEnlace || ruta.startsWith('/encargos')) {
+      return (
+        <PantallaEncargos
+          encargos={misEncargos}
+          errorEnlace={errorEnlace}
+          recargar={recargarEncargos}
+          soloEncargos
+          onCrearHogar={() => {
+            setQuiereCrearHogar(true)
+            reemplazar('/')
+          }}
+          onCerrarSesion={salir}
+        />
+      )
+    }
+  }
+
   if (yo === null) {
     return (
       <PantallaBienvenida
@@ -203,6 +263,8 @@ function App() {
   //   #/vencimientos/nuevo/<seguro|suscripcion>
   //   #/vencimientos/<id>/editar
   //   #/viajes                             → modo viaje
+  //   #/accesos · #/accesos/nuevo · #/accesos/<id>/editar → acceso temporal
+  //   #/encargos                           → lo que te han encargado en otro hogar
   //   #/viajes/nuevo · #/viajes/<grupo>/editar
   const partes = ruta.split('/').filter(Boolean)
   const comun = { hogarId: yo.hogar.id, miUserId: yo.userId }
@@ -229,6 +291,25 @@ function App() {
         onCambio={refrescar}
         onSalirDelHogar={despuesDeSalirDelHogar}
         onCerrarSesion={salir}
+      />
+    )
+  }
+  if (partes[0] === 'accesos' && !partes[1]) {
+    return <PantallaAccesos nombreHogar={yo.hogar.nombre} />
+  }
+  if (partes[0] === 'accesos' && partes[1] === 'nuevo') {
+    return <FormularioAcceso hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} />
+  }
+  if (partes[0] === 'accesos' && partes[1] && partes[2] === 'editar') {
+    return <FormularioAcceso key={partes[1]} hogarId={yo.hogar.id} nombreHogar={yo.hogar.nombre} id={partes[1]} />
+  }
+  if (partes[0] === 'encargos') {
+    return (
+      <PantallaEncargos
+        encargos={misEncargos}
+        errorEnlace={errorEnlace}
+        recargar={recargarEncargos}
+        soloEncargos={false}
       />
     )
   }
@@ -306,6 +387,21 @@ function App() {
         <TarjetaInstalar />
 
         <TarjetaViaje miUserId={yo.userId} />
+
+        {misEncargos && misEncargos.length > 0 && (
+          <button
+            type="button"
+            onClick={() => ir('/encargos')}
+            className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-marca/30"
+          >
+            <span className="block font-semibold">🔑 Tienes encargos</span>
+            <span className="block text-sm text-stone-600">
+              De {misEncargos.map((e) => `«${e.hogar}»`).join(' y ')}. Toca para verlos ›
+            </span>
+          </button>
+        )}
+
+        <TarjetaAyuda />
 
         <TarjetaProximo miUserId={yo.userId} />
 

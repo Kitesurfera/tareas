@@ -22,6 +22,14 @@ const MENSAJES_PROPIOS = [
   'El día de vuelta',
   'Un viaje puede durar',
   'Solo puede irse',
+  'Ese enlace de acceso',
+  'Ese acceso ya ha terminado',
+  'Ya eres de este hogar',
+  'Este enlace ya lo está usando',
+  'No encontramos esa tarea entre tus encargos',
+  'La nota es demasiado larga',
+  'No encontramos ese encargo',
+  'Escribe una nota',
 ]
 
 // Errores técnicos que sí sabemos explicar.

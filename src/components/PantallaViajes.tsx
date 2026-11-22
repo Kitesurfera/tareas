@@ -4,7 +4,17 @@ import { cuandoToca, diasHasta, hoyComoTexto } from '../lib/fechas'
 import { ir, reemplazar, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { useMiembros } from '../lib/useMiembros'
-import { agrupar, diaMes, estaEnCurso, textoPersonas, useViajes, type GrupoViaje, type Viaje } from '../lib/viajes'
+import {
+  agrupar,
+  diaMes,
+  estaEnCurso,
+  periodosSinNadie,
+  textoPeriodo,
+  textoPersonas,
+  useViajes,
+  type GrupoViaje,
+  type Viaje,
+} from '../lib/viajes'
 import { avisoError, botonPrincipal, campo, estiloChip } from './estilos'
 
 type Props = {
@@ -27,6 +37,7 @@ export function PantallaViajes({ miUserId }: Props) {
   const { viajes, error } = useViajes()
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id
   const grupos = viajes ? agrupar(viajes) : null
+  const sinNadie = miembros && viajes ? periodosSinNadie(miembros, viajes) : []
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-5 py-8">
@@ -45,6 +56,18 @@ export function PantallaViajes({ miUserId }: Props) {
           siempre, para que nada se olvide.
         </p>
       </section>
+
+      {sinNadie.length > 0 && (
+        <section className="rounded-2xl bg-amber-50 p-5 text-sm text-amber-900">
+          <p className="font-semibold">🏠 Días sin nadie en casa</p>
+          <ul className="mt-1 list-disc pl-5">
+            {sinNadie.map((p) => (
+              <li key={p.desde}>{textoPeriodo(p).replace(/^./, (l) => l.toUpperCase())}</li>
+            ))}
+          </ul>
+          <p className="mt-2">Pedid a alguien que se ocupe de lo que no puede esperar, como la mascota.</p>
+        </section>
+      )}
 
       <button type="button" onClick={() => ir('/viajes/nuevo')} className={botonPrincipal}>
         + Añadir viaje
@@ -97,6 +120,7 @@ type PropsFormulario = {
 // #/viajes/nuevo y #/viajes/<grupo>/editar
 export function FormularioViaje({ miUserId, grupo }: PropsFormulario) {
   const { miembros } = useMiembros()
+  const { viajes: otrosViajes } = useViajes()
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id
   const [cargado, setCargado] = useState(!grupo)
   // null = sin tocar (en un viaje nuevo, se va quien lo apunta).
@@ -135,6 +159,20 @@ export function FormularioViaje({ miUserId, grupo }: PropsFormulario) {
 
   const elegidas = personas ?? (!grupo && miMiembroId ? [miMiembroId] : [])
   const todas = Boolean(miembros && miembros.length > 1 && miembros.every((m) => elegidas.includes(m.id)))
+
+  // ¿Quedará alguien en casa? Mira este viaje junto con los demás que ya
+  // hay apuntados (aunque sean viajes distintos de otras personas).
+  const sinNadie =
+    miembros && otrosViajes && ida && vuelta && vuelta >= ida
+      ? periodosSinNadie(
+          miembros,
+          [
+            ...otrosViajes.filter((v) => v.grupo !== grupo),
+            ...elegidas.map((id) => ({ id, grupo: 'este', miembro_id: id, desde: ida, hasta: vuelta, destino: null })),
+          ],
+          ida > hoyComoTexto() ? ida : hoyComoTexto(),
+        ).filter((p) => p.desde <= vuelta)
+      : []
 
   function alternar(id: string) {
     setPersonas(elegidas.includes(id) ? elegidas.filter((p) => p !== id) : [...elegidas, id])
@@ -205,12 +243,6 @@ export function FormularioViaje({ miUserId, grupo }: PropsFormulario) {
                 </button>
               )}
             </div>
-            {todas && (
-              <p className="text-sm text-stone-600">
-                🏠 No quedará nadie en casa: los avisos seguirán llegando como siempre. Pedid a alguien que
-                se ocupe de lo que no puede esperar, como la mascota.
-              </p>
-            )}
           </fieldset>
 
           <div className="flex gap-3">
@@ -241,6 +273,14 @@ export function FormularioViaje({ miUserId, grupo }: PropsFormulario) {
               className={campo}
             />
           </label>
+
+          {sinNadie.length > 0 && (
+            <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+              🏠 <strong>No quedará nadie en casa {sinNadie.map(textoPeriodo).join(' ni ')}.</strong> Los avisos
+              seguirán llegando como siempre. Pedid a alguien que se ocupe de lo que no puede esperar, como la
+              mascota.
+            </p>
+          )}
 
           {error && <p role="alert" className={avisoError}>{error}</p>}
 
