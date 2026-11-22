@@ -11,11 +11,12 @@ import {
   PantallaNuevoTratamiento,
 } from './components/FormularioTratamiento'
 import { PantallaLogin } from './components/PantallaLogin'
-import { TarjetaHogar } from './components/TarjetaHogar'
 import { TarjetaMascotas } from './components/TarjetaMascotas'
 import { TarjetaProximo } from './components/TarjetaProximo'
 import { TarjetaInstalar } from './components/TarjetaInstalar'
-import { TarjetaAvisos } from './components/TarjetaAvisos'
+import { TarjetaCargaMental } from './components/TarjetaCargaMental'
+import { PantallaCargaMental } from './components/PantallaCargaMental'
+import { PantallaAjustes } from './components/PantallaAjustes'
 import { ConPestanas } from './components/BarraPestanas'
 import { PantallaVencimientos } from './components/PantallaVencimientos'
 import {
@@ -27,7 +28,7 @@ import { PantallaEditarRutina, PantallaNuevaRutina } from './components/Formular
 import { PantallaTareas } from './components/PantallaTareas'
 import { PantallaEditarTarea, PantallaNuevaTarea } from './components/FormularioTarea'
 import { guardarInvitacionDeLaUrl } from './lib/invitacionPendiente'
-import { useRuta } from './lib/ruta'
+import { ir, reemplazar, useRuta } from './lib/ruta'
 import { supabase } from './lib/supabase'
 import type { Hogar, Yo } from './lib/tipos'
 
@@ -124,10 +125,22 @@ function App() {
     setIntento((n) => n + 1)
   }
 
+  // Vuelve a leer tu nombre y el del hogar sin enseñar «Cargando…».
+  function refrescar() {
+    setIntento((n) => n + 1)
+  }
+
+  // Al salir del hogar, de vuelta a la bienvenida.
+  function despuesDeSalirDelHogar() {
+    reemplazar('/')
+    recargar()
+  }
+
   // undefined = cargando; null = aún no tiene hogar.
   const yo = cargado && cargado.userId === userId ? cargado.yo : undefined
 
-  const salir = () => supabase?.auth.signOut()
+  // Cierra la sesión solo en este dispositivo (no en los demás).
+  const salir = () => supabase?.auth.signOut({ scope: 'local' })
 
   if (!supabase) {
     return (
@@ -204,6 +217,20 @@ function App() {
   if (partes[0] === 'tratamientos' && partes[1] && partes[2] === 'editar') {
     return <PantallaEditarTratamiento key={partes[1]} id={partes[1]} {...comun} />
   }
+  if (partes[0] === 'ajustes') {
+    return (
+      <PantallaAjustes
+        yo={yo}
+        email={sesion.user.email ?? null}
+        onCambio={refrescar}
+        onSalirDelHogar={despuesDeSalirDelHogar}
+        onCerrarSesion={salir}
+      />
+    )
+  }
+  if (partes[0] === 'carga') {
+    return <PantallaCargaMental miUserId={yo.userId} />
+  }
   if (partes[0] === 'tareas' && !partes[1]) {
     return (
       <ConPestanas actual="tareas">
@@ -254,10 +281,12 @@ function App() {
           </div>
           <button
             type="button"
-            onClick={salir}
-            className="rounded-full px-3 py-1 text-sm text-stone-500 ring-1 ring-stone-300"
+            onClick={() => ir('/ajustes')}
+            aria-label="Ajustes"
+            title="Ajustes"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-xl shadow-sm ring-1 ring-stone-200 active:scale-95"
           >
-            Salir
+            <span aria-hidden="true">⚙️</span>
           </button>
         </header>
 
@@ -265,14 +294,12 @@ function App() {
 
         <TarjetaProximo miUserId={yo.userId} />
 
-        <TarjetaAvisos />
+        <TarjetaCargaMental miUserId={yo.userId} />
 
         <TarjetaMascotas />
 
-        <TarjetaHogar hogar={yo.hogar} miUserId={yo.userId} onSalir={recargar} />
-
         <footer className="mt-auto text-center text-xs text-stone-400">
-          Tareas · Fase 1
+          Tareas · Fase 2
         </footer>
       </main>
     </ConPestanas>
