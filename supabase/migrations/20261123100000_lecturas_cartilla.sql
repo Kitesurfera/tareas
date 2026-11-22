@@ -36,4 +36,10 @@ create index if not exists lecturas_cartilla_hogar_fecha_idx
 alter table public.lecturas_cartilla enable row level security;
 revoke all on public.lecturas_cartilla from anon, authenticated;
 
+-- Lo que necesita el servidor (por si el proyecto no da permisos de serie
+-- a las tablas nuevas): saber de qué hogar eres, contar las lecturas del
+-- día y apuntar la nueva. Volver a darlos no cambia nada.
+grant select (user_id, hogar_id) on public.miembros to service_role;
+grant select, insert on public.lecturas_cartilla to service_role;
+
 commit;
