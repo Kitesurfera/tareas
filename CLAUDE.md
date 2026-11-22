@@ -62,13 +62,16 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - **rutinas**: id, hogar_id, nombre, frecuencia_dias, fecha_ultima, responsable_id, turnos (si rota entre la gente del hogar), participantes (miembros.id que se turnan; vacío = todo el hogar), notas, creada_por
 - **lista_compra**: id, hogar_id, nombre, cantidad, comprado, anadido_por, comprado_por, comprado_en (quién añade y quién compra lo pone la base de datos)
 - **actividad**: id, hogar_id, user_id, tipo (pensar / hacer), origen (tarea / tratamiento / rutina / vencimiento / compra), origen_id, titulo, creado_en. Diario de «En equipo» que rellenan solo los disparadores (`apuntar_actividad_*`): pensar = crear una tarea a mano, un tratamiento, una rutina o un vencimiento, o apuntar algo en la compra; hacer = completar una tarea o comprar algo. Reabrir o desmarcar quita ese «hacer». Nadie puede escribir en él a mano y **cada persona solo lee sus propias filas**. `resumen_carga_mental` da tus números (solo tuyos), `totales_del_hogar` lo de todas sin decir quién y `agradecimientos` lo que pensaron las demás personas (para dar las gracias).
-- **avisos_push**: id, user_id, endpoint, p256dh, auth, ultimo_envio (móviles con avisos activados; cada persona solo ve los suyos; `guardar_aviso_push` los guarda y `recordatorios_del_dia` —solo para el servidor— prepara el resumen: lo pendiente hasta hoy que es tuyo o no es de nadie)
+- **avisos_push**: id, user_id, endpoint, p256dh, auth, ultimo_envio (móviles con avisos activados; cada persona solo ve los suyos; `guardar_aviso_push` los guarda y `recordatorios_del_dia` —solo para el servidor— prepara el resumen: lo pendiente hasta hoy que es tuyo o no es de nadie, teniendo en cuenta los viajes)
+- **viajes**: id, hogar_id, grupo, miembro_id, desde, hasta, destino, creada_por. Una fila por persona; si se van varias a la vez comparten `grupo`. `guardar_viaje` crea o cambia un viaje entero de una vez (borra y vuelve a crear las filas del grupo). Se ven en `#/viajes` (desde Ajustes) y en la tarjeta «✈️ Modo viaje» del inicio.
 
 **Mismo hogar garantizado:** `responsable_id` apunta a `miembros.id`. Las relaciones entre tablas usan claves compuestas `(id, hogar_id)`, así la base de datos impide enlazar una mascota, un tratamiento o una persona de otro hogar.
 
 **Regla clave que une las dos ideas:** cada tratamiento genera automáticamente una tarea para su próxima fecha (`fecha_ultima + frecuencia_dias`). Al marcar esa tarea como hecha, se actualiza `fecha_ultima` del tratamiento y se crea la siguiente tarea. Lo hace la propia base de datos: el disparador `sincronizar_tarea_del_tratamiento` (al crear o cambiar un tratamiento) y la función `completar_tarea` (al marcar como hecha).
 
 **Otras reglas automáticas:** las rutinas funcionan igual que los tratamientos (`sincronizar_tarea_de_la_rutina`). Si tienen `turnos`, al completarlas `completar_tarea` pasa el turno a la persona que va después de quien la ha hecho (por orden de llegada al hogar, dando la vuelta); hacer la de otra persona cuenta como tu turno. Si la rutina tiene `participantes`, solo rotan esas personas; si la hace alguien que no participa, el turno sigue como si la hubiera hecho la persona a la que le tocaba. El disparador `comprobar_participantes` impide meter a gente de otro hogar. Los vencimientos con aviso crean una tarea `aviso_dias` antes de `fecha_renovacion` (`sincronizar_tarea_del_vencimiento`); al completarla, `fecha_renovacion` salta a la siguiente renovación futura. Las suscripciones sin aviso no crean tareas: la app calcula sola la próxima renovación.
+
+**Modo viaje:** mientras alguien está de viaje, sus tareas, turnos y avisos pasan a quien se queda en casa, **sin cambiar `responsable_id`** (se calcula, así al volver todo sigue siendo suyo). En la app lo calcula `useNombres` (`encargada`, `notaViaje`, `esMia`) con `src/lib/viajes.ts`; para una tarea cuenta su fecha, o hoy si ya pasó. En el aviso de las 8:00 lo hace `recordatorios_del_dia`: quien está fuera no recibe nada y quien se queda recibe también lo de quien está fuera. Si no queda nadie en casa, todo sigue como siempre (lo tuyo y lo que no es de nadie) y la app avisa «🏠 nadie en casa».
 
 **Salir y quitar:** `salir_del_hogar` (cualquiera; si es la última persona se borra el hogar entero, y la app borra antes sus fotos), `quitar_del_hogar` (solo admin) y `anular_invitaciones` (cualquiera del hogar). Lo que tenía asignado quien se va queda sin responsable (las rutinas con turnos pasan a la siguiente persona) y siempre queda alguien de admin.
 
@@ -102,8 +105,9 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 ### Fase 3
 - Foto de la cartilla veterinaria → la IA extrae vacunas y fechas.
 - Añadir tareas escribiendo o dictando en lenguaje natural ("hay que renovar el seguro de la furgo en marzo").
-- Modo viaje: requisitos de vacunas y papeles para la mascota según el país.
-- Compartir el acceso temporalmente con quien cuide a la mascota.
+- ✅ **Modo viaje** (cambió de idea: ya no son los requisitos para viajar con la mascota, sino quién está fuera y quién cubre sus tareas). Para una persona o para varias, y para todas las tareas.
+- **Acceso temporal** (siguiente, pedido): desde Ajustes, para las tareas que se elijan (por tipo o una a una). Quien lo recibe entra con Google desde un enlace que caduca, **no es miembro del hogar** (no puede usar `mi_hogar_id`), solo ve esas tareas y la ficha de esas mascotas o plantas, puede marcarlas como hechas y **dejar notas** al hacerlo. Si viaja todo el hogar, las tareas pasan a esta persona.
+- **Plantas** (pedido): sección «🪴 Plantas» dentro de la pestaña Casa. Cada planta con su ficha y sus cuidados (riego, abono, trasplante…), que crean tareas solas como los tratamientos de la mascota.
 
 ## Fuera del alcance por ahora
 - Pagos o suscripciones.
