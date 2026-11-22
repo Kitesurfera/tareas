@@ -1,7 +1,17 @@
 import { cuandoToca, hoyComoTexto, sumarDias } from '../lib/fechas'
 import { ir } from '../lib/ruta'
 import { useMiembros } from '../lib/useMiembros'
-import { agrupar, cobertura, diaMes, estaEnCurso, textoPersonas, useViajes, type GrupoViaje } from '../lib/viajes'
+import {
+  agrupar,
+  cobertura,
+  diaMes,
+  estaEnCurso,
+  periodosSinNadie,
+  textoPeriodo,
+  textoPersonas,
+  useViajes,
+  type GrupoViaje,
+} from '../lib/viajes'
 
 type Props = {
   miUserId: string
@@ -40,10 +50,14 @@ export function TarjetaViaje({ miUserId }: Props) {
   const yoFuera = Boolean(miMiembroId && !hoy.enCasa.some((m) => m.id === miMiembroId))
   const quienesSeQuedan = textoPersonas(hoy.enCasa.map((m) => m.id), miembros, miMiembroId)
 
+  // Días sin nadie en casa, aunque cada una se vaya en un viaje distinto.
+  const sinNadie = periodosSinNadie(miembros, viajes).filter((p) => p.desde <= limite)
+  const ahoraSinNadie = sinNadie.find((p) => p.desde === hoyComoTexto())
+  const proximosSinNadie = sinNadie.filter((p) => p !== ahoraSinNadie)
+
   let mientras: string | null = null
-  if (hoy.nadieEnCasa) {
-    mientras =
-      '🏠 Hoy no hay nadie en casa. Los avisos siguen llegando como siempre: pedid a alguien que se ocupe de lo que no puede esperar, como la mascota.'
+  if (ahoraSinNadie) {
+    mientras = `🏠 Hoy no hay nadie en casa${ahoraSinNadie.hasta > ahoraSinNadie.desde ? ` (hasta el ${diaMes(ahoraSinNadie.hasta)})` : ''}. Los avisos siguen llegando como siempre: pedid a alguien que se ocupe de lo que no puede esperar, como la mascota.`
   } else if (alguienFuera && yoFuera) {
     mientras = `Mientras, ${quienesSeQuedan} ${hoy.enCasa.length > 1 ? 'cubren' : 'cubre'} tus tareas. ¡Buen viaje!`
   } else if (alguienFuera) {
@@ -62,6 +76,12 @@ export function TarjetaViaje({ miUserId }: Props) {
         ))}
       </ul>
       {mientras && <p className="mt-3 rounded-xl bg-white p-3 text-sm text-stone-700">{mientras}</p>}
+      {proximosSinNadie.map((p) => (
+        <p key={p.desde} className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+          🏠 <strong>{textoPeriodo(p).replace(/^./, (l) => l.toUpperCase())} no habrá nadie en casa.</strong> Pedid a
+          alguien que se ocupe de lo que no puede esperar, como la mascota.
+        </p>
+      ))}
       <button type="button" onClick={() => ir('/viajes')} className="mt-3 text-sm font-semibold text-marca">
         Ver viajes ›
       </button>
