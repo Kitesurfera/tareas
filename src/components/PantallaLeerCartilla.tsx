@@ -165,7 +165,11 @@ export function PantallaLeerCartilla({ mascotaId, hogarId, miUserId }: Props) {
             </p>
             <p>
               🔒 No hace falta la página de tus datos (sección I): mejor no la fotografíes. Las fotos se mandan a
-              Claude, la IA de Anthropic, solo para leerlas; <strong>la app no las guarda</strong>.
+              Gemma, una IA abierta que funciona en Cloudflare, solo para leerlas; <strong>la app no las guarda</strong>{' '}
+              y Cloudflare no las usa para entrenar.
+            </p>
+            <p>
+              Es gratis, pero la IA puede confundirse con la letra a mano: revisa las fechas antes de guardar.
             </p>
           </section>
 

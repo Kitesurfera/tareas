@@ -111,7 +111,7 @@ function comoTextoBase64(foto: Blob): Promise<string> {
 }
 
 // Prepara las fotos (más pequeñas si hace falta, sin datos ocultos como el
-// GPS) y se las manda al servidor, que se las pasa a Claude.
+// GPS) y se las manda al servidor, que se las pasa a la IA (Gemma, en Cloudflare).
 export async function leerCartilla(archivos: File[]): Promise<ResultadoLectura> {
   if (!supabase) throw new Error('Sin conexión.')
   const { data } = await supabase.auth.getSession()
