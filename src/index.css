@@ -26,6 +26,11 @@
   --color-ajustes-tinta: #44403c;
   --color-plantas: #e4f4d6;
   --color-plantas-tinta: #3d6b1e;
+  --color-planes: #fde4ef;
+  --color-planes-tinta: #9d2860;
+  /* Un amarillo más para las categorías de planes */
+  --color-sol: #fdf0c4;
+  --color-sol-tinta: #7a4f00;
 
   /* Tamaños de pantalla: «md» empieza en 600 px para que TODAS las tablets
      (también en vertical, como la Galaxy Tab o el iPad mini) tengan el
