@@ -12,10 +12,13 @@ import {
 import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
+import { useDocumentos } from '../lib/documentos'
+import { useMiembros } from '../lib/useMiembros'
 import { useNombres } from '../lib/useNombres'
 import { avisoError, botonSecundario } from './estilos'
 import { CabeceraPestana } from './CabeceraPestana'
 import { TituloSeccion } from './Piezas'
+import { SeccionDocumentos } from './SeccionDocumentos'
 
 type Props = {
   miUserId: string
@@ -51,9 +54,11 @@ function alMes(v: Vencimiento): number {
   return v.importe && v.frecuencia_meses ? v.importe / v.frecuencia_meses : 0
 }
 
-// Pestaña «Vencimientos»: seguros y suscripciones.
+// Pestaña «Vencimientos»: seguros, suscripciones y documentos.
 export function PantallaVencimientos({ miUserId }: Props) {
   const nombres = useNombres(miUserId)
+  const { miembros } = useMiembros()
+  const documentos = useDocumentos()
   const [lista, setLista] = useState<Vencimiento[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -87,7 +92,7 @@ export function PantallaVencimientos({ miUserId }: Props) {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
-      <CabeceraPestana color="vencimientos" titulo="Vencimientos" subtitulo="Seguros y suscripciones, sin sustos." dibujo="📅" />
+      <CabeceraPestana color="vencimientos" titulo="Vencimientos" subtitulo="Seguros, suscripciones y documentos, sin sustos." dibujo="📅" />
 
       {(suscripcionesAlMes > 0 || segurosAlAnio > 0) && (
         <section className="flex gap-3">
@@ -157,6 +162,19 @@ export function PantallaVencimientos({ miUserId }: Props) {
                             </span>
                           </span>
                         </button>
+                        {/* Sus documentos (la póliza…), que se abren aparte. */}
+                        {documentos.datos?.documentos
+                          .filter((d) => d.vencimiento_id === v.id)
+                          .map((d) => (
+                            <button
+                              key={d.id}
+                              type="button"
+                              onClick={() => ir(`/documentos/${d.id}`)}
+                              className="mb-2 ml-11 inline-flex items-center gap-1 rounded-full bg-vencimientos px-3 py-1 text-xs font-semibold text-vencimientos-tinta hover:brightness-95"
+                            >
+                              📎 {d.titulo}
+                            </button>
+                          ))}
                       </li>
                     )
                   })}
@@ -172,6 +190,8 @@ export function PantallaVencimientos({ miUserId }: Props) {
             )
           })}
       </div>
+
+      <SeccionDocumentos datos={documentos.datos} error={documentos.error} miembros={miembros} vencimientos={lista} />
 
       <p className="px-2 text-center text-xs text-stone-500">
         Los avisos aparecen en Próximo y en Tareas. Al marcarlos como hechos, la
