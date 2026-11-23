@@ -27,7 +27,7 @@ const RAICES = PESTANAS.map((p) => p.ruta)
 // En qué sección del menú estás (las fichas y formularios cuelgan de su pestaña).
 function seccionDe(ruta: string): string {
   const primera = ruta.split('/').filter(Boolean)[0] ?? ''
-  if (primera === '' || primera === 'mascotas' || primera === 'tratamientos') return 'inicio'
+  if (primera === '' || primera === 'mascotas' || primera === 'tratamientos' || primera === 'semana') return 'inicio'
   if (primera === 'cuidados') return 'casa'
   if (primera === 'documentos') return 'vencimientos'
   return primera
