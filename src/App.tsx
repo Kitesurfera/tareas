@@ -41,6 +41,8 @@ import { PantallaPlanes } from './components/PantallaPlanes'
 import { FormularioPlan } from './components/FormularioPlan'
 import { PantallaCategoriasPlan } from './components/PantallaCategoriasPlan'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
+import { PantallaDocumento } from './components/PantallaDocumento'
+import { FormularioDocumento } from './components/FormularioDocumento'
 import {
   borrarEncargoPendiente,
   guardarEncargoDeLaUrl,
@@ -282,7 +284,8 @@ function App() {
     //   #/cuidados/<id>/editar               → editar cuidado
     //   #/planes                             → generador de planes y calendario
   //   #/planes/nuevo · #/planes/<id>/editar · #/planes/categorias
-  //   #/vencimientos                       → seguros y suscripciones
+  //   #/vencimientos                       → seguros, suscripciones y documentos
+  //   #/documentos/nuevo · #/documentos/<id> · #/documentos/<id>/editar
     //   #/vencimientos/nuevo/<seguro|suscripcion>
     //   #/vencimientos/<id>/editar
     //   #/viajes                             → modo viaje
@@ -390,6 +393,15 @@ function App() {
     }
     if (partes[0] === 'planes' && partes[1] && partes[2] === 'editar') {
       return <FormularioPlan key={partes[1]} hogarId={yo.hogar.id} id={partes[1]} />
+    }
+    if (partes[0] === 'documentos' && partes[1] === 'nuevo') {
+      return <FormularioDocumento {...comun} />
+    }
+    if (partes[0] === 'documentos' && partes[1] && partes[2] === 'editar') {
+      return <FormularioDocumento key={partes[1]} id={partes[1]} {...comun} />
+    }
+    if (partes[0] === 'documentos' && partes[1] && !partes[2]) {
+      return <PantallaDocumento key={partes[1]} id={partes[1]} />
     }
     if (partes[0] === 'vencimientos' && !partes[1]) {
       return <PantallaVencimientos miUserId={yo.userId} />

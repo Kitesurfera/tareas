@@ -29,6 +29,7 @@ function seccionDe(ruta: string): string {
   const primera = ruta.split('/').filter(Boolean)[0] ?? ''
   if (primera === '' || primera === 'mascotas' || primera === 'tratamientos') return 'inicio'
   if (primera === 'cuidados') return 'casa'
+  if (primera === 'documentos') return 'vencimientos'
   return primera
 }
 

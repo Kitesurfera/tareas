@@ -3,6 +3,7 @@ import { mensajeDeError } from '../lib/errores'
 import { supabase } from '../lib/supabase'
 import type { Hogar } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
+import { vaciarAlmacenDelHogar } from '../lib/documentos'
 import { Avatar, TituloSeccion } from './Piezas'
 
 type Props = {
@@ -99,7 +100,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
     const ultima = miembros.length <= 1
     const seguro = window.confirm(
       ultima
-        ? `Eres la última persona de «${hogar.nombre}». Si sales, se borrará el hogar con todas sus mascotas, fotos, tareas y listas. No se puede deshacer. ¿Seguro?`
+        ? `Eres la última persona de «${hogar.nombre}». Si sales, se borrará el hogar con todas sus mascotas, fotos, documentos, tareas y listas. No se puede deshacer. ¿Seguro?`
         : `¿Salir de «${hogar.nombre}»? Dejarás de ver todo lo del hogar. Para volver, necesitarás una invitación nueva.`,
     )
     if (!seguro) return
@@ -111,6 +112,7 @@ export function TarjetaHogar({ hogar, miUserId, onSalir, titulo }: Props) {
       const { data } = await supabase.storage.from('mascotas').list(hogar.id, { limit: 1000 })
       const rutas = (data ?? []).map((archivo) => `${hogar.id}/${archivo.name}`)
       if (rutas.length > 0) await supabase.storage.from('mascotas').remove(rutas)
+      await vaciarAlmacenDelHogar(hogar.id)
     }
     const { error } = await supabase.rpc('salir_del_hogar')
     setOcupado(false)
