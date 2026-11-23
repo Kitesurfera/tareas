@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { mensajeDeError } from './errores'
-import { leerFecha, sumarDias, sumarMeses } from './fechas'
+import { hoyComoTexto, leerFecha, sumarDias, sumarMeses } from './fechas'
+import { infoCategoria as infoCategoriaPlan, type CategoriaPlan, type EntradaAgenda, type Plan } from './planes'
 import { lunesDe, type RutinaTurnos } from './semana'
 import { supabase } from './supabase'
 import { infoCategoria, infoCuidado, infoTipo, type Tarea, type TipoCuidado, type TipoTratamiento, type TipoVencimiento } from './tipos'
@@ -9,7 +10,34 @@ import { infoCategoria, infoCuidado, infoTipo, type Tarea, type TipoCuidado, typ
 // de tarea y el color de la persona que se encarga.
 
 export type Vista = 'mes' | 'semana'
-export type Filtro = 'todas' | 'rutinas'
+export type Filtro = 'todas' | 'rutinas' | 'mascota' | 'plantas' | 'planes'
+
+export const FILTROS: { valor: Filtro; texto: string }[] = [
+  { valor: 'todas', texto: 'Todas' },
+  { valor: 'rutinas', texto: '🧹 Rutinas de casa' },
+  { valor: 'mascota', texto: '🐾 Mascota' },
+  { valor: 'plantas', texto: '🪴 Plantas' },
+  { valor: 'planes', texto: '🎉 Planes' },
+]
+
+// ¿Sale esta tarea con este filtro? (Los planes van aparte.)
+export function tareaPasaFiltro(tarea: Tarea, filtro: Filtro): boolean {
+  if (filtro === 'todas') return true
+  if (filtro === 'rutinas') return Boolean(tarea.rutina_id)
+  if (filtro === 'mascota') return tarea.categoria === 'mascota'
+  if (filtro === 'plantas') return tarea.categoria === 'plantas'
+  return false
+}
+
+export const planesPasanFiltro = (filtro: Filtro) => filtro === 'todas' || filtro === 'planes'
+
+// El icono de un plan: el de su categoría (o 🎉 si no tiene).
+export function iconoDePlan(plan: Plan, categorias: CategoriaPlan[]): { icono: string; tipo: string } {
+  const categoria = infoCategoriaPlan(categorias, plan.categoria_id)
+  return plan.categoria_id && categoria.nombre !== 'Sin categoría'
+    ? { icono: categoria.dibujo, tipo: categoria.nombre }
+    : { icono: '🎉', tipo: 'Plan' }
+}
 
 // Los días que se ven: el mes entero en semanas de lunes a domingo, o una semana.
 export function rangoDeLaVista(vista: Vista, fecha: string): { desde: string; hasta: string; dias: string[] } {
@@ -88,6 +116,9 @@ export type DatosCalendario = {
   rutinas: RutinaTurnos[]
   frecuencias: Record<string, number>
   info: InfoTipos
+  agenda: EntradaAgenda[]
+  planes: Plan[]
+  categoriasPlan: CategoriaPlan[]
 }
 
 // Las tareas pendientes con fecha y lo necesario para prever las siguientes
@@ -113,9 +144,15 @@ export function useDatosCalendario() {
       supabase.from('tratamientos').select('id, frecuencia_dias, tipo'),
       supabase.from('cuidados').select('id, frecuencia_dias, tipo'),
       supabase.from('vencimientos').select('id, tipo'),
-    ]).then(([tareas, rutinas, tratamientos, cuidados, vencimientos]) => {
+      // Los planes del calendario desde hace mes y medio (lo que se puede ver).
+      supabase.from('agenda_planes').select('*').gte('fecha', sumarDias(hoyComoTexto(), -45)).order('fecha'),
+      supabase.from('planes').select('*'),
+      supabase.from('categorias_plan').select('*'),
+    ]).then(([tareas, rutinas, tratamientos, cuidados, vencimientos, agenda, planes, categorias]) => {
       if (!vigente) return
-      const fallo = tareas.error ?? rutinas.error ?? tratamientos.error ?? cuidados.error ?? vencimientos.error
+      const fallo =
+        tareas.error ?? rutinas.error ?? tratamientos.error ?? cuidados.error ?? vencimientos.error ??
+        agenda.error ?? planes.error ?? categorias.error
       if (fallo) return setError(mensajeDeError(fallo))
       setError(null)
       const frecuencias: Record<string, number> = {}
@@ -130,7 +167,15 @@ export function useDatosCalendario() {
         info.cuidados[c.id] = c.tipo
       }
       for (const v of (vencimientos.data ?? []) as { id: string; tipo: TipoVencimiento }[]) info.vencimientos[v.id] = v.tipo
-      setDatos({ tareas: tareas.data as Tarea[], rutinas: rutinas.data as RutinaTurnos[], frecuencias, info })
+      setDatos({
+        tareas: tareas.data as Tarea[],
+        rutinas: rutinas.data as RutinaTurnos[],
+        frecuencias,
+        info,
+        agenda: agenda.data as EntradaAgenda[],
+        planes: planes.data as Plan[],
+        categoriasPlan: categorias.data as CategoriaPlan[],
+      })
     })
     return () => {
       vigente = false
