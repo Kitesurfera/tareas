@@ -99,6 +99,48 @@ export function siguienteTurno(rutina: RutinaTurnos, actual: string | null, miem
   return (vez: number) => (posicion < 0 ? actual : gente[(posicion + vez) % gente.length].id)
 }
 
+// Lo que toca entre dos fechas: las tareas con su fecha y las siguientes
+// veces previstas de lo que se repite (rutinas, cuidados y tratamientos).
+export type Ocurrencia = {
+  clave: string
+  tarea: Tarea
+  fecha: string
+  responsableId: string | null
+  // Prevista = la siguiente vez de algo que se repite (aún no es una tarea).
+  prevista: boolean
+  turno: boolean
+}
+
+export function ocurrencias(
+  tareas: Tarea[],
+  rutinas: RutinaTurnos[],
+  frecuencias: Record<string, number>,
+  miembros: Miembro[],
+  desde: string,
+  hasta: string,
+  hoy: string,
+): Ocurrencia[] {
+  const lista: Ocurrencia[] = []
+  for (const tarea of tareas) {
+    if (tarea.completada || !tarea.fecha_limite || tarea.fecha_limite > hasta) continue
+    if (tarea.fecha_limite >= desde) {
+      lista.push({ clave: tarea.id, tarea, fecha: tarea.fecha_limite, responsableId: tarea.responsable_id, prevista: false, turno: false })
+    }
+    const rutina = tarea.rutina_id ? rutinas.find((r) => r.id === tarea.rutina_id) : undefined
+    const frecuencia =
+      rutina?.frecuencia_dias ??
+      (tarea.tratamiento_id ? frecuencias[tarea.tratamiento_id] : undefined) ??
+      (tarea.cuidado_id ? frecuencias[tarea.cuidado_id] : undefined)
+    if (frecuencia) {
+      const turnoDe = rutina?.turnos ? siguienteTurno(rutina, tarea.responsable_id, miembros) : undefined
+      for (const p of repeticiones(tarea, frecuencia, desde, hasta, hoy, turnoDe)) {
+        lista.push({ ...p, prevista: true })
+      }
+    }
+  }
+  return lista.sort((a, b) => a.fecha.localeCompare(b.fecha) || Number(a.prevista) - Number(b.prevista))
+}
+
 export type Renovacion = { clave: string; vencimiento: Vencimiento; fecha: string }
 export type PlanDelDia = { entrada: EntradaAgenda; plan: Plan }
 
@@ -142,22 +184,9 @@ export function armarSemana(datos: DatosSemana, miembros: Miembro[], lunes: stri
   }))
   const dia = (fecha: string) => dias[Math.round((leerFecha(fecha).getTime() - leerFecha(lunes).getTime()) / 86_400_000)]
 
-  for (const tarea of datos.tareas) {
-    if (tarea.completada || !tarea.fecha_limite || tarea.fecha_limite > domingo) continue
-    if (enLaSemana(tarea.fecha_limite)) dia(tarea.fecha_limite).tareas.push(tarea)
-
-    // Las siguientes veces de las tareas que se repiten.
-    const rutina = tarea.rutina_id ? datos.rutinas.find((r) => r.id === tarea.rutina_id) : undefined
-    const frecuencia =
-      rutina?.frecuencia_dias ??
-      (tarea.tratamiento_id ? datos.frecuencias[tarea.tratamiento_id] : undefined) ??
-      (tarea.cuidado_id ? datos.frecuencias[tarea.cuidado_id] : undefined)
-    if (frecuencia) {
-      const turnoDe = rutina?.turnos ? siguienteTurno(rutina, tarea.responsable_id, miembros) : undefined
-      for (const prevista of repeticiones(tarea, frecuencia, lunes, domingo, hoy, turnoDe)) {
-        dia(prevista.fecha).previstas.push(prevista)
-      }
-    }
+  for (const o of ocurrencias(datos.tareas, datos.rutinas, datos.frecuencias, miembros, lunes, domingo, hoy)) {
+    if (o.prevista) dia(o.fecha).previstas.push(o)
+    else dia(o.fecha).tareas.push(o.tarea)
   }
 
   for (const entrada of datos.agenda) {

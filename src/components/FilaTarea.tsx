@@ -15,6 +15,8 @@ type Props = {
   notaViaje?: string | null
   nombreMascota: string | null
   nombreQuienLaHizo?: string | null
+  // Otro icono en vez del de la categoría (el calendario usa uno por tipo).
+  dibujo?: string
   onPulsarCirculo?: () => void
   onReabrir?: () => void
   children?: ReactNode
@@ -36,6 +38,7 @@ export function FilaTarea({
   notaViaje,
   nombreMascota,
   nombreQuienLaHizo,
+  dibujo,
   onPulsarCirculo,
   onReabrir,
   children,
@@ -79,7 +82,7 @@ export function FilaTarea({
               )
             )}
             <Etiqueta className={SUAVE[COLOR_CATEGORIA[tarea.categoria] ?? 'ajustes']}>
-              <span aria-hidden="true">{categoria.dibujo}</span> {nombreMascota ?? categoria.texto}
+              <span aria-hidden="true">{dibujo ?? categoria.dibujo}</span> {nombreMascota ?? categoria.texto}
             </Etiqueta>
             {!tarea.completada &&
               (nombreResponsable ? (
