@@ -16,6 +16,8 @@ import { TarjetaProximo } from './components/TarjetaProximo'
 import { TarjetaInstalar } from './components/TarjetaInstalar'
 import { TarjetaCargaMental } from './components/TarjetaCargaMental'
 import { PantallaCargaMental } from './components/PantallaCargaMental'
+import { PantallaSemana } from './components/PantallaSemana'
+import { TarjetaSemana } from './components/TarjetaSemana'
 import { PantallaAjustes } from './components/PantallaAjustes'
 import { FormularioViaje, PantallaViajes } from './components/PantallaViajes'
 import { TarjetaViaje } from './components/TarjetaViaje'
@@ -355,6 +357,9 @@ function App() {
     if (partes[0] === 'carga') {
       return <PantallaCargaMental />
     }
+    if (partes[0] === 'semana') {
+      return <PantallaSemana miUserId={yo.userId} />
+    }
     if (partes[0] === 'tareas' && !partes[1]) {
       return <PantallaTareas miUserId={yo.userId} />
     }
@@ -467,6 +472,8 @@ function App() {
             <TarjetaAyuda />
 
             <TarjetaProximo miUserId={yo.userId} />
+
+            <TarjetaSemana />
           </div>
 
           <div className="contents lg:flex lg:flex-col lg:gap-6">
