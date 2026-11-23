@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { recordarOrdenDePersonas } from './colores'
 import { supabase } from './supabase'
 import type { Miembro } from './tipos'
 
@@ -19,7 +20,11 @@ export function useMiembros() {
       .then(({ data, error }) => {
         if (!vigente) return
         if (error) setError(true)
-        else setMiembros(data as Miembro[])
+        else {
+          // Cada persona, su color (por orden de llegada al hogar).
+          recordarOrdenDePersonas((data as Miembro[]).map((m) => m.id))
+          setMiembros(data as Miembro[])
+        }
       })
     return () => {
       vigente = false

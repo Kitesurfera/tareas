@@ -9,10 +9,12 @@ type Props = {
   tareas: Tarea[]
   acciones: AccionesTarea
   nombres: Nombres
+  // Icono de cada tarea, si no es el de su categoría.
+  dibujoDe?: (tarea: Tarea) => string
 }
 
 // Lista de tareas con su círculo para marcarlas como hechas.
-export function ListaTareas({ tareas, acciones, nombres }: Props) {
+export function ListaTareas({ tareas, acciones, nombres, dibujoDe }: Props) {
   // El aviso del viaje (o «nadie en casa»), si cambia quién se encarga.
   const notaDe = (tarea: Tarea) => {
     const encargada = nombres.encargada(tarea.responsable_id, tarea.fecha_limite, tarea)
@@ -29,6 +31,7 @@ export function ListaTareas({ tareas, acciones, nombres }: Props) {
           notaViaje={notaDe(tarea)}
           nombreMascota={nombres.mascota(tarea.mascota_id)}
           nombreQuienLaHizo={nombres.porUsuario(tarea.completada_por)}
+          dibujo={dibujoDe?.(tarea)}
           onPulsarCirculo={() => acciones.pulsarCirculo(tarea)}
           onReabrir={
             tarea.completada && !esAutomatica(tarea) ? () => acciones.reabrir(tarea) : undefined
