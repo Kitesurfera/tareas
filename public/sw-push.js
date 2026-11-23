@@ -25,12 +25,15 @@ self.addEventListener('push', (evento) => {
 // Al tocar el aviso: si la app ya está abierta, se trae al frente; si no, se abre.
 self.addEventListener('notificationclick', (evento) => {
   evento.notification.close()
-  const url = new URL((evento.notification.data && evento.notification.data.ruta) || '/', self.location.origin).href
+  const ruta = (evento.notification.data && evento.notification.data.ruta) || '/'
+  const url = new URL(ruta, self.location.origin).href
   evento.waitUntil(
     (async () => {
       const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       for (const ventana of ventanas) {
         if (new URL(ventana.url).origin === self.location.origin) {
+          // Si el aviso lleva a una pantalla concreta («/#/semana»), la app va allí.
+          if (ruta.startsWith('/#/')) ventana.postMessage({ tipo: 'abrir', ruta })
           await ventana.focus()
           return
         }

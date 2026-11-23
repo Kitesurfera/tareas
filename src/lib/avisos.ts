@@ -1,3 +1,4 @@
+import { ir } from './ruta'
 import { supabase } from './supabase'
 
 // Avisos en el móvil (notificaciones). Funcionan con el service worker de
@@ -76,14 +77,16 @@ export async function desactivarAvisos(): Promise<void> {
   await suscripcion.unsubscribe()
 }
 
-// Pide al servidor un aviso de prueba para tus móviles.
-export async function probarAviso(): Promise<number> {
+// Pide al servidor un aviso de prueba para tus móviles. Con «semana», tu
+// resumen de la semana de verdad (el que llega los domingos).
+export async function probarAviso(tipo?: 'semana'): Promise<number> {
   const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }
   const token = data.session?.access_token
   if (!token) throw new Error('Tienes que entrar con tu cuenta.')
   const respuesta = await fetch('/api/aviso-de-prueba', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(tipo ? { tipo } : {}),
   })
   const cuerpo = (await respuesta.json().catch(() => ({}))) as { enviados?: number; error?: string }
   if (!respuesta.ok) throw new Error(cuerpo.error ?? 'No se ha podido mandar el aviso de prueba.')
@@ -113,4 +116,18 @@ export async function estadoDelAvisoDiario(): Promise<EstadoAvisoDiario> {
   const cuerpo = (await respuesta.json().catch(() => ({}))) as Partial<EstadoAvisoDiario> & { error?: string }
   if (!respuesta.ok) throw new Error(cuerpo.error ?? 'No se ha podido comprobar el aviso diario.')
   return cuerpo as EstadoAvisoDiario
+}
+
+// Al tocar un aviso con la app ya abierta, el service worker nos dice a qué
+// pantalla ir (por ejemplo, el resumen del domingo abre «📆 La semana»).
+export function escucharAvisosTocados(): void {
+  if (!('serviceWorker' in navigator)) return
+  navigator.serviceWorker.addEventListener('message', (evento) => {
+    if (evento.origin && evento.origin !== window.location.origin) return
+    const datos = evento.data as { tipo?: unknown; ruta?: unknown } | null
+    if (datos?.tipo !== 'abrir' || typeof datos.ruta !== 'string') return
+    // Solo pantallas de la propia app.
+    if (!/^\/#\/[a-z0-9/-]*$/.test(datos.ruta)) return
+    ir(datos.ruta.slice(2))
+  })
 }

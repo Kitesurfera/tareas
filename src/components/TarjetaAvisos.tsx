@@ -75,12 +75,14 @@ export function TarjetaAvisos() {
       await desactivarAvisos()
       setEstado('apagados')
     })
-  const probar = () =>
+  const probar = (tipo?: 'semana') =>
     hacer(async () => {
-      const enviados = await probarAviso()
+      const enviados = await probarAviso(tipo)
       setMensaje(
         enviados > 0
-          ? 'Aviso enviado. Debería llegarte en unos segundos.'
+          ? tipo === 'semana'
+            ? 'Resumen enviado. Debería llegarte en unos segundos (el del domingo te llegará igual).'
+            : 'Aviso enviado. Debería llegarte en unos segundos.'
           : 'No hay ningún móvil con avisos activados en tu cuenta.',
       )
     })
@@ -112,12 +114,12 @@ export function TarjetaAvisos() {
         <>
           <p className="mt-1 text-sm text-stone-600">
             Activados en este móvil. Cada mañana sobre las 8:00 te diremos lo que te toca hoy o va atrasado (si no
-            tienes nada pendiente, no hay aviso).
+            tienes nada pendiente, no hay aviso). Y los domingos a las 20:00, el resumen de la semana.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={probar}
+              onClick={() => probar()}
               disabled={ocupado}
               className="rounded-full px-3 py-2.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 disabled:opacity-60"
             >
@@ -130,6 +132,14 @@ export function TarjetaAvisos() {
               className="rounded-full px-3 py-2.5 text-sm font-medium text-stone-600 ring-1 ring-stone-300 disabled:opacity-60"
             >
               Desactivar
+            </button>
+            <button
+              type="button"
+              onClick={() => probar('semana')}
+              disabled={ocupado}
+              className="col-span-2 rounded-full px-3 py-2.5 text-sm font-semibold bg-marca-suave/70 text-marca ring-1 ring-marca/15 disabled:opacity-60"
+            >
+              📆 Probar el resumen del domingo
             </button>
           </div>
         </>
