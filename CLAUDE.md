@@ -144,6 +144,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
   - `#/planes/nuevo`, `#/planes/<id>/editar` y `#/planes/categorias`. En el inicio, «🎉 Próximos planes» (solo si hay alguno).
 - ✅ **Documentos del hogar** (sección «📂 Documentos» en Vencimientos): pólizas, ITV, DNI, garantías…
   - Cada uno con hasta 5 fotos o PDF, de quién es y el seguro con el que va. Debajo de cada seguro salen sus documentos («📎 Póliza del coche»).
+  - También se adjuntan desde el formulario de cada seguro o suscripción (sección «📎 Documentos»: crea el documento enlazado, «Póliza» o «Contrato» por defecto, y enseña los que ya tiene). Las piezas comunes (`Miniatura`, `BotonElegirArchivos`) están en `PiezasDocumentos.tsx`; `useArchivosNuevos` y `subirVarios`, en `src/lib/documentos.ts`.
   - Cuándo caduca, con aviso antes (tarea automática «Renovar: …» con su responsable).
   - Ficha `#/documentos/<id>`: las fotos se ven en grande y los PDF se abren. Formulario en `#/documentos/nuevo` y `#/documentos/<id>/editar`.
   - Lista: lo que caduca pronto, primero (ámbar si quedan 60 días o menos; rojo si caduca hoy o ya caducó).

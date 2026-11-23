@@ -1,18 +1,17 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import {
   AVISOS_DOCUMENTO,
   borrarArchivos,
   enlacesTemporales,
-  esPdf,
   infoTipoDocumento,
   MAX_ARCHIVOS,
-  problemaConArchivo,
-  subirArchivo,
+  subirVarios,
   tamanoLegible,
   TIPOS_DOCUMENTO,
   type ArchivoDocumento,
   type Documento,
   type TipoDocumento,
+  useArchivosNuevos,
 } from '../lib/documentos'
 import { mensajeDeError } from '../lib/errores'
 import { fechaLarga } from '../lib/fechas'
@@ -20,7 +19,8 @@ import { reemplazar, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { Vencimiento } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
-import { avisoError, botonPrincipal, botonSecundario, campo, estiloChip } from './estilos'
+import { avisoError, botonPrincipal, campo, estiloChip } from './estilos'
+import { BotonElegirArchivos, Miniatura } from './PiezasDocumentos'
 
 type Props = { hogarId: string; miUserId: string; id?: string }
 
@@ -65,8 +65,6 @@ function Aviso({ children }: { children: ReactNode }) {
   )
 }
 
-type Nuevo = { clave: string; archivo: File; vista: string | null }
-
 function Formulario({
   hogarId,
   miUserId,
@@ -91,21 +89,14 @@ function Formulario({
   const [responsable, setResponsable] = useState<string | null | undefined>(documento ? documento.responsable_id : undefined)
   const [notas, setNotas] = useState(documento?.notas ?? '')
   const [quitar, setQuitar] = useState<Set<string>>(new Set()) // ids de archivos que ya estaban
-  const [nuevos, setNuevos] = useState<Nuevo[]>([])
+  const archivosNuevos = useArchivosNuevos()
+  const nuevos = archivosNuevos.nuevos
   const [enlaces, setEnlaces] = useState<Record<string, string>>({})
   const [guardando, setGuardando] = useState<string | null>(null) // texto de progreso
   const [error, setError] = useState<string | null>(null)
   // Si al crear el documento falla la subida de un archivo, ya existe: los
   // siguientes intentos lo cambian en vez de crear otro.
   const [creadoId, setCreadoId] = useState<string | null>(documento?.id ?? null)
-  const selector = useRef<HTMLInputElement>(null)
-  const nuevosAlSalir = useRef<Nuevo[]>([])
-
-  useEffect(() => {
-    nuevosAlSalir.current = nuevos
-  }, [nuevos])
-  // Al salir, se liberan las vistas previas.
-  useEffect(() => () => nuevosAlSalir.current.forEach((n) => n.vista && URL.revokeObjectURL(n.vista)), [])
 
   // Vistas de los archivos que ya estaban.
   useEffect(() => {
@@ -117,18 +108,8 @@ function Formulario({
   const quedan = archivos.filter((a) => !quitar.has(a.id))
   const total = quedan.length + nuevos.length
 
-  function anadir(lista: FileList | null) {
-    if (!lista) return
-    setError(null)
-    const elegidos = [...lista]
-    const problema = elegidos.map(problemaConArchivo).find(Boolean)
-    if (problema) setError(problema)
-    const validos = elegidos.filter((a) => !problemaConArchivo(a)).slice(0, MAX_ARCHIVOS - total)
-    if (elegidos.length > MAX_ARCHIVOS - total) setError(`Como mucho ${MAX_ARCHIVOS} archivos por documento.`)
-    setNuevos([
-      ...nuevos,
-      ...validos.map((archivo) => ({ clave: crypto.randomUUID(), archivo, vista: esPdf(archivo) ? null : URL.createObjectURL(archivo) })),
-    ])
+  function anadir(lista: File[]) {
+    setError(archivosNuevos.anadir(lista, MAX_ARCHIVOS - total))
   }
 
   async function guardar(evento: FormEvent) {
@@ -170,17 +151,15 @@ function Formulario({
       setGuardando(null)
       return setError(fallo)
     }
-    let orden = Math.max(-1, ...quedan.map((a) => a.orden)) + 1
-    for (const [i, nuevo] of nuevos.entries()) {
-      setGuardando(nuevos.length > 1 ? `Subiendo ${i + 1} de ${nuevos.length}…` : 'Subiendo…')
-      try {
-        await subirArchivo(hogarId, docId, nuevo.archivo, orden++)
-      } catch (e) {
-        // Lo ya subido se queda; lo que falta sigue en la lista para reintentar.
-        setNuevos(nuevos.slice(i))
-        setGuardando(null)
-        return setError(`El documento se ha guardado, pero ${e instanceof Error ? e.message.charAt(0).toLowerCase() + e.message.slice(1) : 'no se ha podido subir un archivo.'} Prueba otra vez.`)
-      }
+    const orden = Math.max(-1, ...quedan.map((a) => a.orden)) + 1
+    const subida = await subirVarios(hogarId, docId, nuevos.map((n) => n.archivo), orden, (i) =>
+      setGuardando(nuevos.length > 1 ? `Subiendo ${i + 1} de ${nuevos.length}…` : 'Subiendo…'),
+    )
+    if (subida.error) {
+      // Lo ya subido se queda; lo que falta sigue en la lista para reintentar.
+      archivosNuevos.olvidarSubidos(subida.subidos)
+      setGuardando(null)
+      return setError(`El documento se ha guardado, pero ${subida.error.charAt(0).toLowerCase() + subida.error.slice(1)} Prueba otra vez.`)
     }
     setGuardando(null)
     reemplazar(`/documentos/${docId}`)
@@ -261,30 +240,13 @@ function Formulario({
                   nombre={n.archivo.name}
                   detalle="Nuevo"
                   etiqueta={`Quitar el archivo ${quedan.length + i + 1}`}
-                  onQuitar={() => {
-                    if (n.vista) URL.revokeObjectURL(n.vista)
-                    setNuevos(nuevos.filter((x) => x.clave !== n.clave))
-                  }}
+                  onQuitar={() => archivosNuevos.quitar(n.clave)}
                 />
               ))}
             </ul>
           )}
-          <input
-            ref={selector}
-            type="file"
-            accept="image/*,application/pdf"
-            multiple
-            className="sr-only"
-            aria-label="Elegir fotos o PDF"
-            onChange={(e) => {
-              anadir(e.target.files)
-              e.target.value = ''
-            }}
-          />
           {total < MAX_ARCHIVOS && (
-            <button type="button" onClick={() => selector.current?.click()} className={botonSecundario}>
-              {total === 0 ? '📷 Hacer una foto o elegir archivos' : '+ Añadir más'}
-            </button>
+            <BotonElegirArchivos texto={total === 0 ? '📷 Hacer una foto o elegir archivos' : '+ Añadir más'} onElegir={anadir} />
           )}
           <p className="text-xs text-stone-500">Las fotos se reducen y pierden la ubicación GPS. PDF de hasta 10 MB.</p>
         </fieldset>
@@ -346,30 +308,6 @@ function Formulario({
         </button>
       </form>
     </main>
-  )
-}
-
-function Miniatura({ vista, nombre, detalle, etiqueta, onQuitar }: { vista: string | null | undefined; nombre: string; detalle: string; etiqueta: string; onQuitar: () => void }) {
-  return (
-    <li className="relative overflow-hidden rounded-xl bg-stone-50 ring-1 ring-stone-900/5">
-      {vista ? (
-        <img src={vista} alt={nombre} className="aspect-[3/4] w-full object-cover" />
-      ) : (
-        <span className="flex aspect-[3/4] flex-col items-center justify-center gap-1 p-2 text-center">
-          <span aria-hidden="true" className="text-3xl">📄</span>
-          <span className="line-clamp-2 text-[11px] break-all text-stone-600">{nombre}</span>
-        </span>
-      )}
-      <span className="absolute bottom-1 left-1 rounded-full bg-white/90 px-2 text-[10px] font-semibold text-stone-600">{detalle}</span>
-      <button
-        type="button"
-        onClick={onQuitar}
-        aria-label={etiqueta}
-        className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-sm shadow-sm"
-      >
-        ✕
-      </button>
-    </li>
   )
 }
 

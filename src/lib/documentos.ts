@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { mensajeDeError } from './errores'
 import { diasHasta } from './fechas'
 import { prepararFoto } from './fotos'
@@ -138,6 +138,66 @@ export async function subirArchivo(hogarId: string, documentoId: string, archivo
   if (error) {
     await supabase.storage.from(ALMACEN).remove([ruta])
     throw new Error(mensajeDeError(error))
+  }
+}
+
+// Sube varios archivos seguidos (en ese orden). Si uno falla, para y dice
+// cuántos se han subido y por qué.
+export async function subirVarios(
+  hogarId: string,
+  documentoId: string,
+  archivos: File[],
+  primerOrden: number,
+  alAvanzar?: (subidos: number) => void,
+): Promise<{ subidos: number; error: string | null }> {
+  for (const [i, archivo] of archivos.entries()) {
+    alAvanzar?.(i)
+    try {
+      await subirArchivo(hogarId, documentoId, archivo, primerOrden + i)
+    } catch (e) {
+      return { subidos: i, error: e instanceof Error ? e.message : 'No se ha podido subir un archivo.' }
+    }
+  }
+  return { subidos: archivos.length, error: null }
+}
+
+// Un archivo elegido que aún no se ha subido (con su vista previa si es foto).
+export type ArchivoNuevo = { clave: string; archivo: File; vista: string | null }
+
+// Los archivos elegidos en un formulario, antes de subirlos. Las vistas
+// previas se liberan al quitarlos o al salir del formulario.
+export function useArchivosNuevos() {
+  const [nuevos, setNuevos] = useState<ArchivoNuevo[]>([])
+  const alSalir = useRef<ArchivoNuevo[]>([])
+  useEffect(() => {
+    alSalir.current = nuevos
+  }, [nuevos])
+  useEffect(() => () => alSalir.current.forEach((n) => n.vista && URL.revokeObjectURL(n.vista)), [])
+
+  return {
+    nuevos,
+    // Añade los elegidos sin pasar de «hueco». Devuelve el motivo si alguno
+    // no vale o no cabe (los demás se añaden igual).
+    anadir(lista: File[], hueco: number): string | null {
+      const validos = lista.filter((a) => !problemaConArchivo(a))
+      const problema = lista.map(problemaConArchivo).find(Boolean) ?? null
+      const caben = validos.slice(0, Math.max(0, hueco))
+      setNuevos([
+        ...nuevos,
+        ...caben.map((archivo) => ({ clave: crypto.randomUUID(), archivo, vista: esPdf(archivo) ? null : URL.createObjectURL(archivo) })),
+      ])
+      return validos.length > caben.length ? `Como mucho ${MAX_ARCHIVOS} archivos por documento.` : problema
+    },
+    quitar(clave: string) {
+      const nuevo = nuevos.find((n) => n.clave === clave)
+      if (nuevo?.vista) URL.revokeObjectURL(nuevo.vista)
+      setNuevos(nuevos.filter((n) => n.clave !== clave))
+    },
+    // Después de subir los «subidos» primeros, se quedan los que faltan.
+    olvidarSubidos(subidos: number) {
+      nuevos.slice(0, subidos).forEach((n) => n.vista && URL.revokeObjectURL(n.vista))
+      setNuevos(nuevos.slice(subidos))
+    },
   }
 }
 

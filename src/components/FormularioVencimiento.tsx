@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { MAX_ARCHIVOS, subirVarios, useArchivosNuevos } from '../lib/documentos'
 import { mensajeDeError } from '../lib/errores'
 import { cuandoToca, euros, fechaLarga, sumarDias, textoFrecuenciaMeses, textoPeriodo } from '../lib/fechas'
-import { volver } from '../lib/ruta'
+import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import type { TipoVencimiento, Vencimiento } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
 import { avisoError, botonPrincipal, campo, campoBase, estiloChip } from './estilos'
+import { BotonElegirArchivos, Miniatura } from './PiezasDocumentos'
 
 type Comun = {
   hogarId: string
@@ -35,24 +37,33 @@ export function PantallaNuevoVencimiento({ tipo, ...comun }: Comun & { tipo: Tip
   return <Formulario tipoInicial={tipo} {...comun} />
 }
 
-// Pantalla para editar uno que ya existe.
+// Un documento que ya va con este seguro o suscripción.
+type Adjunto = { id: string; titulo: string; archivos: number }
+
+// Pantalla para editar uno que ya existe (con sus documentos).
 export function PantallaEditarVencimiento({ id, ...comun }: Comun & { id: string }) {
-  const [estado, setEstado] = useState<{ vencimiento: Vencimiento | null; error?: string } | null>(null)
+  const [estado, setEstado] = useState<{ vencimiento: Vencimiento | null; documentos: Adjunto[]; error?: string } | null>(null)
 
   useEffect(() => {
     if (!supabase) return
     let vigente = true
-    supabase
-      .from('vencimientos')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!vigente) return
-        setEstado(
-          error ? { vencimiento: null, error: mensajeDeError(error) } : { vencimiento: data as Vencimiento | null },
-        )
+    Promise.all([
+      supabase.from('vencimientos').select('*').eq('id', id).maybeSingle(),
+      supabase.from('documentos').select('id, titulo').eq('vencimiento_id', id).order('titulo'),
+      supabase.from('documento_archivos').select('documento_id'),
+    ]).then(([vencimiento, documentos, archivos]) => {
+      if (!vigente) return
+      const fallo = vencimiento.error ?? documentos.error ?? archivos.error
+      if (fallo) return setEstado({ vencimiento: null, documentos: [], error: mensajeDeError(fallo) })
+      const deCada = (archivos.data ?? []) as { documento_id: string }[]
+      setEstado({
+        vencimiento: vencimiento.data as Vencimiento | null,
+        documentos: ((documentos.data ?? []) as { id: string; titulo: string }[]).map((d) => ({
+          ...d,
+          archivos: deCada.filter((a) => a.documento_id === d.id).length,
+        })),
       })
+    })
     return () => {
       vigente = false
     }
@@ -61,7 +72,14 @@ export function PantallaEditarVencimiento({ id, ...comun }: Comun & { id: string
   if (!estado) return <Aviso texto="Cargando…" />
   if (estado.error) return <Aviso texto={estado.error} />
   if (!estado.vencimiento) return <Aviso texto="No encontramos este vencimiento en tu hogar." />
-  return <Formulario tipoInicial={estado.vencimiento.tipo} vencimiento={estado.vencimiento} {...comun} />
+  return (
+    <Formulario
+      tipoInicial={estado.vencimiento.tipo}
+      vencimiento={estado.vencimiento}
+      documentos={estado.documentos}
+      {...comun}
+    />
+  )
 }
 
 function Aviso({ texto }: { texto: string }) {
@@ -75,9 +93,10 @@ function Aviso({ texto }: { texto: string }) {
 type Props = Comun & {
   tipoInicial: TipoVencimiento
   vencimiento?: Vencimiento
+  documentos?: Adjunto[]
 }
 
-function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
+function Formulario({ hogarId, miUserId, tipoInicial, vencimiento, documentos = [] }: Props) {
   const { miembros } = useMiembros()
   const editando = Boolean(vencimiento)
   const mesesIniciales = vencimiento ? vencimiento.frecuencia_meses : tipoInicial === 'seguro' ? 12 : 1
@@ -99,7 +118,18 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
   )
   const [notas, setNotas] = useState(vencimiento?.notas ?? '')
   const [guardando, setGuardando] = useState(false)
+  const [progreso, setProgreso] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Documento nuevo (la póliza, el contrato…): sus archivos y su nombre.
+  const archivosNuevos = useArchivosNuevos()
+  const nuevos = archivosNuevos.nuevos
+  const [tituloDoc, setTituloDoc] = useState<string | null>(null)
+  const tituloAdjunto = tituloDoc ?? (tipo === 'seguro' ? 'Póliza' : 'Contrato')
+  // Si algo falla después de guardar, lo ya guardado no se repite al
+  // volver a pulsar el botón: se cambia en vez de crear otro.
+  const [guardadoId, setGuardadoId] = useState<string | null>(vencimiento?.id ?? null)
+  const [documentoId, setDocumentoId] = useState<string | null>(null)
+  const [yaSubidos, setYaSubidos] = useState(0)
 
   const miMiembroId = miembros?.find((m) => m.user_id === miUserId)?.id ?? null
   const responsableElegido = responsable !== undefined ? responsable : miembros ? miMiembroId : undefined
@@ -139,20 +169,55 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
       responsable_id: responsableElegido ?? null,
       notas: notas.trim() || null,
     }
-    const { error } = vencimiento
-      ? await supabase.from('vencimientos').update(datos).eq('id', vencimiento.id)
-      : await supabase.from('vencimientos').insert({ hogar_id: hogarId, ...datos })
-    if (error) {
-      setError(mensajeDeError(error))
-      setGuardando(false)
-      return
+    let id = guardadoId
+    if (id) {
+      const { error } = await supabase.from('vencimientos').update(datos).eq('id', id)
+      if (error) return fallar(mensajeDeError(error))
+    } else {
+      const { data, error } = await supabase.from('vencimientos').insert({ hogar_id: hogarId, ...datos }).select('id').single()
+      if (error || !data) return fallar(mensajeDeError(error))
+      id = (data as { id: string }).id
+      setGuardadoId(id)
+    }
+
+    // El documento adjunto: se crea (enlazado a este seguro o suscripción) y
+    // se suben sus archivos, igual que desde 📂 Documentos.
+    if (nuevos.length > 0) {
+      const guardado = tipo === 'seguro' ? 'El seguro se ha guardado' : 'La suscripción se ha guardado'
+      let docId = documentoId
+      if (!docId) {
+        const { data, error } = await supabase
+          .from('documentos')
+          .insert({ hogar_id: hogarId, titulo: tituloAdjunto.trim(), tipo: tipo === 'seguro' ? 'seguro' : 'otros', vencimiento_id: id })
+          .select('id')
+          .single()
+        if (error || !data) return fallar(`${guardado}, pero el documento no: ${mensajeDeError(error)}`)
+        docId = (data as { id: string }).id
+        setDocumentoId(docId)
+      }
+      const subida = await subirVarios(hogarId, docId, nuevos.map((n) => n.archivo), yaSubidos, (i) =>
+        setProgreso(nuevos.length > 1 ? `Subiendo ${i + 1} de ${nuevos.length}…` : 'Subiendo…'),
+      )
+      if (subida.error) {
+        // Lo ya subido se queda; lo que falta sigue en la lista para reintentar.
+        archivosNuevos.olvidarSubidos(subida.subidos)
+        setYaSubidos(yaSubidos + subida.subidos)
+        return fallar(`${guardado}, pero ${subida.error.charAt(0).toLowerCase() + subida.error.slice(1)} Prueba otra vez.`)
+      }
     }
     volver('/vencimientos')
   }
 
+  function fallar(mensaje: string) {
+    setError(mensaje)
+    setProgreso(null)
+    setGuardando(false)
+  }
+
   async function borrar() {
     if (!supabase || !vencimiento) return
-    if (!window.confirm(`¿Borrar «${vencimiento.nombre}»? También se borrarán sus avisos.`)) return
+    const aviso = documentos.length > 0 ? ' Sus documentos no se borran: se quedan en 📂 Documentos.' : ''
+    if (!window.confirm(`¿Borrar «${vencimiento.nombre}»? También se borrarán sus avisos.${aviso}`)) return
     setGuardando(true)
     const { error } = await supabase.from('vencimientos').delete().eq('id', vencimiento.id)
     if (error) {
@@ -407,10 +472,81 @@ function Formulario({ hogarId, miUserId, tipoInicial, vencimiento }: Props) {
           </span>
         </label>
 
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 text-sm font-medium text-stone-700">
+            📎 Documentos <span className="font-normal text-stone-400">(opcional)</span>
+          </legend>
+          <p className="-mt-1 text-xs text-stone-500">
+            {tipo === 'seguro' ? 'La póliza, el recibo o las condiciones' : 'El contrato o las facturas'}, en fotos o
+            PDF. También aparecen en 📂 Documentos.
+          </p>
+          {documentos.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {documentos.map((d) => (
+                <li key={d.id}>
+                  <button
+                    type="button"
+                    onClick={() => ir(`/documentos/${d.id}`)}
+                    className="flex w-full items-center gap-2 rounded-2xl bg-vencimientos px-3 py-2 text-left text-sm text-vencimientos-tinta"
+                  >
+                    <span aria-hidden="true">📎</span>
+                    <span className="min-w-0 flex-1 font-semibold">{d.titulo}</span>
+                    <span className="shrink-0 text-xs">
+                      {d.archivos === 0 ? 'Sin archivos' : d.archivos === 1 ? '1 archivo' : `${d.archivos} archivos`} ›
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {nuevos.length > 0 && (
+            <div className="flex flex-col gap-3 rounded-2xl bg-stone-50 p-3 ring-1 ring-stone-900/5">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium text-stone-700">Nombre del documento</span>
+                <input
+                  className={campo}
+                  value={tituloAdjunto}
+                  onChange={(e) => setTituloDoc(e.target.value)}
+                  maxLength={80}
+                  required
+                />
+              </label>
+              <ul className="grid grid-cols-3 gap-2">
+                {nuevos.map((n, i) => (
+                  <Miniatura
+                    key={n.clave}
+                    vista={n.vista}
+                    nombre={n.archivo.name}
+                    detalle="Nuevo"
+                    etiqueta={`Quitar el archivo ${i + 1}`}
+                    onQuitar={() => archivosNuevos.quitar(n.clave)}
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
+          {nuevos.length < MAX_ARCHIVOS && (
+            <BotonElegirArchivos
+              texto={
+                nuevos.length > 0
+                  ? '+ Añadir más'
+                  : documentos.length > 0
+                    ? '📎 Adjuntar otro documento'
+                    : '📎 Adjuntar fotos o PDF'
+              }
+              onElegir={(lista) => setError(archivosNuevos.anadir(lista, MAX_ARCHIVOS - nuevos.length))}
+            />
+          )}
+          <p className="text-xs text-stone-500">
+            Hasta {MAX_ARCHIVOS} archivos por documento. Las fotos se reducen y pierden la ubicación GPS. PDF de hasta
+            10 MB.
+          </p>
+        </fieldset>
+
         {error && <p role="alert" className={avisoError}>{error}</p>}
 
         <button type="submit" disabled={guardando} className={botonPrincipal}>
-          {guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Añadir'}
+          {progreso ?? (guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Añadir')}
         </button>
       </form>
 
