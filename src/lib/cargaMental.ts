@@ -6,7 +6,7 @@ import { supabase } from './supabase'
 // personas y te enseña TUS números (que solo ves tú). Los datos los apunta
 // la propia base de datos (tabla «actividad»).
 
-export type Origen = 'tarea' | 'tratamiento' | 'rutina' | 'vencimiento' | 'compra' | 'cuidado' | 'plan'
+export type Origen = 'tarea' | 'tratamiento' | 'rutina' | 'vencimiento' | 'compra' | 'cuidado' | 'plan' | 'documento'
 
 export type Gracia = {
   quien: string
@@ -60,6 +60,8 @@ export function fraseDeGracias(g: Gracia): string {
       return `organizó «${g.titulo}» para las plantas`
     case 'plan':
       return `organizó el plan «${g.titulo}»`
+    case 'documento':
+      return `guardó el documento «${g.titulo}»`
     default:
       return `se acordó de «${g.titulo}»`
   }

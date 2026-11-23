@@ -97,6 +97,8 @@ export type Tarea = {
   rutina_id: string | null
   planta_id: string | null
   cuidado_id: string | null
+  // Tareas automáticas «Renovar: …» de un documento que caduca.
+  documento_id?: string | null
   creada_por: string | null
   completada: boolean
   completada_por: string | null
@@ -106,7 +108,7 @@ export type Tarea = {
 // Las tareas automáticas vienen de un tratamiento, un vencimiento, una
 // rutina o un cuidado de una planta: no se editan ni se reabren a mano.
 export function esAutomatica(tarea: Tarea): boolean {
-  return Boolean(tarea.tratamiento_id || tarea.vencimiento_id || tarea.rutina_id || tarea.cuidado_id)
+  return Boolean(tarea.tratamiento_id || tarea.vencimiento_id || tarea.rutina_id || tarea.cuidado_id || tarea.documento_id)
 }
 
 // Dónde se edita una tarea automática.
@@ -115,6 +117,7 @@ export function rutaDeOrigen(tarea: Tarea): string | null {
   if (tarea.vencimiento_id) return `/vencimientos/${tarea.vencimiento_id}/editar`
   if (tarea.rutina_id) return `/casa/rutinas/${tarea.rutina_id}/editar`
   if (tarea.cuidado_id) return `/cuidados/${tarea.cuidado_id}/editar`
+  if (tarea.documento_id) return `/documentos/${tarea.documento_id}`
   return null
 }
 

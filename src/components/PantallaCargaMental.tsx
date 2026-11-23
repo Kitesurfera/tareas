@@ -13,6 +13,7 @@ const TEXTOS_PENSAR: Record<Origen, [string, string]> = {
   compra: ['cosa apuntada en la compra', 'cosas apuntadas en la compra'],
   cuidado: ['cuidado de planta', 'cuidados de plantas'],
   plan: ['plan organizado', 'planes organizados'],
+  documento: ['documento guardado', 'documentos guardados'],
 }
 const TEXTOS_HACER: Partial<Record<Origen, [string, string]>> = {
   tarea: ['tarea hecha', 'tareas hechas'],
