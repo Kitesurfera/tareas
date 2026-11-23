@@ -89,3 +89,28 @@ export async function probarAviso(): Promise<number> {
   if (!respuesta.ok) throw new Error(cuerpo.error ?? 'No se ha podido mandar el aviso de prueba.')
   return cuerpo.enviados ?? 0
 }
+
+export type EstadoAvisoDiario = {
+  claveDelServidor: boolean
+  entorno: string
+  moviles: number
+  hoy: string
+  horaEnEspana: number
+  ultimoAviso: string | null
+  pendientesHoy: number | null
+}
+
+// «🩺 Comprobar el aviso de las 8:00»: pregunta al servidor si está listo,
+// cuándo te llegó el último aviso diario y si hoy tienes algo pendiente.
+export async function estadoDelAvisoDiario(): Promise<EstadoAvisoDiario> {
+  const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }
+  const token = data.session?.access_token
+  if (!token) throw new Error('Tienes que entrar con tu cuenta.')
+  const respuesta = await fetch('/api/estado-avisos', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const cuerpo = (await respuesta.json().catch(() => ({}))) as Partial<EstadoAvisoDiario> & { error?: string }
+  if (!respuesta.ok) throw new Error(cuerpo.error ?? 'No se ha podido comprobar el aviso diario.')
+  return cuerpo as EstadoAvisoDiario
+}

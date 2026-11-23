@@ -8,6 +8,7 @@ import {
   probarAviso,
 } from '../lib/avisos'
 import { abiertaComoApp, esIOS } from '../lib/instalar'
+import { DiagnosticoAvisos } from './DiagnosticoAvisos'
 import { avisoError } from './estilos'
 import { TituloSeccion } from './Piezas'
 
@@ -110,7 +111,8 @@ export function TarjetaAvisos() {
       {estado === 'activados' && (
         <>
           <p className="mt-1 text-sm text-stone-600">
-            Activados en este móvil. Cada mañana a las 8:00 te diremos lo que te toca.
+            Activados en este móvil. Cada mañana sobre las 8:00 te diremos lo que te toca hoy o va atrasado (si no
+            tienes nada pendiente, no hay aviso).
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
@@ -143,6 +145,9 @@ export function TarjetaAvisos() {
 
       {mensaje && <p role="status" className="mt-3 rounded-xl bg-marca-suave p-3 text-sm text-marca">{mensaje}</p>}
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
+
+      {/* Sirve aunque en este aparato estén apagados: puede que los tengas en otro móvil. */}
+      {estado !== 'comprobando' && <DiagnosticoAvisos />}
     </section>
   )
 }
