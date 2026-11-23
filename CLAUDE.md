@@ -154,7 +154,8 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
   - Día a día, de lunes a domingo: tareas de todo el hogar (se marcan desde ahí), 🔁 las siguientes veces de lo que se repite con el turno previsto, planes, renovaciones con su importe y documentos que caducan.
   - Arriba, el resumen, quién está de viaje y los días sin nadie en casa; y «Pendiente de antes». Lo calcula `src/lib/semana.ts`.
   - Al tocar un aviso con la app abierta, `sw-push.js` le dice a la app a qué pantalla ir (`escucharAvisosTocados`, solo rutas `/#/…`).
-- ✅ **Calendario en el inicio** (`TarjetaCalendario`, debajo de «Próximo»): vista de **mes o semana** y filtro **«Todas» / «🧹 Rutinas de casa»** (se recuerdan en el móvil con `localStorage`).
+- ✅ **Calendario en el inicio** (`TarjetaCalendario`, **arriba del todo**; en el ordenador, a todo el ancho): vista de **mes o semana** y filtros **Todas · 🧹 Rutinas de casa · 🐾 Mascota · 🪴 Plantas · 🎉 Planes** (`FILTROS` en `src/lib/calendario.ts`; se recuerdan en el móvil con `localStorage`).
+  - Los **planes** del calendario de planes también salen (en «Todas» y «Planes»): el icono de su categoría en un círculo rosa, porque son de todo el hogar; los hechos, tachados.
   - Cada cosa es el **icono de su tipo** dentro de un círculo del **color de quien se encarga** (gris si no es de nadie). Los iconos están en `src/lib/calendario.ts` (`iconoDeTarea`): rutinas según su nombre (🗑️ basura, 🧺 lavadora, 🛒 compra…, 🧹 el resto), tratamientos y cuidados según su tipo, 📑 seguro, 💳 suscripción, 🪪 documento y, a mano, el de su categoría.
   - Lo que se repite sale previsto (borde de puntos) con su turno, calculado con `ocurrencias()` de `src/lib/semana.ts`, igual que en «La semana».
   - Al tocar un día se ve su lista (se pueden marcar como hechas). Hay una leyenda con la gente y los iconos que salen.
