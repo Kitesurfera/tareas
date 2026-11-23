@@ -448,6 +448,9 @@ function App() {
           }
         />
 
+        {/* El calendario, lo primero (en el ordenador, a todo el ancho). */}
+        <TarjetaCalendario miUserId={yo.userId} />
+
         {/* En el móvil, una sola columna (en este orden). En el ordenador, dos:
             a la izquierda los avisos y «Próximo»; a la derecha, el resto. */}
         <div className="contents lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start lg:gap-6">
@@ -472,8 +475,6 @@ function App() {
             <TarjetaAyuda />
 
             <TarjetaProximo miUserId={yo.userId} />
-
-            <TarjetaCalendario miUserId={yo.userId} />
           </div>
 
           <div className="contents lg:flex lg:flex-col lg:gap-6">
