@@ -17,7 +17,7 @@ import { TarjetaInstalar } from './components/TarjetaInstalar'
 import { TarjetaCargaMental } from './components/TarjetaCargaMental'
 import { PantallaCargaMental } from './components/PantallaCargaMental'
 import { PantallaSemana } from './components/PantallaSemana'
-import { TarjetaSemana } from './components/TarjetaSemana'
+import { TarjetaCalendario } from './components/TarjetaCalendario'
 import { PantallaAjustes } from './components/PantallaAjustes'
 import { FormularioViaje, PantallaViajes } from './components/PantallaViajes'
 import { TarjetaViaje } from './components/TarjetaViaje'
@@ -473,7 +473,7 @@ function App() {
 
             <TarjetaProximo miUserId={yo.userId} />
 
-            <TarjetaSemana />
+            <TarjetaCalendario miUserId={yo.userId} />
           </div>
 
           <div className="contents lg:flex lg:flex-col lg:gap-6">
