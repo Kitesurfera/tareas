@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import type { Yo } from '../lib/tipos'
 import { avisoError, botonSecundario, campo } from './estilos'
 import { TarjetaAvisos } from './TarjetaAvisos'
+import { TarjetaCalendarios } from './TarjetaCalendarios'
 import { TarjetaHogar } from './TarjetaHogar'
 import { TarjetaInstalar } from './TarjetaInstalar'
 import { CabeceraPestana } from './CabeceraPestana'
@@ -146,6 +147,8 @@ export function PantallaAjustes({ yo, email, onCambio, onSalirDelHogar, onCerrar
         </section>
 
         <TarjetaAvisos />
+
+        <TarjetaCalendarios />
 
         <section className="tarjeta">
           <TituloSeccion dibujo="✈️" titulo="Modo viaje" color="vencimientos" />
