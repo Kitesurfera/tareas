@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { cuandoToca, fechaCorta, hoyComoTexto, sumarDias } from '../lib/fechas'
 import {
+  borrarPlanes,
   cambiarFavorito,
   infoCategoria,
   loHicimosHoy,
@@ -27,7 +28,7 @@ export function PastillaCategoria({ categorias, id }: { categorias: CategoriaPla
 }
 
 // Energía, precio y duración (solo lo que esté apuntado).
-export function DatosDelPlan({ plan }: { plan: Plan }) {
+export function DatosDelPlan({ plan }: { plan: Pick<Plan, 'energia' | 'precio' | 'duracion'> }) {
   return (
     <>
       {plan.energia && (
@@ -71,10 +72,11 @@ type Acciones = {
   // Para volver a cargar todo después de un cambio.
   onCambio: () => void
   conEditar?: boolean
+  conBorrar?: boolean
 }
 
-// «📅 Programar» (elegir día) y «✅ Lo hicimos hoy».
-export function AccionesPlan({ plan, agenda, onCambio, conEditar = true }: Acciones) {
+// «📅 Programar» (elegir día), «✅ Lo hicimos hoy», editar y borrar.
+export function AccionesPlan({ plan, agenda, onCambio, conEditar = true, conBorrar = false }: Acciones) {
   const [eligiendoDia, setEligiendoDia] = useState(false)
   const [fecha, setFecha] = useState(proximoSabado)
   const [enviando, setEnviando] = useState(false)
@@ -90,6 +92,16 @@ export function AccionesPlan({ plan, agenda, onCambio, conEditar = true }: Accio
     if (fallo) return setError(fallo)
     setHecho(mensaje)
     setEligiendoDia(false)
+    onCambio()
+  }
+
+  async function borrar() {
+    if (!window.confirm(`¿Borrar «${plan.nombre}»? También se quitará del calendario.`)) return
+    setEnviando(true)
+    setError(null)
+    const { error } = await borrarPlanes([plan.id])
+    setEnviando(false)
+    if (error) return setError(error)
     onCambio()
   }
 
@@ -122,6 +134,16 @@ export function AccionesPlan({ plan, agenda, onCambio, conEditar = true }: Accio
             className={`${boton} text-stone-600 ring-1 ring-stone-200 hover:bg-stone-50`}
           >
             ✏️ Editar
+          </button>
+        )}
+        {conBorrar && (
+          <button
+            type="button"
+            onClick={borrar}
+            disabled={enviando}
+            className={`${boton} text-red-700 ring-1 ring-red-200 hover:bg-red-50`}
+          >
+            🗑️ Borrar
           </button>
         )}
       </div>

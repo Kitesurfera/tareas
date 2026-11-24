@@ -252,6 +252,21 @@ export function cambiarFavorito(plan: Plan, favorito: boolean): Promise<string |
   return hacer(supabase.from('planes').update({ favorito }).eq('id', plan.id))
 }
 
+// Borrar uno o varios planes (también se quitan del calendario). De 100 en
+// 100, para que la dirección de cada petición no sea enorme. Devuelve
+// cuántos se han borrado y, si algo falla, el error.
+export async function borrarPlanes(ids: string[]): Promise<{ borrados: number; error: string | null }> {
+  if (!supabase) return { borrados: 0, error: 'Sin conexión.' }
+  let borrados = 0
+  for (let i = 0; i < ids.length; i += 100) {
+    const trozo = ids.slice(i, i + 100)
+    const { error } = await supabase.from('planes').delete().in('id', trozo)
+    if (error) return { borrados, error: mensajeDeError(error) }
+    borrados += trozo.length
+  }
+  return { borrados, error: null }
+}
+
 // Los enlaces de las notas («https://…») se pueden tocar.
 export function trozosConEnlaces(texto: string): { texto: string; enlace: boolean }[] {
   return texto
