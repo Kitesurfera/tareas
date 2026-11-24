@@ -49,7 +49,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 
 - El código vive en GitHub (`Kitesurfera/tareas`). Trabajo con Claude Code conectado a este repositorio.
 - `main` siempre tiene que funcionar. Cada paso de una fase se hace en una rama propia (por ejemplo `fase1-login`) y se une a `main` con un pull request.
-- En cada pull request, explícame en español qué cambia y cómo probarlo antes de que yo lo apruebe.
+- Al terminar cada cambio, crea el pull request y fusiónalo directamente, sin preguntar. Explícame igualmente en español qué cambia y cómo probarlo. Excepción: si necesita SQL, espera a que yo lo haya ejecutado en Supabase antes de fusionar (si no, la app publicada fallaría).
 - Vercel despliega automáticamente cada cambio que llega a `main`. Yo lo pruebo todo desde el móvil con el enlace de prueba del pull request (no tengo el proyecto en mi ordenador).
 
 ## Seguridad (no negociable)
