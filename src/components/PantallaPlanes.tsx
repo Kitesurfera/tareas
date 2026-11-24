@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CATEGORIAS_SUGERIDAS, usePlanes } from '../lib/planes'
 import { mensajeDeError } from '../lib/errores'
+import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { CabeceraPestana } from './CabeceraPestana'
 import { CalendarioPlanes } from './CalendarioPlanes'
-import { avisoError, botonPrincipal } from './estilos'
+import { avisoError, botonCabecera, botonPrincipal } from './estilos'
 import { GeneradorPlanes } from './GeneradorPlanes'
 import { ListaPlanes } from './ListaPlanes'
 import { TituloSeccion } from './Piezas'
@@ -16,7 +18,22 @@ export function PantallaPlanes({ hogarId }: { hogarId: string }) {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-6xl lg:px-10 lg:py-10">
-      <CabeceraPestana color="planes" titulo="Planes" subtitulo="¿Qué hacemos? Al azar o elegido, y vuestro calendario." dibujo="🎲" />
+      <CabeceraPestana
+        color="planes"
+        titulo="Planes"
+        subtitulo="¿Qué hacemos? Al azar o elegido, y vuestro calendario."
+        dibujo="🎲"
+        botonEnOrdenador
+        boton={
+          <div className="flex shrink-0 gap-2">
+            <MenuAnadir />
+            {/* En la tablet y el ordenador, Ajustes ya está en el menú de la izquierda. */}
+            <button type="button" onClick={() => ir('/ajustes')} aria-label="Ajustes" title="Ajustes" className={`${botonCabecera} md:hidden`}>
+              <span aria-hidden="true">⚙️</span>
+            </button>
+          </div>
+        }
+      />
 
       {error && <p role="alert" className={avisoError}>{error}</p>}
       {datos === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
@@ -76,5 +93,88 @@ function EmpezarConSugeridas({ hogarId, onListo }: { hogarId: string; onListo: (
         {creando ? 'Creando…' : '✨ Usar estas categorías'}
       </button>
     </section>
+  )
+}
+
+// ➕ arriba a la derecha: añadir un plan (con el formulario) o varios a la
+// vez (con la plantilla CSV). El menú se dibuja fuera de la cabecera para
+// que no lo recorte su borde redondeado.
+function MenuAnadir() {
+  const [abierto, setAbierto] = useState(false)
+  const [sitio, setSitio] = useState({ top: 0, right: 0 })
+  const boton = useRef<HTMLButtonElement>(null)
+  const primero = useRef<HTMLButtonElement>(null)
+
+  function abrir() {
+    const caja = boton.current?.getBoundingClientRect()
+    if (caja) setSitio({ top: caja.bottom + 8, right: Math.max(12, window.innerWidth - caja.right) })
+    setAbierto(true)
+  }
+
+  useEffect(() => {
+    if (!abierto) return
+    primero.current?.focus()
+    const cerrar = () => setAbierto(false)
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setAbierto(false)
+      boton.current?.focus()
+    }
+    window.addEventListener('keydown', tecla)
+    window.addEventListener('resize', cerrar)
+    window.addEventListener('scroll', cerrar)
+    return () => {
+      window.removeEventListener('keydown', tecla)
+      window.removeEventListener('resize', cerrar)
+      window.removeEventListener('scroll', cerrar)
+    }
+  }, [abierto])
+
+  const opcion = 'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-stone-50 focus-visible:bg-stone-50'
+
+  return (
+    <>
+      <button
+        ref={boton}
+        type="button"
+        onClick={() => (abierto ? setAbierto(false) : abrir())}
+        aria-expanded={abierto}
+        aria-controls="menu-anadir-planes"
+        aria-label="Añadir planes"
+        title="Añadir planes"
+        className={`${botonCabecera} md:w-auto md:gap-1.5 md:px-4 md:text-base md:font-semibold md:text-planes-tinta`}
+      >
+        <span aria-hidden="true">➕</span>
+        <span aria-hidden="true" className="hidden md:inline">Añadir</span>
+      </button>
+      {abierto &&
+        createPortal(
+          // El fondo transparente cierra el menú al tocar fuera.
+          <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)}>
+            <div
+              id="menu-anadir-planes"
+              style={{ top: sitio.top, right: sitio.right }}
+              className="fixed flex w-72 max-w-[calc(100vw-1.5rem)] animate-aparecer flex-col rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-stone-900/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button ref={primero} type="button" onClick={() => ir('/planes/nuevo')} className={opcion}>
+                <span aria-hidden="true" className="text-2xl">✏️</span>
+                <span>
+                  <span className="block font-semibold">Un plan</span>
+                  <span className="block text-xs text-stone-500">Rellenando el formulario</span>
+                </span>
+              </button>
+              <button type="button" onClick={() => ir('/planes/importar')} className={opcion}>
+                <span aria-hidden="true" className="text-2xl">📄</span>
+                <span>
+                  <span className="block font-semibold">Varios a la vez</span>
+                  <span className="block text-xs text-stone-500">Con una plantilla CSV (Excel, Google Sheets…)</span>
+                </span>
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }

@@ -14,6 +14,10 @@ export const botonPrincipal =
 export const botonSecundario =
   'w-full rounded-full bg-marca-suave/70 px-5 py-3 font-semibold text-marca ring-1 ring-marca/15 transition hover:bg-marca-suave active:scale-[0.98] disabled:opacity-60'
 
+// Botón redondo blanco de la cabecera de color (⚙️ Ajustes, ➕ Añadir…).
+export const botonCabecera =
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white transition hover:bg-white active:scale-95'
+
 export const avisoError = 'rounded-xl bg-red-50 p-3 text-sm text-red-700'
 
 // Botón tipo «píldora» para elegir una opción.

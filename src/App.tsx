@@ -42,6 +42,8 @@ import { PantallaLeerCartilla } from './components/PantallaLeerCartilla'
 import { PantallaPlanes } from './components/PantallaPlanes'
 import { FormularioPlan } from './components/FormularioPlan'
 import { PantallaCategoriasPlan } from './components/PantallaCategoriasPlan'
+import { PantallaImportarPlanes } from './components/PantallaImportarPlanes'
+import { botonCabecera } from './components/estilos'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
 import { PantallaDocumento } from './components/PantallaDocumento'
 import { FormularioDocumento } from './components/FormularioDocumento'
@@ -285,7 +287,7 @@ function App() {
     //   #/casa/plantas/<id>/cuidados/nuevo   → añadir cuidado
     //   #/cuidados/<id>/editar               → editar cuidado
     //   #/planes                             → generador de planes y calendario
-  //   #/planes/nuevo · #/planes/<id>/editar · #/planes/categorias
+  //   #/planes/nuevo · #/planes/importar · #/planes/<id>/editar · #/planes/categorias
   //   #/vencimientos                       → seguros, suscripciones y documentos
   //   #/documentos/nuevo · #/documentos/<id> · #/documentos/<id>/editar
     //   #/vencimientos/nuevo/<seguro|suscripcion>
@@ -393,6 +395,9 @@ function App() {
     if (partes[0] === 'planes' && partes[1] === 'nuevo') {
       return <FormularioPlan hogarId={yo.hogar.id} />
     }
+    if (partes[0] === 'planes' && partes[1] === 'importar') {
+      return <PantallaImportarPlanes hogarId={yo.hogar.id} />
+    }
     if (partes[0] === 'planes' && partes[1] === 'categorias') {
       return <PantallaCategoriasPlan hogarId={yo.hogar.id} />
     }
@@ -441,7 +446,7 @@ function App() {
               onClick={() => ir('/ajustes')}
               aria-label="Ajustes"
               title="Ajustes"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-xl shadow-sm ring-1 ring-white active:scale-95 md:hidden"
+              className={`${botonCabecera} md:hidden`}
             >
               <span aria-hidden="true">⚙️</span>
             </button>
