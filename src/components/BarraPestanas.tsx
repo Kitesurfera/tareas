@@ -1,4 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
+import { BotonCabeza } from './CajaCabeza'
 import { ir, reemplazar } from '../lib/ruta'
 
 export type Pestana = 'inicio' | 'tareas' | 'casa' | 'planes' | 'vencimientos'
@@ -15,6 +16,7 @@ const PESTANAS: { valor: Pestana; texto: string; dibujo: string; ruta: string; a
 
 // Lo que no es una pestaña pero está a mano en el menú del ordenador.
 const OTRAS: { valor: string; texto: string; dibujo: string; ruta: string }[] = [
+  { valor: 'bandeja', texto: 'Mi bandeja', dibujo: '🧠', ruta: '/bandeja' },
   { valor: 'carga', texto: 'En equipo', dibujo: '💚', ruta: '/carga' },
   { valor: 'viajes', texto: 'Viajes', dibujo: '✈️', ruta: '/viajes' },
   { valor: 'accesos', texto: 'Accesos', dibujo: '🔑', ruta: '/accesos' },
@@ -50,6 +52,7 @@ function alPulsar(ruta: string, sustituir: boolean) {
 type Props = {
   ruta: string
   hogar: string
+  hogarId: string
   nombre: string
   // Si te han encargado tareas en otro hogar (acceso temporal).
   conEncargos: boolean
@@ -60,11 +63,11 @@ type Props = {
 // - En el móvil, la barra de pestañas flotando abajo (solo en las pestañas).
 // - En la tablet y el ordenador (desde 768 px de ancho), un menú fijo a la
 //   izquierda siempre (más estrecho en la tablet).
-export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
+export function Marco({ ruta, hogar, hogarId, nombre, conEncargos, children }: Props) {
   const seccion = seccionDe(ruta)
   const enPestana = RAICES.includes(ruta)
   const otras = conEncargos
-    ? [...OTRAS.slice(0, 3), { valor: 'encargos', texto: 'Mis encargos', dibujo: '🧺', ruta: '/encargos' }, OTRAS[3]]
+    ? [...OTRAS.slice(0, 4), { valor: 'encargos', texto: 'Mis encargos', dibujo: '🧺', ruta: '/encargos' }, OTRAS[4]]
     : OTRAS
 
   return (
@@ -146,6 +149,9 @@ export function Marco({ ruta, hogar, nombre, conEncargos, children }: Props) {
       </aside>
 
       <div className="md:pl-52 lg:pl-64">{children}</div>
+
+      {/* 🧠 Vaciar la cabeza: en todas las pestañas. */}
+      {enPestana && <BotonCabeza hogarId={hogarId} />}
 
       {enPestana && (
         <nav

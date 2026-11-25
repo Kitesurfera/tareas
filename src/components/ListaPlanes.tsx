@@ -181,8 +181,8 @@ export function ListaPlanes({ datos, onCambio }: Props) {
       })}
 
       {eligiendo ? (
-        // Pegado abajo mientras se baja por la lista (en el móvil, encima de la barra de pestañas).
-        <div className="sticky bottom-24 z-10 -mx-2 flex flex-col gap-2 rounded-2xl bg-white/95 p-2 shadow-[0_-6px_20px_-12px_rgb(60_40_20/0.4)] ring-1 ring-stone-900/5 backdrop-blur md:bottom-4">
+        // Pegado abajo mientras se baja por la lista, encima de la barra de pestañas y del botón 🧠.
+        <div className="sticky bottom-[calc(10.75rem+env(safe-area-inset-bottom))] z-10 -mx-2 flex flex-col gap-2 rounded-2xl bg-white/95 p-2 shadow-[0_-6px_20px_-12px_rgb(60_40_20/0.4)] ring-1 ring-stone-900/5 backdrop-blur md:bottom-24">
           {error && <p role="alert" className={avisoError}>{error}</p>}
           <button
             type="button"
