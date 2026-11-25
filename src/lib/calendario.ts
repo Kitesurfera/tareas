@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { mensajeDeError } from './errores'
 import { hoyComoTexto, leerFecha, sumarDias, sumarMeses } from './fechas'
 import { infoCategoria as infoCategoriaPlan, type CategoriaPlan, type EntradaAgenda, type Plan } from './planes'
+import type { FechaEspecial } from './regalos'
 import { lunesDe, type RutinaTurnos } from './semana'
 import { supabase } from './supabase'
 import { infoCategoria, infoCuidado, infoTipo, type Tarea, type TipoCuidado, type TipoTratamiento, type TipoVencimiento } from './tipos'
@@ -10,7 +11,7 @@ import { infoCategoria, infoCuidado, infoTipo, type Tarea, type TipoCuidado, typ
 // de tarea y el color de la persona que se encarga.
 
 export type Vista = 'mes' | 'semana'
-export type Filtro = 'todas' | 'rutinas' | 'mascota' | 'plantas' | 'planes'
+export type Filtro = 'todas' | 'rutinas' | 'mascota' | 'plantas' | 'planes' | 'fechas'
 
 export const FILTROS: { valor: Filtro; texto: string }[] = [
   { valor: 'todas', texto: 'Todas' },
@@ -18,6 +19,7 @@ export const FILTROS: { valor: Filtro; texto: string }[] = [
   { valor: 'mascota', texto: '🐾 Mascota' },
   { valor: 'plantas', texto: '🪴 Plantas' },
   { valor: 'planes', texto: '🎉 Planes' },
+  { valor: 'fechas', texto: '🎂 Fechas' },
 ]
 
 // ¿Sale esta tarea con este filtro? (Los planes van aparte.)
@@ -30,6 +32,7 @@ export function tareaPasaFiltro(tarea: Tarea, filtro: Filtro): boolean {
 }
 
 export const planesPasanFiltro = (filtro: Filtro) => filtro === 'todas' || filtro === 'planes'
+export const fechasPasanFiltro = (filtro: Filtro) => filtro === 'todas' || filtro === 'fechas'
 
 // El icono de un plan: el de su categoría (o 🎉 si no tiene).
 export function iconoDePlan(plan: Plan, categorias: CategoriaPlan[]): { icono: string; tipo: string } {
@@ -119,6 +122,7 @@ export type DatosCalendario = {
   agenda: EntradaAgenda[]
   planes: Plan[]
   categoriasPlan: CategoriaPlan[]
+  fechas: FechaEspecial[] // cumpleaños, aniversarios… (de Regalos)
 }
 
 // Las tareas pendientes con fecha y lo necesario para prever las siguientes
@@ -148,11 +152,14 @@ export function useDatosCalendario() {
       supabase.from('agenda_planes').select('*').gte('fecha', sumarDias(hoyComoTexto(), -45)).order('fecha'),
       supabase.from('planes').select('*'),
       supabase.from('categorias_plan').select('*'),
-    ]).then(([tareas, rutinas, tratamientos, cuidados, vencimientos, agenda, planes, categorias]) => {
+      supabase.from('fechas_especiales').select('*'),
+    ]).then(([tareas, rutinas, tratamientos, cuidados, vencimientos, agenda, planes, categorias, fechas]) => {
       if (!vigente) return
+      // Si todavía no se ha ejecutado el SQL de los regalos, el calendario sigue funcionando sin fechas.
+      const sinTablaDeFechas = fechas.error?.code === '42P01' || fechas.error?.code === 'PGRST205'
       const fallo =
         tareas.error ?? rutinas.error ?? tratamientos.error ?? cuidados.error ?? vencimientos.error ??
-        agenda.error ?? planes.error ?? categorias.error
+        agenda.error ?? planes.error ?? categorias.error ?? (sinTablaDeFechas ? null : fechas.error)
       if (fallo) return setError(mensajeDeError(fallo))
       setError(null)
       const frecuencias: Record<string, number> = {}
@@ -175,6 +182,7 @@ export function useDatosCalendario() {
         agenda: agenda.data as EntradaAgenda[],
         planes: planes.data as Plan[],
         categoriasPlan: categorias.data as CategoriaPlan[],
+        fechas: sinTablaDeFechas ? [] : (fechas.data as FechaEspecial[]),
       })
     })
     return () => {

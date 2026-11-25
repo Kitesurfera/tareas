@@ -6,6 +6,7 @@ import {
   moverVista,
   nombreDelMes,
   planesPasanFiltro,
+  fechasPasanFiltro,
   primeroDelMes,
   rangoDeLaVista,
   tareaPasaFiltro,
@@ -16,6 +17,7 @@ import {
 import { bordeDePersona, colorDePersona } from '../lib/colores'
 import { hoyComoTexto, leerFecha } from '../lib/fechas'
 import { infoCategoria as infoCategoriaPlan, type EntradaAgenda, type Plan } from '../lib/planes'
+import { TIPOS_FECHA, cuantosAnios, vecesEntre, type FechaEspecial } from '../lib/regalos'
 import { ir } from '../lib/ruta'
 import { ocurrencias, type Ocurrencia } from '../lib/semana'
 import { useAccionesTarea } from '../lib/useAccionesTarea'
@@ -53,14 +55,16 @@ const diaLargo = (fecha: string) =>
   mayuscula(leerFecha(fecha).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', ''))
 
 // Lo que sale en el calendario: una tarea (o la siguiente vez de algo que se
-// repite) o un plan del calendario de planes.
+// repite), un plan del calendario de planes o una fecha especial (Regalos).
 type Cosa = { clave: string; fecha: string; icono: string; tipo: string; titulo: string } & (
   | { es: 'tarea'; o: Ocurrencia }
   | { es: 'plan'; entrada: EntradaAgenda; plan: Plan }
+  | { es: 'fecha'; f: FechaEspecial }
 )
 
 // El icono del tipo en un círculo: del color de quien se encarga (con borde
-// de puntos si es una repetición prevista) o rosa si es un plan del hogar.
+// de puntos si es una repetición prevista), rosa si es un plan del hogar o
+// amarillo si es una fecha especial.
 // Con «titulo», también el nombre a partir de ese ancho de pantalla.
 function Ficha({ cosa, titulo }: { cosa: Cosa; titulo?: 'md' | 'lg' }) {
   const prevista = cosa.es === 'tarea' && cosa.o.prevista
@@ -68,7 +72,9 @@ function Ficha({ cosa, titulo }: { cosa: Cosa; titulo?: 'md' | 'lg' }) {
   const color =
     cosa.es === 'plan'
       ? 'bg-planes ring-1 ring-planes-tinta/30'
-      : prevista
+      : cosa.es === 'fecha'
+        ? 'bg-sol ring-1 ring-sol-tinta/30'
+        : prevista
         ? `border-[1.5px] border-dashed bg-white ${bordeDePersona(cosa.o.responsableId)}`
         : colorDePersona(cosa.o.responsableId)
   const tamano = titulo === 'md' ? 'h-[1.2rem] w-[1.2rem] text-[10px]' : 'h-4 w-4 text-[9px] lg:h-[1.2rem] lg:w-[1.2rem] lg:text-[10px]'
@@ -124,6 +130,14 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
         cosas.push({ es: 'plan', entrada, plan, clave: entrada.id, fecha: entrada.fecha, titulo: plan.nombre, ...iconoDePlan(plan, datos.categoriasPlan) })
       }
     }
+    if (fechasPasanFiltro(filtro)) {
+      for (const f of datos.fechas) {
+        for (const dia of vecesEntre(f, desde, hasta)) {
+          const { dibujo, texto } = TIPOS_FECHA[f.tipo]
+          cosas.push({ es: 'fecha', f, clave: `${f.id}-${dia}`, fecha: dia, titulo: f.titulo, icono: dibujo, tipo: texto })
+        }
+      }
+    }
   }
   const delDia = (dia: string) => cosas.filter((c) => c.fecha === dia)
   // Lo atrasado de antes de lo que se ve (solo si se ve hoy).
@@ -159,6 +173,7 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
   const reales = elegidas.flatMap((c) => (c.es === 'tarea' && !c.o.prevista ? [c] : []))
   const previstas = elegidas.flatMap((c) => (c.es === 'tarea' && c.o.prevista ? [c.o] : []))
   const planes = elegidas.flatMap((c) => (c.es === 'plan' ? [c] : []))
+  const fechasDelDia = elegidas.flatMap((c) => (c.es === 'fecha' ? [c] : []))
   const enLaVista = desde <= hoy && hoy <= hasta
   const iconoDe = new Map(reales.map((c) => [c.o.tarea.id, c.icono]))
   // La leyenda: los colores de la gente y los iconos que salen.
@@ -166,6 +181,7 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
   const haySinAsignar = cosas.some((c) => c.es === 'tarea' && !c.o.responsableId)
   const hayPrevistas = cosas.some((c) => c.es === 'tarea' && c.o.prevista)
   const hayPlanes = cosas.some((c) => c.es === 'plan')
+  const hayFechas = cosas.some((c) => c.es === 'fecha')
   const error = errorCarga ?? acciones.error
 
   return (
@@ -329,6 +345,12 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
                   Planes (de todo el hogar)
                 </span>
               )}
+              {hayFechas && (
+                <span className="inline-flex items-center gap-1">
+                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-sol ring-1 ring-sol-tinta/30" />
+                  Fechas especiales
+                </span>
+              )}
               {hayPrevistas && (
                 <span className="inline-flex items-center gap-1">
                   <span aria-hidden="true" className="h-3 w-3 rounded-full border-[1.5px] border-dashed border-stone-500 bg-white" />
@@ -349,12 +371,35 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
 
           <AvisoRecienHecha acciones={acciones} />
 
-          {/* El día elegido: sus tareas (se pueden marcar) y sus planes. */}
+          {/* El día elegido: sus fechas especiales, sus tareas (se pueden marcar) y sus planes. */}
           <div className="border-t border-stone-100 pt-3" aria-label={`Día elegido: ${diaLargo(elegido)}`} role="region">
             <h3 className="flex items-center gap-2 font-bold">
               {diaLargo(elegido)}
               {elegido === hoy && <Etiqueta className="bg-marca-suave text-marca">Hoy</Etiqueta>}
             </h3>
+            {fechasDelDia.length > 0 && (
+              <ul className="mt-2 flex flex-col gap-2">
+                {fechasDelDia.map((c) => {
+                  const anios = cuantosAnios(c.f, c.fecha)
+                  return (
+                    <li key={c.clave}>
+                      <button
+                        type="button"
+                        onClick={() => ir('/regalos')}
+                        className="flex w-full items-center gap-2 rounded-2xl bg-sol px-3 py-2 text-left text-sm font-semibold text-sol-tinta"
+                      >
+                        <span aria-hidden="true">{c.icono}</span>
+                        <span className="min-w-0 flex-1">
+                          {c.f.titulo}
+                          {anios && <span className="font-normal"> · {anios}</span>}
+                        </span>
+                        <span className="shrink-0 text-xs font-medium">🎁 Regalos ›</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
             {reales.length > 0 && (
               <ListaTareas
                 tareas={reales.map((c) => c.o.tarea)}
@@ -396,6 +441,13 @@ export function TarjetaCalendario({ miUserId }: { miUserId: string }) {
                     Aún no tenéis rutinas de casa.{' '}
                     <button type="button" onClick={() => ir('/casa')} className="font-semibold text-marca">
                       Crearlas en Casa ›
+                    </button>
+                  </>
+                ) : filtro === 'fechas' && datos.fechas.length === 0 ? (
+                  <>
+                    Aún no tenéis fechas especiales.{' '}
+                    <button type="button" onClick={() => ir('/regalos')} className="font-semibold text-marca">
+                      Apuntarlas en Regalos ›
                     </button>
                   </>
                 ) : filtro === 'planes' && datos.agenda.length === 0 ? (
