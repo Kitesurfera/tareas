@@ -10,6 +10,7 @@ import { avisoError, botonPrincipal } from './estilos'
 import { AvisoRecienHecha, ListaTareas } from './ListaTareas'
 import { CabeceraPestana } from './CabeceraPestana'
 import { Vacio } from './Piezas'
+import { TarjetaRegalos } from './TarjetaRegalos'
 
 type Props = {
   miUserId: string
@@ -86,6 +87,8 @@ export function PantallaTareas({ miUserId }: Props) {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-2xl md:px-6 lg:max-w-4xl lg:px-10 lg:py-10">
       <CabeceraPestana color="tareas" titulo="Tareas" subtitulo="Todo lo que hay que recordar, sin que se quede en una sola cabeza." dibujo="📝" />
+
+      <TarjetaRegalos />
 
       {/* En el ordenador, todo en una fila: pendientes/hechas, todas/mías y el botón. */}
       <div className="contents lg:flex lg:items-center lg:gap-4">

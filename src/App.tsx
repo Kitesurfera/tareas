@@ -46,6 +46,7 @@ import { PantallaImportarPlanes } from './components/PantallaImportarPlanes'
 import { PantallaParaVer } from './components/PantallaParaVer'
 import { PantallaAnadirParaVer } from './components/PantallaAnadirParaVer'
 import { PantallaSugerenciasVer } from './components/PantallaSugerenciasVer'
+import { PantallaRegalos } from './components/PantallaRegalos'
 import { botonCabecera } from './components/estilos'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
 import { PantallaDocumento } from './components/PantallaDocumento'
@@ -292,6 +293,7 @@ function App() {
     //   #/planes                             → generador de planes y calendario
   //   #/planes/nuevo · #/planes/importar · #/planes/<id>/editar · #/planes/categorias
   //   #/ver · #/ver/anadir/<pelicula|serie> · #/ver/sugerencias/<pelicula|serie> → «🍿 Para ver»
+  //   #/regalos → «🎁 Regalos» (fechas especiales, listas de deseos e ideas)
   //   #/vencimientos                       → seguros, suscripciones y documentos
   //   #/documentos/nuevo · #/documentos/<id> · #/documentos/<id>/editar
     //   #/vencimientos/nuevo/<seguro|suscripcion>
@@ -398,6 +400,9 @@ function App() {
     }
     if (partes[0] === 'planes' && partes[1] === 'nuevo') {
       return <FormularioPlan hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'regalos' && !partes[1]) {
+      return <PantallaRegalos {...comun} />
     }
     if (partes[0] === 'ver' && !partes[1]) {
       return <PantallaParaVer {...comun} />
