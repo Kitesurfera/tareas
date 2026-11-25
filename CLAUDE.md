@@ -63,6 +63,7 @@ Una app web (que se instala en el móvil como PWA) para que una pareja o un hoga
 - Cuando terminemos cada fase, repasa conmigo cómo podría alguien acceder a datos de otro hogar y cómo lo hemos impedido (me interesa aprender hacking ético).
 - Cabeceras de seguridad de la web en `vercel.json` (CSP, no dejar meter la app en un marco, etc.). `Permissions-Policy` solo deja usar el **micrófono** a la propia app (para dictar tareas); cámara, ubicación y pagos siguen bloqueados. Si se añade algo que cargue cosas de otro dominio, hay que permitirlo ahí o el navegador lo bloqueará (las carátulas y logos de TMDB, `https://image.tmdb.org`, ya están permitidas en `img-src`).
 - En Supabase solo está activado el login con Google (el de email y contraseña está desactivado a propósito).
+- Los avisos solo se mandan a los servicios de avisos de verdad (Google, Mozilla, Apple y Microsoft: `esServicioDeAvisos` en `api/_lib/avisos.ts`). La base de datos acepta cualquier dirección `https://`, así que, sin esa lista, alguien podría guardar la de una web suya y hacer que nuestro servidor le mandara peticiones. Las direcciones que no son de esos servicios se borran sin mandar nada.
 
 ## Modelo de datos (versión inicial)
 
