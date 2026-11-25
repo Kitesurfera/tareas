@@ -44,9 +44,36 @@ export type Movil = {
   auth: string
 }
 
+// Los servicios de avisos de verdad: Google (Chrome, Android, Edge en
+// Android…), Mozilla (Firefox), Apple (Safari, iPhone) y Microsoft (Edge en
+// Windows). La «dirección» de cada móvil la guarda la app, y la base de
+// datos solo comprueba que empiece por https://. Sin esta lista, alguien
+// podría guardar la dirección de una web suya y hacer que nuestro servidor
+// le mandara peticiones (cada mañana o al pulsar «Probar aviso»).
+const SERVICIOS_DE_AVISOS = [
+  /^fcm\.googleapis\.com$/,
+  /^updates\.push\.services\.mozilla\.com$/,
+  /^([a-z0-9-]+\.)?push\.apple\.com$/,
+  /^[a-z0-9-]+\.notify\.windows\.com$/,
+]
+
+export function esServicioDeAvisos(direccion: string): boolean {
+  try {
+    const url = new URL(direccion)
+    return url.protocol === 'https:' && url.port === '' && !url.username && SERVICIOS_DE_AVISOS.some((s) => s.test(url.hostname))
+  } catch {
+    return false
+  }
+}
+
 // Manda un aviso a un móvil. «borrar» = ese móvil ya no existe (se
-// desinstaló la app o se quitaron los permisos) y hay que olvidarlo.
+// desinstaló la app o se quitaron los permisos), o su dirección no es de
+// un servicio de avisos de verdad, y hay que olvidarlo.
 export async function enviar(movil: Movil, aviso: Aviso): Promise<'ok' | 'borrar' | 'error'> {
+  if (!esServicioDeAvisos(movil.endpoint)) {
+    console.error('Dirección de avisos que no es de un servicio de avisos: se borra')
+    return 'borrar'
+  }
   prepararWebPush()
   try {
     await sendNotification(
