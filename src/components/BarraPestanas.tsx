@@ -30,6 +30,7 @@ function seccionDe(ruta: string): string {
   if (primera === '' || primera === 'mascotas' || primera === 'tratamientos' || primera === 'semana') return 'inicio'
   if (primera === 'cuidados') return 'casa'
   if (primera === 'documentos') return 'vencimientos'
+  if (primera === 'ver') return 'planes'
   return primera
 }
 

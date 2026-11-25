@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIAS_SUGERIDAS, usePlanes } from '../lib/planes'
 import { mensajeDeError } from '../lib/errores'
+import { tipoRecordado } from '../lib/paraVer'
 import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { CabeceraPestana } from './CabeceraPestana'
@@ -9,6 +10,7 @@ import { CalendarioPlanes } from './CalendarioPlanes'
 import { avisoError, botonCabecera, botonPrincipal } from './estilos'
 import { GeneradorPlanes } from './GeneradorPlanes'
 import { ListaPlanes } from './ListaPlanes'
+import { TarjetaParaVer } from './TarjetaParaVer'
 import { TituloSeccion } from './Piezas'
 
 // Pestaña «Planes»: el generador al azar, vuestra lista de planes por
@@ -46,6 +48,7 @@ export function PantallaPlanes({ hogarId }: { hogarId: string }) {
         <div className="contents lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
           <div className="contents lg:flex lg:flex-col lg:gap-6">
             <GeneradorPlanes datos={datos} onCambio={recargar} />
+            <TarjetaParaVer />
             <div className="order-last lg:order-none">
               <ListaPlanes datos={datos} onCambio={recargar} />
             </div>
@@ -96,8 +99,8 @@ function EmpezarConSugeridas({ hogarId, onListo }: { hogarId: string; onListo: (
   )
 }
 
-// ➕ arriba a la derecha: añadir un plan (con el formulario) o varios a la
-// vez (con la plantilla CSV). El menú se dibuja fuera de la cabecera para
+// ➕ arriba a la derecha: añadir un plan (con el formulario), varios a la
+// vez (con la plantilla CSV) o una película o serie a «Para ver». El menú se dibuja fuera de la cabecera para
 // que no lo recorte su borde redondeado.
 function MenuAnadir() {
   const [abierto, setAbierto] = useState(false)
@@ -169,6 +172,13 @@ function MenuAnadir() {
                 <span>
                   <span className="block font-semibold">Varios a la vez</span>
                   <span className="block text-xs text-stone-500">Con una plantilla CSV (Excel, Google Sheets…)</span>
+                </span>
+              </button>
+              <button type="button" onClick={() => ir(`/ver/anadir/${tipoRecordado()}`)} className={opcion}>
+                <span aria-hidden="true" className="text-2xl">🍿</span>
+                <span>
+                  <span className="block font-semibold">Película o serie</span>
+                  <span className="block text-xs text-stone-500">A vuestra lista «Para ver»</span>
                 </span>
               </button>
             </div>

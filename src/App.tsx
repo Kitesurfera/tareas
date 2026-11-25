@@ -43,6 +43,9 @@ import { PantallaPlanes } from './components/PantallaPlanes'
 import { FormularioPlan } from './components/FormularioPlan'
 import { PantallaCategoriasPlan } from './components/PantallaCategoriasPlan'
 import { PantallaImportarPlanes } from './components/PantallaImportarPlanes'
+import { PantallaParaVer } from './components/PantallaParaVer'
+import { PantallaAnadirParaVer } from './components/PantallaAnadirParaVer'
+import { PantallaSugerenciasVer } from './components/PantallaSugerenciasVer'
 import { botonCabecera } from './components/estilos'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
 import { PantallaDocumento } from './components/PantallaDocumento'
@@ -288,6 +291,7 @@ function App() {
     //   #/cuidados/<id>/editar               → editar cuidado
     //   #/planes                             → generador de planes y calendario
   //   #/planes/nuevo · #/planes/importar · #/planes/<id>/editar · #/planes/categorias
+  //   #/ver · #/ver/anadir/<pelicula|serie> · #/ver/sugerencias/<pelicula|serie> → «🍿 Para ver»
   //   #/vencimientos                       → seguros, suscripciones y documentos
   //   #/documentos/nuevo · #/documentos/<id> · #/documentos/<id>/editar
     //   #/vencimientos/nuevo/<seguro|suscripcion>
@@ -394,6 +398,15 @@ function App() {
     }
     if (partes[0] === 'planes' && partes[1] === 'nuevo') {
       return <FormularioPlan hogarId={yo.hogar.id} />
+    }
+    if (partes[0] === 'ver' && !partes[1]) {
+      return <PantallaParaVer {...comun} />
+    }
+    if (partes[0] === 'ver' && partes[1] === 'anadir' && (partes[2] === 'pelicula' || partes[2] === 'serie')) {
+      return <PantallaAnadirParaVer key={partes[2]} tipo={partes[2]} {...comun} />
+    }
+    if (partes[0] === 'ver' && partes[1] === 'sugerencias' && (partes[2] === 'pelicula' || partes[2] === 'serie')) {
+      return <PantallaSugerenciasVer key={partes[2]} tipo={partes[2]} {...comun} />
     }
     if (partes[0] === 'planes' && partes[1] === 'importar') {
       return <PantallaImportarPlanes hogarId={yo.hogar.id} />
