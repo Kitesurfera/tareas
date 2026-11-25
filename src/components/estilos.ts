@@ -20,9 +20,9 @@ export const botonCabecera =
 
 export const avisoError = 'rounded-xl bg-red-50 p-3 text-sm text-red-700'
 
-// Botón tipo «píldora» para elegir una opción.
-export function estiloChip(activo: boolean): string {
-  return `rounded-full px-4 py-2 text-sm font-medium ring-1 transition ${
+// Botón tipo «píldora» para elegir una opción (pequeño: para filtros).
+export function estiloChip(activo: boolean, pequeno = false): string {
+  return `rounded-full ${pequeno ? 'px-3 py-1.5' : 'px-4 py-2'} text-sm font-medium ring-1 transition ${
     activo ? 'bg-marca text-white ring-marca' : 'bg-white text-stone-700 ring-stone-300 hover:bg-stone-50'
   }`
 }
