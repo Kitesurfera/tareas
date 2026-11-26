@@ -28,6 +28,7 @@ export function ListaTareas({ tareas, acciones, nombres, dibujoDe }: Props) {
           tarea={tarea}
           nombreResponsable={nombres.responsable(tarea.responsable_id)}
           nombreReal={nombres.nombreDe(tarea.responsable_id)}
+          nombrePrestadaDe={tarea.prestada_de && !tarea.completada ? nombres.nombreDe(tarea.prestada_de) : null}
           notaViaje={notaDe(tarea)}
           nombreMascota={nombres.mascota(tarea.mascota_id)}
           nombreQuienLaHizo={nombres.porUsuario(tarea.completada_por)}
