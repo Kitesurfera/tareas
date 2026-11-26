@@ -99,6 +99,12 @@ export type Tarea = {
   cuidado_id: string | null
   // Tareas automáticas «Renovar: …» de un documento que caduca.
   documento_id?: string | null
+  // Tareas a mano que se repiten (la siguiente la crea la base de datos al hacerla).
+  repetir_cada?: number | null
+  repetir_unidad?: 'dias' | 'semanas' | 'meses' | 'anios' | null
+  repetir_desde?: 'fecha' | 'hecha' | null
+  repetir_ancla?: string | null
+  repetida_de?: string | null
   creada_por: string | null
   completada: boolean
   completada_por: string | null

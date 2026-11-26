@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Documento } from './documentos'
 import { mensajeDeError } from './errores'
 import { hoyComoTexto, leerFecha, sumarDias, sumarMeses } from './fechas'
+import { siguientesVeces } from './repetir'
 import type { CategoriaPlan, EntradaAgenda, Plan } from './planes'
 import { supabase } from './supabase'
 import type { Miembro, Tarea, Vencimiento } from './tipos'
@@ -100,7 +101,8 @@ export function siguienteTurno(rutina: RutinaTurnos, actual: string | null, miem
 }
 
 // Lo que toca entre dos fechas: las tareas con su fecha y las siguientes
-// veces previstas de lo que se repite (rutinas, cuidados y tratamientos).
+// veces previstas de lo que se repite (rutinas, cuidados, tratamientos y
+// tareas a mano que se repiten).
 export type Ocurrencia = {
   clave: string
   tarea: Tarea
@@ -137,6 +139,10 @@ export function ocurrencias(
         lista.push({ ...p, prevista: true })
       }
     }
+    // Tareas a mano que se repiten (🔁): sus siguientes veces, con la misma persona.
+    siguientesVeces(tarea, desde, hasta, hoy).forEach((fecha, i) => {
+      lista.push({ clave: `${tarea.id}-r${i + 1}`, tarea, fecha, responsableId: tarea.responsable_id, prevista: true, turno: false })
+    })
   }
   return lista.sort((a, b) => a.fecha.localeCompare(b.fecha) || Number(a.prevista) - Number(b.prevista))
 }

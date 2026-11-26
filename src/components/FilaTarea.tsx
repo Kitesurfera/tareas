@@ -4,6 +4,7 @@ import { cuandoToca, diasHasta } from '../lib/fechas'
 import { ir } from '../lib/ruta'
 import { infoCategoria, rutaDeOrigen, type Tarea } from '../lib/tipos'
 import { Avatar, Etiqueta } from './Piezas'
+import { cadaCuanto, repeticionDe } from '../lib/repetir'
 
 type Props = {
   tarea: Tarea
@@ -44,6 +45,7 @@ export function FilaTarea({
   children,
 }: Props) {
   const categoria = infoCategoria(tarea.categoria)
+  const repeticion = repeticionDe(tarea)
   // Las tareas automáticas se editan desde su origen.
   const editar = () => ir(rutaDeOrigen(tarea) ?? `/tareas/${tarea.id}/editar`)
 
@@ -84,6 +86,11 @@ export function FilaTarea({
             <Etiqueta className={SUAVE[COLOR_CATEGORIA[tarea.categoria] ?? 'ajustes']}>
               <span aria-hidden="true">{dibujo ?? categoria.dibujo}</span> {nombreMascota ?? categoria.texto}
             </Etiqueta>
+            {repeticion && !tarea.completada && (
+              <Etiqueta className="bg-stone-100 text-stone-600">
+                <span aria-hidden="true">🔁</span> {cadaCuanto(repeticion.cada, repeticion.unidad)}
+              </Etiqueta>
+            )}
             {!tarea.completada &&
               (nombreResponsable ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-stone-600">
