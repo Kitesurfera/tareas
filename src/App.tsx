@@ -456,12 +456,16 @@ function App() {
     if (partes[0] === 'plantillas') {
       const enPlan = partes.indexOf('plan')
       const agendaId = enPlan > 0 ? (partes[enPlan + 1] ?? null) : null
-      const resto = enPlan > 0 ? partes.slice(1, enPlan) : partes.slice(1)
+      // «/fecha/2027-03-15»: con la fecha ya puesta (desde el asistente 🧠).
+      const enFecha = partes.indexOf('fecha')
+      const fechaInicial = enFecha > 0 && /^\d{4}-\d{2}-\d{2}$/.test(partes[enFecha + 1] ?? '') ? partes[enFecha + 1] : null
+      const corte = [enPlan, enFecha].filter((i) => i > 0)
+      const resto = corte.length > 0 ? partes.slice(1, Math.min(...corte)) : partes.slice(1)
       if (resto.length === 0) return <PantallaPlantillas />
       if (resto[0] === 'elegir') return <PantallaPlantillas key={agendaId ?? 'elegir'} agendaId={agendaId} />
       if (resto[0] === 'nueva') return <PantallaEditarPlantilla key="nueva" hogarId={yo.hogar.id} modo="nueva" />
       if (resto[0] === 'ia') return <PantallaEditarPlantilla key={`ia-${agendaId}`} hogarId={yo.hogar.id} modo="ia" agendaId={agendaId} />
-      if (resto[0] === 'usar' && resto[1]) return <PantallaUsarPlantilla key={`${resto[1]}-${agendaId}`} clave={resto[1]} agendaId={agendaId} miUserId={yo.userId} />
+      if (resto[0] === 'usar' && resto[1]) return <PantallaUsarPlantilla key={`${resto[1]}-${agendaId}-${fechaInicial}`} clave={resto[1]} agendaId={agendaId} fechaInicial={fechaInicial} miUserId={yo.userId} />
       if (resto[0] === 'copiar' && resto[1]) return <PantallaEditarPlantilla key={`copiar-${resto[1]}`} hogarId={yo.hogar.id} modo="copiar" clave={resto[1]} agendaId={agendaId} />
       if (resto[1] === 'editar') return <PantallaEditarPlantilla key={`editar-${resto[0]}`} hogarId={yo.hogar.id} modo="editar" clave={resto[0]} />
     }
@@ -552,6 +556,7 @@ function App() {
       ruta={ruta}
       hogar={yo.hogar.nombre}
       hogarId={yo.hogar.id}
+      miUserId={yo.userId}
       nombre={yo.nombre}
       conEncargos={(misEncargos?.length ?? 0) > 0}
     >

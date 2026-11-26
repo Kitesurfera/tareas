@@ -18,11 +18,11 @@ import { infoCategoria, type Miembro } from '../lib/tipos'
 import { useMiembros } from '../lib/useMiembros'
 import { avisoError, botonPrincipal, campo } from './estilos'
 
-type Props = { clave: string; agendaId: string | null; miUserId: string }
+type Props = { clave: string; agendaId: string | null; fechaInicial?: string | null; miUserId: string }
 
 // #/plantillas/usar/<clave>[/plan/<id>]: eliges la fecha, ves cuándo toca
 // cada cosa, quitas lo que no necesitáis, repartes y se crean las tareas.
-export function PantallaUsarPlantilla({ clave, agendaId, miUserId }: Props) {
+export function PantallaUsarPlantilla({ clave, agendaId, fechaInicial = null, miUserId }: Props) {
   const { datos, error } = usePlantillas()
   const { miembros } = useMiembros()
   const delPlan = usePlanDeAgenda(agendaId)
@@ -32,7 +32,7 @@ export function PantallaUsarPlantilla({ clave, agendaId, miUserId }: Props) {
   if (!datos || miembros === null || delPlan === undefined) return <Mensaje>Cargando…</Mensaje>
   if (!plantilla) return <Mensaje>No encontramos esta plantilla.</Mensaje>
   if (agendaId && !delPlan) return <Mensaje>Ese plan ya no está en el calendario.</Mensaje>
-  return <Formulario key={clave} plantilla={plantilla} miembros={miembros} miUserId={miUserId} delPlan={delPlan} agendaId={agendaId} />
+  return <Formulario key={clave} plantilla={plantilla} miembros={miembros} miUserId={miUserId} delPlan={delPlan} agendaId={agendaId} fechaInicial={fechaInicial} />
 }
 
 function Mensaje({ children }: { children: string }) {
@@ -51,17 +51,19 @@ function Formulario({
   miUserId,
   delPlan,
   agendaId,
+  fechaInicial,
 }: {
   plantilla: Plantilla
   miembros: Miembro[]
   miUserId: string
   delPlan: ReturnType<typeof usePlanDeAgenda>
   agendaId: string | null
+  fechaInicial: string | null
 }) {
   const hoy = hoyComoTexto()
   const yo = miembros.find((m) => m.user_id === miUserId)?.id ?? null
   const [nombre, setNombre] = useState(delPlan?.plan.nombre ?? plantilla.nombre)
-  const [fecha, setFecha] = useState(delPlan?.fecha ?? (plantilla.fija ? proximaFechaFija(plantilla.fija, hoy) : ''))
+  const [fecha, setFecha] = useState(delPlan?.fecha ?? fechaInicial ?? (plantilla.fija ? proximaFechaFija(plantilla.fija, hoy) : ''))
   // Con dos personas, de entrada a medias (se puede cambiar); si no, sin repartir.
   const [filas, setFilas] = useState<Fila[]>(() => {
     const reparto = miembros.length === 2 ? repartirAMedias(plantilla.tareas, miembros, yo) : plantilla.tareas.map(() => null)

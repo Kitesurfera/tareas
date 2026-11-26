@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { pedirAyuda } from './ayuda'
 import { mensajeDeError } from './errores'
 import { hoyComoTexto } from './fechas'
+import { programar, type Plan } from './planes'
 import { supabase } from './supabase'
-import type { Categoria } from './tipos'
+import type { Categoria, TipoTratamiento } from './tipos'
+import type { TipoDocumento } from './documentos'
 
 // «🧠 Vaciar la cabeza»: tu bandeja privada (tabla bandeja) y el reparto
 // con la IA (api/vaciar-cabeza). La IA solo propone: aquí se guarda cada
@@ -11,6 +14,7 @@ import type { Categoria } from './tipos'
 export type NotaBandeja = { id: string; texto: string; creado_en: string }
 
 export const TIPOS_CUIDADO = ['riego', 'abono', 'trasplante', 'poda', 'otro'] as const
+export type TipoVencimientoBandeja = 'seguro' | 'suscripcion'
 export type TipoCuidadoHecho = (typeof TIPOS_CUIDADO)[number]
 export type TipoFechaBandeja = 'cumpleanos' | 'aniversario' | 'otra'
 
@@ -25,23 +29,56 @@ export type Propuesta = { nota: string } & (
   | { destino: 'fecha'; titulo: string; tipo: TipoFechaBandeja; dia: number; mes: number; anio: number | null; miembro_id: string | null; persona_id: string | null }
   | { destino: 'peso'; mascota_id: string; kg: number }
   | { destino: 'cuidado_hecho'; planta_id: string; tipo: TipoCuidadoHecho }
+  // --- Crear en el resto de pestañas (el asistente y la bandeja)
+  | { destino: 'rutina'; nombre: string; frecuencia_dias: number; fecha_ultima: string; responsable_id: string | null; turnos: boolean }
+  | { destino: 'tratamiento'; mascota_id: string | null; tipo: TipoTratamiento; nombre: string; frecuencia_dias: number; fecha_ultima: string }
+  | { destino: 'planta'; nombre: string; ubicacion: string | null; riego_dias: number | null }
+  | { destino: 'cuidado'; planta_id: string | null; tipo: TipoCuidadoHecho; frecuencia_dias: number; fecha_ultima: string; responsable_id: string | null }
+  | { destino: 'vencimiento'; tipo: TipoVencimientoBandeja; nombre: string; fecha_renovacion: string | null; frecuencia_meses: number | null; importe: number | null; aviso_dias: number | null }
+  | { destino: 'documento'; titulo: string; tipo: TipoDocumento; caduca_el: string | null; persona_id: string | null }
+  | { destino: 'viaje'; personas: string[]; ida: string | null; vuelta: string | null; lugar: string | null }
+  // «plan_id»: el de vuestra lista (lo busca la app); sin él, se crea el plan.
+  | { destino: 'programar'; plan: string; fecha: string | null; plan_id?: string | null }
+  // «clave»: la plantilla que encaja (la busca la app). No se guarda: se abre.
+  | { destino: 'plantilla'; que: string; fecha: string | null; clave?: string | null }
+  // --- Cambiar lo que ya existe: la IA dice «que» con palabras y la app
+  //     busca a qué tarea o artículo se refiere (tarea_id, articulo_id…).
+  | { destino: 'hecho'; que: string; tarea_id?: string | null }
+  | { destino: 'mover'; que: string; fecha: string | null; tarea_id?: string | null }
+  | { destino: 'ayuda'; que: string | null; para_id: string | null; tareas?: string[] }
+  | { destino: 'comprado'; que: string; articulo_id?: string | null }
+  | { destino: 'pausa'; hasta: string | null }
   | { destino: 'sin_clasificar'; texto: string }
 )
 
 export type Destino = Propuesta['destino']
 
-export const DESTINOS: { valor: Destino; texto: string; dibujo: string }[] = [
-  { valor: 'tarea', texto: 'Tarea', dibujo: '📝' },
-  { valor: 'compra', texto: 'Compra', dibujo: '🛒' },
-  { valor: 'plan', texto: 'Plan', dibujo: '🎉' },
-  { valor: 'pelicula', texto: 'Película para ver', dibujo: '🎬' },
-  { valor: 'serie', texto: 'Serie para ver', dibujo: '📺' },
-  { valor: 'deseo', texto: 'Mi lista de deseos', dibujo: '⭐' },
-  { valor: 'idea_regalo', texto: 'Idea de regalo', dibujo: '💡' },
-  { valor: 'fecha', texto: 'Fecha especial', dibujo: '🎂' },
-  { valor: 'peso', texto: 'Peso de la mascota', dibujo: '⚖️' },
-  { valor: 'cuidado_hecho', texto: 'Planta cuidada', dibujo: '🪴' },
-  { valor: 'sin_clasificar', texto: 'Dejar en la bandeja', dibujo: '🧠' },
+export const DESTINOS: { valor: Destino; texto: string; dibujo: string; grupo: 'crear' | 'cambiar' | 'bandeja' }[] = [
+  { valor: 'tarea', texto: 'Tarea', dibujo: '📝', grupo: 'crear' },
+  { valor: 'compra', texto: 'Compra', dibujo: '🛒', grupo: 'crear' },
+  { valor: 'plan', texto: 'Plan', dibujo: '🎉', grupo: 'crear' },
+  { valor: 'programar', texto: 'Plan en el calendario', dibujo: '📅', grupo: 'crear' },
+  { valor: 'pelicula', texto: 'Película para ver', dibujo: '🎬', grupo: 'crear' },
+  { valor: 'serie', texto: 'Serie para ver', dibujo: '📺', grupo: 'crear' },
+  { valor: 'deseo', texto: 'Mi lista de deseos', dibujo: '⭐', grupo: 'crear' },
+  { valor: 'idea_regalo', texto: 'Idea de regalo', dibujo: '💡', grupo: 'crear' },
+  { valor: 'fecha', texto: 'Fecha especial', dibujo: '🎂', grupo: 'crear' },
+  { valor: 'rutina', texto: 'Rutina de casa', dibujo: '🔁', grupo: 'crear' },
+  { valor: 'tratamiento', texto: 'Tratamiento de la mascota', dibujo: '💉', grupo: 'crear' },
+  { valor: 'peso', texto: 'Peso de la mascota', dibujo: '⚖️', grupo: 'crear' },
+  { valor: 'planta', texto: 'Planta nueva', dibujo: '🪴', grupo: 'crear' },
+  { valor: 'cuidado', texto: 'Cuidado de planta', dibujo: '💧', grupo: 'crear' },
+  { valor: 'vencimiento', texto: 'Seguro o suscripción', dibujo: '📑', grupo: 'crear' },
+  { valor: 'documento', texto: 'Documento', dibujo: '🪪', grupo: 'crear' },
+  { valor: 'viaje', texto: 'Viaje', dibujo: '✈️', grupo: 'crear' },
+  { valor: 'plantilla', texto: 'Usar una plantilla', dibujo: '📋', grupo: 'crear' },
+  { valor: 'hecho', texto: 'Marcar como hecha', dibujo: '✅', grupo: 'cambiar' },
+  { valor: 'cuidado_hecho', texto: 'Planta cuidada', dibujo: '🌿', grupo: 'cambiar' },
+  { valor: 'mover', texto: 'Cambiar de día', dibujo: '📆', grupo: 'cambiar' },
+  { valor: 'ayuda', texto: 'Hoy no puedo (pedir ayuda)', dibujo: '🙋', grupo: 'cambiar' },
+  { valor: 'comprado', texto: 'Ya comprado', dibujo: '🛍️', grupo: 'cambiar' },
+  { valor: 'pausa', texto: 'Pausar los avisos', dibujo: '⏸️', grupo: 'cambiar' },
+  { valor: 'sin_clasificar', texto: 'Dejar en la bandeja', dibujo: '🧠', grupo: 'bandeja' },
 ]
 export const infoDestino = (d: Destino) => DESTINOS.find((x) => x.valor === d) ?? DESTINOS[DESTINOS.length - 1]
 
@@ -183,7 +220,10 @@ async function hacer(consulta: PromiseLike<{ error: { message?: string; code?: s
   return mensajeDeError(error)
 }
 
-export async function guardarPropuesta(hogarId: string, p: Propuesta): Promise<string | null> {
+// Lo que hace falta del hogar para guardar algunas cosas (quién eres, los planes).
+export type Extra = { miMiembroId: string | null; planes: Plan[] }
+
+export async function guardarPropuesta(hogarId: string, p: Propuesta, extra: Extra = { miMiembroId: null, planes: [] }): Promise<string | null> {
   const db = supabase
   if (!db) return 'Sin conexión.'
   const hoy = hoyComoTexto()
@@ -254,6 +294,114 @@ export async function guardarPropuesta(hogarId: string, p: Propuesta): Promise<s
       if (!tarea) return 'No hay ningún cuidado pendiente de esa planta.'
       return hacer(db.rpc('completar_tarea', { tarea_id: tarea.id, hecha_el: hoy }))
     }
+    case 'rutina':
+      return hacer(
+        db.from('rutinas').insert({
+          hogar_id: hogarId,
+          nombre: p.nombre,
+          frecuencia_dias: p.frecuencia_dias,
+          fecha_ultima: p.fecha_ultima,
+          // Con turnos, a alguien le tiene que tocar la primera: si no se ha dicho, a ti.
+          responsable_id: p.responsable_id ?? (p.turnos ? extra.miMiembroId : null),
+          turnos: p.turnos,
+          participantes: null,
+        }),
+      )
+    case 'tratamiento':
+      if (!p.mascota_id) return 'Elige la mascota.'
+      return hacer(
+        db.from('tratamientos').insert({
+          hogar_id: hogarId,
+          mascota_id: p.mascota_id,
+          tipo: p.tipo,
+          nombre: p.nombre,
+          fecha_ultima: p.fecha_ultima,
+          frecuencia_dias: p.frecuencia_dias,
+        }),
+      )
+    case 'planta': {
+      const { data, error } = await db.from('plantas').insert({ hogar_id: hogarId, nombre: p.nombre, ubicacion: p.ubicacion }).select('id').single()
+      if (error || !data) return mensajeDeError(error)
+      if (!p.riego_dias) return null
+      return hacer(
+        db.from('cuidados').insert({ hogar_id: hogarId, planta_id: (data as { id: string }).id, tipo: 'riego', fecha_ultima: hoy, frecuencia_dias: p.riego_dias }),
+      )
+    }
+    case 'cuidado':
+      if (!p.planta_id) return 'Elige la planta.'
+      return hacer(
+        db.from('cuidados').insert({
+          hogar_id: hogarId,
+          planta_id: p.planta_id,
+          tipo: p.tipo,
+          nombre: p.tipo === 'otro' ? 'Cuidado' : null,
+          fecha_ultima: p.fecha_ultima,
+          frecuencia_dias: p.frecuencia_dias,
+          responsable_id: p.responsable_id,
+        }),
+      )
+    case 'vencimiento':
+      if (!p.fecha_renovacion) return 'Elige cuándo se renueva.'
+      return hacer(
+        db.from('vencimientos').insert({
+          hogar_id: hogarId,
+          tipo: p.tipo,
+          nombre: p.nombre,
+          fecha_renovacion: p.fecha_renovacion,
+          frecuencia_meses: p.frecuencia_meses,
+          importe: p.importe,
+          aviso_dias: p.aviso_dias,
+        }),
+      )
+    case 'documento':
+      return hacer(
+        db.from('documentos').insert({
+          hogar_id: hogarId,
+          titulo: p.titulo,
+          tipo: p.tipo,
+          persona_id: p.persona_id,
+          caduca_el: p.caduca_el,
+          // Con fecha, aviso un mes antes para quien es (o para ti).
+          aviso_dias: p.caduca_el ? 30 : null,
+          responsable_id: p.caduca_el ? (p.persona_id ?? extra.miMiembroId) : null,
+        }),
+      )
+    case 'viaje':
+      if (p.personas.length === 0) return 'Elige quién se va.'
+      if (!p.ida || !p.vuelta) return 'Elige el día de ida y el de vuelta.'
+      if (p.vuelta < p.ida) return 'La vuelta no puede ser antes que la ida.'
+      if (p.vuelta < hoy) return 'Ese viaje ya habría terminado.'
+      return hacer(db.rpc('guardar_viaje', { viaje_grupo: null, personas: p.personas, ida: p.ida, vuelta: p.vuelta, lugar: p.lugar }))
+    case 'programar': {
+      if (!p.fecha) return 'Elige el día.'
+      let plan = extra.planes.find((x) => x.id === p.plan_id)
+      if (!plan) {
+        // Un plan nuevo: primero a vuestra lista y luego al calendario.
+        const { data, error } = await db.from('planes').insert({ hogar_id: hogarId, nombre: p.plan }).select('*').single()
+        if (error || !data) return mensajeDeError(error)
+        plan = data as Plan
+      }
+      return programar(plan, p.fecha)
+    }
+    case 'plantilla':
+      // No se guarda: se abre la plantilla para revisarla (ver TarjetaAccion).
+      return null
+    case 'hecho':
+      if (!p.tarea_id) return 'Elige qué tarea has hecho.'
+      return hacer(db.rpc('completar_tarea', { tarea_id: p.tarea_id, hecha_el: hoy }))
+    case 'mover':
+      if (!p.tarea_id) return 'Elige qué tarea cambiar.'
+      if (!p.fecha) return 'Elige el día nuevo.'
+      return hacer(db.from('tareas').update({ fecha_limite: p.fecha }).eq('id', p.tarea_id).select('id').single())
+    case 'ayuda':
+      if (!p.para_id) return 'Elige a quién se lo pides.'
+      if (!p.tareas || p.tareas.length === 0) return 'Elige qué tareas.'
+      return pedirAyuda(p.para_id, p.tareas, '')
+    case 'comprado':
+      if (!p.articulo_id) return 'Elige qué has comprado.'
+      return hacer(db.from('lista_compra').update({ comprado: true }).eq('id', p.articulo_id))
+    case 'pausa':
+      return hacer(db.from('ajustes_avisos').upsert({ pausa_hasta: p.hasta }, { onConflict: 'user_id' }))
     case 'sin_clasificar':
       return null
   }
