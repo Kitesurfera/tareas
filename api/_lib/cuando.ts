@@ -153,3 +153,44 @@ export function resolverCuando(frase: string | null | undefined, hoyTexto: strin
 function fechaOTexto(fecha: Date | null): string | null {
   return fecha ? aTexto(fecha) : null
 }
+
+// Lo mismo, pero hacia ATRÁS: «ayer», «hace 2 meses», «el 3 de marzo» (el
+// último que ya ha pasado), «el lunes» (el pasado), «la semana pasada»…
+// Para «la última vez fue…» (tratamientos, cuidados, rutinas). Nunca da una
+// fecha futura; si no entiende la frase, devuelve null.
+export function resolverPasado(frase: string | null | undefined, hoyTexto: string): string | null {
+  if (!frase) return null
+  const hoy = aFecha(hoyTexto)
+  const t = normalizar(frase)
+  let m: RegExpExecArray | null
+
+  if (/ (hoy|esta manana|esta tarde|esta noche) /.test(t)) return aTexto(hoy)
+  if (/ anteayer /.test(t)) return aTexto(masDias(hoy, -2))
+  if (/ ayer /.test(t)) return aTexto(masDias(hoy, -1))
+  if ((m = new RegExp(` hace ${CANTIDAD} (dia|dias|semana|semanas|mes|meses|ano|anos) `).exec(t))) {
+    const n = numeroDe(m[1])
+    if (n > 0 && n <= 1000) {
+      if (m[2].startsWith('dia')) return aTexto(masDias(hoy, -n))
+      if (m[2].startsWith('semana')) return aTexto(masDias(hoy, -n * 7))
+      if (m[2].startsWith('mes')) return aTexto(masMeses(hoy, -n))
+      return aTexto(masMeses(hoy, -n * 12))
+    }
+  }
+  if (/ (semana pasada|pasada semana) /.test(t)) return aTexto(masDias(hoy, -7))
+  if (/ (mes pasado|pasado mes) /.test(t)) return aTexto(masMeses(hoy, -1))
+  if (/ (ano pasado|pasado ano) /.test(t)) return aTexto(masMeses(hoy, -12))
+
+  // Un día de la semana: el último que ya ha pasado («el lunes» dicho en lunes, hoy).
+  if ((m = new RegExp(` (?:(?:el|la) )?(?:pasado |pasada )?${DIA_SEMANA}(?: pasado)? `).exec(t))) {
+    const objetivo = DIAS.indexOf(m[1])
+    return aTexto(masDias(hoy, -((hoy.getUTCDay() - objetivo + 7) % 7)))
+  }
+
+  // Lo demás (fechas escritas, meses…): como hacia delante y, si sale en el
+  // futuro, el año anterior.
+  const futura = resolverCuando(frase, hoyTexto)
+  if (!futura) return null
+  if (futura <= hoyTexto) return futura
+  const atras = aTexto(masMeses(aFecha(futura), -12))
+  return atras <= hoyTexto ? atras : hoyTexto
+}

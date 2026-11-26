@@ -114,7 +114,7 @@ export async function preguntarALaIA(pregunta: Pregunta): Promise<{ datos: unkno
     }
   }
 
-  const datosCloudflare = (await respuesta.json().catch(() => ({}))) as RespuestaCloudflare
+  const datosCloudflare = ((await respuesta.json().catch(() => null)) ?? {}) as RespuestaCloudflare
   if (!respuesta.ok || datosCloudflare.success === false) {
     const codigos = (datosCloudflare.errors ?? []).map((e) => e.code)
     console.error(`${etiqueta}: Cloudflare respondió`, respuesta.status, codigos)
