@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cuantasEnLaBandeja, soltar } from '../lib/bandeja'
-import { ir } from '../lib/ruta'
+import { Asistente } from './Asistente'
 import { useDictado } from '../lib/useDictado'
 import { avisoError, botonPrincipal, botonSecundario, campo } from './estilos'
 
@@ -75,9 +75,9 @@ export function CajaCabeza({ hogarId, onGuardado, autoFocus }: { hogarId: string
   )
 }
 
-// El botón 🧠 que flota en todas las pestañas: abre la caja. Lleva el
-// número de cosas que tienes en la bandeja.
-export function BotonCabeza({ hogarId }: { hogarId: string }) {
+// El botón 🧠 que flota en todas las pestañas: abre el asistente (que te
+// saluda y te escucha). Lleva el número de cosas que tienes en la bandeja.
+export function BotonCabeza({ hogarId, miUserId, nombre }: { hogarId: string; miUserId: string; nombre: string }) {
   const [abierta, setAbierta] = useState(false)
   const [cuantas, setCuantas] = useState<number | null>(null)
   const boton = useRef<HTMLButtonElement>(null)
@@ -110,8 +110,8 @@ export function BotonCabeza({ hogarId }: { hogarId: string }) {
         ref={boton}
         type="button"
         onClick={() => setAbierta(true)}
-        aria-label={cuantas ? `Vaciar la cabeza (${cuantas} en tu bandeja)` : 'Vaciar la cabeza'}
-        title="Vaciar la cabeza"
+        aria-label={cuantas ? `Asistente (${cuantas} en tu bandeja)` : 'Asistente'}
+        title="Asistente: pídeme, pregúntame o suéltalo"
         className="fixed right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-20 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-b from-marca to-[#0b5f58] text-2xl text-white shadow-[0_10px_24px_-8px_rgb(15_118_110/0.7)] transition hover:brightness-110 active:scale-95 md:right-6 md:bottom-6"
       >
         <span aria-hidden="true">🧠</span>
@@ -128,31 +128,19 @@ export function BotonCabeza({ hogarId }: { hogarId: string }) {
               role="dialog"
               aria-modal="true"
               aria-labelledby="titulo-cabeza"
-              className="flex w-full max-w-lg animate-aparecer flex-col gap-4 rounded-t-[2rem] bg-crema p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl md:rounded-[2rem]"
+              className="flex max-h-[92svh] w-full max-w-lg animate-aparecer flex-col gap-4 overflow-y-auto rounded-t-[2rem] bg-crema p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl md:rounded-[2rem]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 id="titulo-cabeza" className="text-xl font-extrabold text-marca">
-                    🧠 ¿Qué te ronda?
-                  </h2>
-                  <p className="text-sm text-stone-600">Suéltalo aquí y sigue con lo tuyo. Luego lo repartes.</p>
-                </div>
-                <button type="button" onClick={() => setAbierta(false)} aria-label="Cerrar" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-stone-500 shadow-sm">
-                  ✕
-                </button>
-              </div>
-              <CajaCabeza hogarId={hogarId} autoFocus />
-              <button
-                type="button"
-                onClick={() => {
+              <Asistente
+                hogarId={hogarId}
+                miUserId={miUserId}
+                nombre={nombre}
+                enBandeja={cuantas}
+                onCerrar={() => {
                   setAbierta(false)
-                  ir('/bandeja')
+                  boton.current?.focus()
                 }}
-                className="self-start text-sm font-semibold text-marca"
-              >
-                {cuantas ? `Ver mi bandeja (${cuantas}) y repartir ›` : 'Ver mi bandeja ›'}
-              </button>
+              />
             </div>
           </div>,
           document.body,

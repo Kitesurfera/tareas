@@ -53,6 +53,7 @@ type Props = {
   ruta: string
   hogar: string
   hogarId: string
+  miUserId: string
   nombre: string
   // Si te han encargado tareas en otro hogar (acceso temporal).
   conEncargos: boolean
@@ -63,7 +64,7 @@ type Props = {
 // - En el móvil, la barra de pestañas flotando abajo (solo en las pestañas).
 // - En la tablet y el ordenador (desde 768 px de ancho), un menú fijo a la
 //   izquierda siempre (más estrecho en la tablet).
-export function Marco({ ruta, hogar, hogarId, nombre, conEncargos, children }: Props) {
+export function Marco({ ruta, hogar, hogarId, miUserId, nombre, conEncargos, children }: Props) {
   const seccion = seccionDe(ruta)
   const enPestana = RAICES.includes(ruta)
   const otras = conEncargos
@@ -151,7 +152,7 @@ export function Marco({ ruta, hogar, hogarId, nombre, conEncargos, children }: P
       <div className="md:pl-52 lg:pl-64">{children}</div>
 
       {/* 🧠 Vaciar la cabeza: en todas las pestañas. */}
-      {enPestana && <BotonCabeza hogarId={hogarId} />}
+      {enPestana && <BotonCabeza hogarId={hogarId} miUserId={miUserId} nombre={nombre} />}
 
       {enPestana && (
         <nav
