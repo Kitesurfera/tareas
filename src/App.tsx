@@ -48,6 +48,7 @@ import { PantallaAnadirParaVer } from './components/PantallaAnadirParaVer'
 import { PantallaSugerenciasVer } from './components/PantallaSugerenciasVer'
 import { PantallaRegalos } from './components/PantallaRegalos'
 import { PantallaBandeja } from './components/PantallaBandeja'
+import { TarjetaHoyNoPuedo } from './components/HoyNoPuedo'
 import { botonCabecera } from './components/estilos'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
 import { PantallaDocumento } from './components/PantallaDocumento'
@@ -477,6 +478,9 @@ function App() {
         />
 
         {/* El calendario, lo primero (en el ordenador, a todo el ancho). */}
+        {/* «🙋 Hoy no puedo»: lo que te piden y lo que has pedido (solo si hay algo). */}
+        <TarjetaHoyNoPuedo miUserId={yo.userId} />
+
         <TarjetaCalendario miUserId={yo.userId} />
 
         {/* En el móvil, una sola columna (en este orden). En el ordenador, dos:
