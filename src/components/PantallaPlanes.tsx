@@ -12,6 +12,7 @@ import { GeneradorPlanes } from './GeneradorPlanes'
 import { ListaPlanes } from './ListaPlanes'
 import { TarjetaParaVer } from './TarjetaParaVer'
 import { TituloSeccion } from './Piezas'
+import { PreguntaPreparativos } from './PreguntaPreparativos'
 
 // Pestaña «Planes»: el generador al azar, vuestra lista de planes por
 // categorías y el calendario.
@@ -39,6 +40,9 @@ export function PantallaPlanes({ hogarId }: { hogarId: string }) {
 
       {error && <p role="alert" className={avisoError}>{error}</p>}
       {datos === null && !error && <p className="text-center text-stone-400">Cargando…</p>}
+
+      {/* 📋 Al programar un plan con miga: «¿Preparamos…?» */}
+      <PreguntaPreparativos />
 
       {datos && datos.categorias.length === 0 && <EmpezarConSugeridas hogarId={hogarId} onListo={recargar} />}
 

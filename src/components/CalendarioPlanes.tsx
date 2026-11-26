@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { moverMes, nombreDelMes } from '../lib/cargaMental'
 import { cuandoToca, fechaCorta, fechaLarga, hoyComoTexto } from '../lib/fechas'
 import {
@@ -10,8 +10,14 @@ import {
   type DatosPlanes,
   type EntradaAgenda,
 } from '../lib/planes'
+import { usePlantillas, type Preparativo } from '../lib/plantillas'
+import { ir } from '../lib/ruta'
 import { avisoError, campoBase } from './estilos'
 import { TituloSeccion } from './Piezas'
+
+// Los preparativos de cada plan del calendario (📋 plantillas), para las filas.
+// null = falta el SQL de las plantillas (entonces no se ofrece «📋 Preparar»).
+const PreparativosDelCalendario = createContext<Preparativo[] | null>(null)
 
 
 type Props = { datos: DatosPlanes; onCambio: () => void }
@@ -21,6 +27,7 @@ const dosCifras = (n: number) => String(n).padStart(2, '0')
 
 // «📅 Calendario»: el mes con los planes de cada día, con el color de su categoría.
 export function CalendarioPlanes({ datos, onCambio }: Props) {
+  const plantillas = usePlantillas()
   const hoy = hoyComoTexto()
   const [mes, setMes] = useState(hoy.slice(0, 7))
   const [dia, setDia] = useState<string | null>(null)
@@ -45,112 +52,114 @@ export function CalendarioPlanes({ datos, onCambio }: Props) {
     .slice(0, 6)
 
   return (
-    <section className="tarjeta flex flex-col gap-4">
-      <TituloSeccion dibujo="📅" titulo="Calendario" subtitulo="Los planes que tenéis y los que hicisteis" color="planes" />
+    <PreparativosDelCalendario.Provider value={plantillas.error ? null : (plantillas.datos?.preparativos ?? [])}>
+      <section className="tarjeta flex flex-col gap-4">
+        <TituloSeccion dibujo="📅" titulo="Calendario" subtitulo="Los planes que tenéis y los que hicisteis" color="planes" />
 
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => {
-            setMes(moverMes(mes, -1))
-            setDia(null)
-          }}
-          aria-label="Mes anterior"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-planes-tinta hover:bg-planes"
-        >
-          ‹
-        </button>
-        <h3 className="font-bold first-letter:uppercase">{nombreDelMes(mes)}</h3>
-        <button
-          type="button"
-          onClick={() => {
-            setMes(moverMes(mes, 1))
-            setDia(null)
-          }}
-          aria-label="Mes siguiente"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-planes-tinta hover:bg-planes"
-        >
-          ›
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {DIAS_SEMANA.map((d) => (
-          <span key={d} className="text-xs font-semibold text-stone-400" aria-hidden="true">
-            {d}
-          </span>
-        ))}
-        {Array.from({ length: huecos }, (_, i) => (
-          <span key={`hueco-${i}`} />
-        ))}
-        {Array.from({ length: diasDelMes }, (_, i) => {
-          const fecha = `${mes}-${dosCifras(i + 1)}`
-          const entradas = delDia(fecha)
-          const elegido = dia === fecha
-          const esHoy = fecha === hoy
-          return (
-            <button
-              key={fecha}
-              type="button"
-              onClick={() => setDia(elegido ? null : fecha)}
-              aria-pressed={elegido}
-              aria-label={`${i + 1}${entradas.length ? `: ${entradas.length === 1 ? '1 plan' : `${entradas.length} planes`}` : ''}`}
-              className={`flex min-h-14 flex-col items-center gap-0.5 rounded-xl p-1 text-sm transition ${
-                elegido ? 'bg-planes ring-2 ring-planes-tinta' : esHoy ? 'ring-2 ring-planes-tinta/50' : 'hover:bg-stone-50'
-              } ${fecha < hoy && !elegido ? 'text-stone-400' : ''}`}
-            >
-              <span className={esHoy ? 'font-extrabold text-planes-tinta' : 'font-medium'}>{i + 1}</span>
-              <span className="flex flex-wrap justify-center gap-0.5">
-                {entradas.slice(0, 3).map((e) => {
-                  const info = infoCategoria(datos.categorias, planDe(e)?.categoria_id ?? null)
-                  return (
-                    <span
-                      key={e.id}
-                      aria-hidden="true"
-                      className={`flex h-5 w-5 items-center justify-center rounded-md text-[11px] leading-none ${info.suave} ${e.hecho ? 'opacity-50' : ''}`}
-                    >
-                      {info.dibujo}
-                    </span>
-                  )
-                })}
-                {entradas.length > 3 && <span className="text-[10px] text-stone-500">+{entradas.length - 3}</span>}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Leyenda: el color de cada categoría */}
-      {datos.categorias.length > 0 && (
-        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-600" aria-label="Colores de las categorías">
-          {datos.categorias.map((c) => (
-            <li key={c.id} className="flex items-center gap-1">
-              <span aria-hidden="true" className={`h-3 w-3 rounded-full ${infoCategoria(datos.categorias, c.id).punto}`} />
-              {c.nombre}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {dia ? (
-        <DiaElegido fecha={dia} entradas={delDia(dia)} datos={datos} onCambio={onCambio} onVerDia={verDia} />
-      ) : (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-stone-500">Próximos planes</h3>
-          {proximos.length === 0 ? (
-            <p className="text-sm text-stone-500">
-              Nada en el calendario. Sacad un plan al azar o tocad un día para añadir uno.
-            </p>
-          ) : (
-            <ul className="divide-y divide-stone-100">
-              {proximos.map((e) => (
-                <FilaAgenda key={e.id} entrada={e} datos={datos} onCambio={onCambio} onVerDia={verDia} conFecha />
-              ))}
-            </ul>
-          )}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => {
+              setMes(moverMes(mes, -1))
+              setDia(null)
+            }}
+            aria-label="Mes anterior"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-planes-tinta hover:bg-planes"
+          >
+            ‹
+          </button>
+          <h3 className="font-bold first-letter:uppercase">{nombreDelMes(mes)}</h3>
+          <button
+            type="button"
+            onClick={() => {
+              setMes(moverMes(mes, 1))
+              setDia(null)
+            }}
+            aria-label="Mes siguiente"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-planes-tinta hover:bg-planes"
+          >
+            ›
+          </button>
         </div>
-      )}
-    </section>
+
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {DIAS_SEMANA.map((d) => (
+            <span key={d} className="text-xs font-semibold text-stone-400" aria-hidden="true">
+              {d}
+            </span>
+          ))}
+          {Array.from({ length: huecos }, (_, i) => (
+            <span key={`hueco-${i}`} />
+          ))}
+          {Array.from({ length: diasDelMes }, (_, i) => {
+            const fecha = `${mes}-${dosCifras(i + 1)}`
+            const entradas = delDia(fecha)
+            const elegido = dia === fecha
+            const esHoy = fecha === hoy
+            return (
+              <button
+                key={fecha}
+                type="button"
+                onClick={() => setDia(elegido ? null : fecha)}
+                aria-pressed={elegido}
+                aria-label={`${i + 1}${entradas.length ? `: ${entradas.length === 1 ? '1 plan' : `${entradas.length} planes`}` : ''}`}
+                className={`flex min-h-14 flex-col items-center gap-0.5 rounded-xl p-1 text-sm transition ${
+                  elegido ? 'bg-planes ring-2 ring-planes-tinta' : esHoy ? 'ring-2 ring-planes-tinta/50' : 'hover:bg-stone-50'
+                } ${fecha < hoy && !elegido ? 'text-stone-400' : ''}`}
+              >
+                <span className={esHoy ? 'font-extrabold text-planes-tinta' : 'font-medium'}>{i + 1}</span>
+                <span className="flex flex-wrap justify-center gap-0.5">
+                  {entradas.slice(0, 3).map((e) => {
+                    const info = infoCategoria(datos.categorias, planDe(e)?.categoria_id ?? null)
+                    return (
+                      <span
+                        key={e.id}
+                        aria-hidden="true"
+                        className={`flex h-5 w-5 items-center justify-center rounded-md text-[11px] leading-none ${info.suave} ${e.hecho ? 'opacity-50' : ''}`}
+                      >
+                        {info.dibujo}
+                      </span>
+                    )
+                  })}
+                  {entradas.length > 3 && <span className="text-[10px] text-stone-500">+{entradas.length - 3}</span>}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Leyenda: el color de cada categoría */}
+        {datos.categorias.length > 0 && (
+          <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-600" aria-label="Colores de las categorías">
+            {datos.categorias.map((c) => (
+              <li key={c.id} className="flex items-center gap-1">
+                <span aria-hidden="true" className={`h-3 w-3 rounded-full ${infoCategoria(datos.categorias, c.id).punto}`} />
+                {c.nombre}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {dia ? (
+          <DiaElegido fecha={dia} entradas={delDia(dia)} datos={datos} onCambio={onCambio} onVerDia={verDia} />
+        ) : (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold text-stone-500">Próximos planes</h3>
+            {proximos.length === 0 ? (
+              <p className="text-sm text-stone-500">
+                Nada en el calendario. Sacad un plan al azar o tocad un día para añadir uno.
+              </p>
+            ) : (
+              <ul className="divide-y divide-stone-100">
+                {proximos.map((e) => (
+                  <FilaAgenda key={e.id} entrada={e} datos={datos} onCambio={onCambio} onVerDia={verDia} conFecha />
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </section>
+    </PreparativosDelCalendario.Provider>
   )
 }
 
@@ -244,6 +253,9 @@ function FilaAgenda({ entrada, datos, onCambio, onVerDia, conFecha = false }: Fi
   const plan = datos.planes.find((p) => p.id === entrada.plan_id)
   const info = infoCategoria(datos.categorias, plan?.categoria_id ?? null)
   const hoy = hoyComoTexto()
+  const preparativos = useContext(PreparativosDelCalendario)
+  const preparativo = preparativos?.find((p) => p.agenda_plan_id === entrada.id)
+  const quedan = preparativo ? preparativo.total - preparativo.hechas : 0
   // Si era para más adelante y ya lo habéis hecho, pasa a hoy (y se enseña hoy).
   const esFuturo = entrada.fecha > hoy
 
@@ -293,11 +305,30 @@ function FilaAgenda({ entrada, datos, onCambio, onVerDia, conFecha = false }: Fi
         <button type="button" disabled={enviando} onClick={() => setMoviendo(!moviendo)} aria-expanded={moviendo} className={`${boton} text-stone-600 ring-1 ring-stone-200 hover:bg-stone-50`}>
           📅 Cambiar día
         </button>
+        {preparativo ? (
+          <button type="button" onClick={() => ir(`/preparativos/${preparativo.id}`)} className={`${boton} bg-tareas text-tareas-tinta hover:brightness-95`}>
+            📋 {preparativo.hechas === preparativo.total ? '¡Todo listo!' : `${preparativo.hechas}/${preparativo.total} preparado`}
+          </button>
+        ) : (
+          preparativos &&
+          !entrada.hecho &&
+          plan &&
+          entrada.fecha >= hoy && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('preparar-plan', { detail: { plan, agendaId: entrada.id, fecha: entrada.fecha } }))}
+              className={`${boton} text-tareas-tinta ring-1 ring-tareas hover:bg-tareas`}
+            >
+              📋 Preparar
+            </button>
+          )
+        )}
         <button
           type="button"
           disabled={enviando}
           onClick={() => {
-            if (window.confirm(`¿Quitar «${plan?.nombre ?? 'este plan'}» del calendario?`)) void hacer(() => quitarDelCalendario(entrada))
+            const aviso = quedan > 0 ? ` También se borrarán ${quedan === 1 ? 'la tarea de sus preparativos que queda' : `las ${quedan} tareas de sus preparativos que quedan`} por hacer.` : ''
+            if (window.confirm(`¿Quitar «${plan?.nombre ?? 'este plan'}» del calendario?${aviso}`)) void hacer(() => quitarDelCalendario(entrada))
           }}
           className={`${boton} text-red-700 ring-1 ring-red-200 hover:bg-red-50`}
         >

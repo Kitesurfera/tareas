@@ -123,6 +123,9 @@
     },
     "api/entender-tarea.ts": {
       "maxDuration": 60
+    },
+    "api/plantilla-ia.ts": {
+      "maxDuration": 60
     }
   }
 }

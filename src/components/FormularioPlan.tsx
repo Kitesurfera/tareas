@@ -11,6 +11,7 @@ import {
   type Plan,
   type Precio,
 } from '../lib/planes'
+import { GRUPOS, SUGERIDAS, sugeridaParaPlan, type Plantilla } from '../lib/plantillas'
 import { ir, volver } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
 import { avisoError, botonPrincipal, campo, estiloChip } from './estilos'
@@ -19,7 +20,7 @@ type Props = { hogarId: string; id?: string }
 
 // #/planes/nuevo y #/planes/<id>/editar
 export function FormularioPlan({ hogarId, id }: Props) {
-  const [cargado, setCargado] = useState<{ categorias: CategoriaPlan[]; plan: Plan | null } | null>(null)
+  const [cargado, setCargado] = useState<{ categorias: CategoriaPlan[]; plan: Plan | null; vuestras: Plantilla[] | null } | null>(null)
   const [errorCarga, setErrorCarga] = useState<string | null>(null)
 
   useEffect(() => {
@@ -28,11 +29,16 @@ export function FormularioPlan({ hogarId, id }: Props) {
     Promise.all([
       supabase.from('categorias_plan').select('*').order('orden').order('nombre'),
       id ? supabase.from('planes').select('*').eq('id', id).maybeSingle() : Promise.resolve({ data: null, error: null }),
-    ]).then(([categorias, plan]) => {
+      supabase.from('plantillas').select('id, nombre, dibujo, pregunta, tareas').order('nombre'),
+    ]).then(([categorias, plan, plantillas]) => {
       if (!vigente) return
       const fallo = categorias.error ?? plan.error
       if (fallo) return setErrorCarga(mensajeDeError(fallo))
-      setCargado({ categorias: categorias.data as CategoriaPlan[], plan: plan.data as Plan | null })
+      // Sin el SQL de las plantillas (vuestras = null), el plan se guarda como siempre.
+      const vuestras = plantillas.error
+        ? null
+        : (plantillas.data as Omit<Plantilla, 'clave' | 'grupo'>[]).map((p) => ({ ...p, clave: p.id!, grupo: 'vuestras' as const }))
+      setCargado({ categorias: categorias.data as CategoriaPlan[], plan: plan.data as Plan | null, vuestras })
     })
     return () => {
       vigente = false
@@ -42,7 +48,7 @@ export function FormularioPlan({ hogarId, id }: Props) {
   if (errorCarga) return <Aviso>{errorCarga}</Aviso>
   if (!cargado) return <Aviso>Cargando…</Aviso>
   if (id && !cargado.plan) return <Aviso>No encontramos este plan en tu hogar.</Aviso>
-  return <Formulario hogarId={hogarId} categorias={cargado.categorias} plan={cargado.plan} />
+  return <Formulario hogarId={hogarId} categorias={cargado.categorias} plan={cargado.plan} vuestras={cargado.vuestras} />
 }
 
 function Aviso({ children }: { children: ReactNode }) {
@@ -53,7 +59,17 @@ function Aviso({ children }: { children: ReactNode }) {
   )
 }
 
-function Formulario({ hogarId, categorias, plan }: { hogarId: string; categorias: CategoriaPlan[]; plan: Plan | null }) {
+// 📋 Qué hacer al programar el plan: «auto» (preguntar si es un plan con
+// miga), «no» (no preguntar nunca), «s-barbacoa» (sugerida) o el id de una vuestra.
+function preparativosDe(plan: Plan | null): string {
+  if (!plan) return 'auto'
+  if (plan.sin_preparativos) return 'no'
+  if (plan.plantilla_id) return plan.plantilla_id
+  if (plan.plantilla_sugerida) return `s-${plan.plantilla_sugerida}`
+  return 'auto'
+}
+
+function Formulario({ hogarId, categorias, plan, vuestras }: { hogarId: string; categorias: CategoriaPlan[]; plan: Plan | null; vuestras: Plantilla[] | null }) {
   const [nombre, setNombre] = useState(plan?.nombre ?? '')
   const [categoriaId, setCategoriaId] = useState<string | null>(plan?.categoria_id ?? null)
   const [energia, setEnergia] = useState<Energia | null>(plan?.energia ?? null)
@@ -61,6 +77,7 @@ function Formulario({ hogarId, categorias, plan }: { hogarId: string; categorias
   const [duracion, setDuracion] = useState<Duracion | null>(plan?.duracion ?? null)
   const [notas, setNotas] = useState(plan?.notas ?? '')
   const [favorito, setFavorito] = useState(plan?.favorito ?? false)
+  const [preparativos, setPreparativos] = useState(preparativosDe(plan))
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -77,6 +94,14 @@ function Formulario({ hogarId, categorias, plan }: { hogarId: string; categorias
       duracion,
       notas: notas.trim() || null,
       favorito,
+      // Solo si está el SQL de las plantillas.
+      ...(vuestras
+        ? {
+            plantilla_id: preparativos !== 'auto' && preparativos !== 'no' && !preparativos.startsWith('s-') ? preparativos : null,
+            plantilla_sugerida: preparativos.startsWith('s-') ? preparativos.slice(2) : null,
+            sin_preparativos: preparativos === 'no',
+          }
+        : {}),
     }
     const { error } = plan
       ? await supabase.from('planes').update(datos).eq('id', plan.id)
@@ -177,6 +202,40 @@ function Formulario({ hogarId, categorias, plan }: { hogarId: string; categorias
             placeholder="Dónde es, qué llevar, la web del sitio…"
           />
         </label>
+
+        {vuestras && (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-stone-700">📋 Preparativos al ponerlo en el calendario</span>
+            <select className={campo} value={preparativos} onChange={(e) => setPreparativos(e.target.value)}>
+              <option value="auto">
+                {(() => {
+                  const sugerida = nombre.trim() ? sugeridaParaPlan({ nombre }) : null
+                  return sugerida ? `Preguntar (con «${sugerida.nombre}»)` : 'Preguntar si es un plan grande'
+                })()}
+              </option>
+              <option value="no">No preguntar nunca</option>
+              {vuestras.length > 0 && (
+                <optgroup label="⭐ Vuestras plantillas">
+                  {vuestras.map((p) => (
+                    <option key={p.clave} value={p.clave}>
+                      {p.dibujo} {p.nombre}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {GRUPOS.filter((g) => g.id !== 'vuestras').map((g) => (
+                <optgroup key={g.id} label={g.titulo}>
+                  {SUGERIDAS.filter((s) => s.grupo === g.id).map((s) => (
+                    <option key={s.clave} value={s.clave}>
+                      {s.dibujo} {s.nombre}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <span className="text-xs text-stone-500">Al programarlo, os propondrá crear sus tareas (comprar, reservar, avisar…) con su fecha.</span>
+          </label>
+        )}
 
         <label className="flex items-center gap-3 font-medium text-stone-700">
           <input type="checkbox" className="h-5 w-5 accent-marca" checked={favorito} onChange={(e) => setFavorito(e.target.checked)} />

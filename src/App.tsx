@@ -49,6 +49,10 @@ import { PantallaSugerenciasVer } from './components/PantallaSugerenciasVer'
 import { PantallaRegalos } from './components/PantallaRegalos'
 import { PantallaBandeja } from './components/PantallaBandeja'
 import { TarjetaHoyNoPuedo } from './components/HoyNoPuedo'
+import { PantallaPlantillas } from './components/PantallaPlantillas'
+import { PantallaUsarPlantilla } from './components/PantallaUsarPlantilla'
+import { PantallaEditarPlantilla } from './components/PantallaEditarPlantilla'
+import { PantallaPreparativos } from './components/PantallaPreparativos'
 import { botonCabecera } from './components/estilos'
 import { TarjetaPlanes } from './components/TarjetaPlanes'
 import { PantallaDocumento } from './components/PantallaDocumento'
@@ -445,6 +449,24 @@ function App() {
     }
     if (partes[0] === 'vencimientos' && partes[1] && partes[2] === 'editar') {
       return <PantallaEditarVencimiento key={partes[1]} id={partes[1]} {...comun} />
+    }
+    // 📋 Plantillas: #/plantillas · /nueva · /ia · /elegir · /usar/<clave> ·
+    // /copiar/<clave> · /<id>/editar (con «/plan/<id>» si van con un plan
+    // del calendario) y #/preparativos/<id>.
+    if (partes[0] === 'plantillas') {
+      const enPlan = partes.indexOf('plan')
+      const agendaId = enPlan > 0 ? (partes[enPlan + 1] ?? null) : null
+      const resto = enPlan > 0 ? partes.slice(1, enPlan) : partes.slice(1)
+      if (resto.length === 0) return <PantallaPlantillas />
+      if (resto[0] === 'elegir') return <PantallaPlantillas key={agendaId ?? 'elegir'} agendaId={agendaId} />
+      if (resto[0] === 'nueva') return <PantallaEditarPlantilla key="nueva" hogarId={yo.hogar.id} modo="nueva" />
+      if (resto[0] === 'ia') return <PantallaEditarPlantilla key={`ia-${agendaId}`} hogarId={yo.hogar.id} modo="ia" agendaId={agendaId} />
+      if (resto[0] === 'usar' && resto[1]) return <PantallaUsarPlantilla key={`${resto[1]}-${agendaId}`} clave={resto[1]} agendaId={agendaId} miUserId={yo.userId} />
+      if (resto[0] === 'copiar' && resto[1]) return <PantallaEditarPlantilla key={`copiar-${resto[1]}`} hogarId={yo.hogar.id} modo="copiar" clave={resto[1]} agendaId={agendaId} />
+      if (resto[1] === 'editar') return <PantallaEditarPlantilla key={`editar-${resto[0]}`} hogarId={yo.hogar.id} modo="editar" clave={resto[0]} />
+    }
+    if (partes[0] === 'preparativos' && partes[1]) {
+      return <PantallaPreparativos key={partes[1]} id={partes[1]} miUserId={yo.userId} />
     }
     if (partes[0] === 'tareas' && partes[1] === 'nueva') {
       return <PantallaNuevaTarea {...comun} />
