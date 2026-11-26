@@ -8,7 +8,10 @@
 // cuando en España son las 20 o las 21 del domingo: en verano y en
 // invierno hay un primer intento sobre las 20 y otro sobre las 21. Nadie lo
 // recibe dos veces (avisos_push.ultimo_resumen) y solo avisa si hay algo.
+// Quien lo ha quitado o tiene los avisos en pausa (⏰ Avisos a tu medida)
+// no lo recibe.
 import { ahoraEnEspana, enviar, supabaseServidor } from './_lib/avisos.js'
+import { ajustesPorMovil, tocaResumen } from './_lib/horarios.js'
 import { avisoDeLaSemana, diaDeLaSemana, hayAlgo, sumarDias, type CuentasSemana } from './_lib/semana.js'
 
 const HORAS_DEL_RESUMEN = [20, 21]
@@ -37,11 +40,26 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'No se pudo preparar el resumen' }, { status: 500 })
   }
 
+  let porMovil
+  try {
+    porMovil = await ajustesPorMovil(supabase)
+  } catch {
+    console.error('Resumen de la semana: no se pudieron leer los móviles')
+    return Response.json({ error: 'No se pudo preparar el resumen' }, { status: 500 })
+  }
+
   let enviados = 0
+  let sinResumen = 0
   let tranquilos = 0
   let borrados = 0
   let fallidos = 0
   for (const fila of (data ?? []) as Fila[]) {
+    // Quien no lo quiere (o está en pausa), no.
+    const ajustes = porMovil.get(fila.aviso_id)
+    if (ajustes && !tocaResumen(ajustes, dia)) {
+      sinResumen++
+      continue
+    }
     // Si no hay nada esa semana, no se molesta a nadie.
     if (!hayAlgo(fila)) {
       tranquilos++
@@ -62,6 +80,6 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   // En el registro solo números, nunca datos de nadie.
-  console.log('Resumen de la semana', { horaEnEspana: hora, enviados, tranquilos, borrados, fallidos })
-  return Response.json({ lunes, enviados, tranquilos, borrados, fallidos })
+  console.log('Resumen de la semana', { horaEnEspana: hora, enviados, sinResumen, tranquilos, borrados, fallidos })
+  return Response.json({ lunes, enviados, sinResumen, tranquilos, borrados, fallidos })
 }
