@@ -116,7 +116,6 @@ export function TarjetaAvisos() {
           <p className="mt-1 text-sm text-stone-600">
             Activados en este móvil. Lo que elijas aquí vale para todos tus móviles.
           </p>
-          <AjustesAvisos />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -153,6 +152,9 @@ export function TarjetaAvisos() {
           del navegador).
         </p>
       )}
+
+      {/* Tus ajustes valen para todos tus móviles: se pueden cambiar aunque en este estén apagados. */}
+      {(estado === 'activados' || estado === 'apagados') && <AjustesAvisos />}
 
       {mensaje && <p role="status" className="mt-3 rounded-xl bg-marca-suave p-3 text-sm text-marca">{mensaje}</p>}
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
