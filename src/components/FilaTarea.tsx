@@ -14,6 +14,8 @@ type Props = {
   nombreReal?: string | null
   // «✈️ Bea está de viaje: la cubres tú», «🏠 nadie en casa»…
   notaViaje?: string | null
+  // «🙋 Hoy no puedo»: de quién era (esta vez la hace otra persona).
+  nombrePrestadaDe?: string | null
   nombreMascota: string | null
   nombreQuienLaHizo?: string | null
   // Otro icono en vez del de la categoría (el calendario usa uno por tipo).
@@ -37,6 +39,7 @@ export function FilaTarea({
   nombreResponsable,
   nombreReal,
   notaViaje,
+  nombrePrestadaDe,
   nombreMascota,
   nombreQuienLaHizo,
   dibujo,
@@ -86,6 +89,11 @@ export function FilaTarea({
             <Etiqueta className={SUAVE[COLOR_CATEGORIA[tarea.categoria] ?? 'ajustes']}>
               <span aria-hidden="true">{dibujo ?? categoria.dibujo}</span> {nombreMascota ?? categoria.texto}
             </Etiqueta>
+            {nombrePrestadaDe && (
+              <Etiqueta className="bg-coral-suave text-coral-tinta">
+                <span aria-hidden="true">🙋</span> por {nombrePrestadaDe}
+              </Etiqueta>
+            )}
             {repeticion && !tarea.completada && (
               <Etiqueta className="bg-stone-100 text-stone-600">
                 <span aria-hidden="true">🔁</span> {cadaCuanto(repeticion.cada, repeticion.unidad)}

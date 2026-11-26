@@ -30,6 +30,15 @@ const MENSAJES_PROPIOS = [
   'La nota es demasiado larga',
   'No encontramos ese encargo',
   'Escribe una nota',
+  // «🙋 Hoy no puedo»
+  'Pídeselo a otra persona',
+  'Elige al menos una tarea',
+  'Como mucho 30 tareas',
+  'Solo puedes pedir ayuda',
+  'El mensaje es demasiado largo',
+  'Ya has pedido ayuda',
+  'No encontramos esa petición',
+  'Esa petición ya no está pendiente',
 ]
 
 // Errores técnicos que sí sabemos explicar.

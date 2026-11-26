@@ -105,6 +105,8 @@ export type Tarea = {
   repetir_desde?: 'fecha' | 'hecha' | null
   repetir_ancla?: string | null
   repetida_de?: string | null
+  // «🙋 Hoy no puedo»: de quién era la tarea que otra persona hace esta vez.
+  prestada_de?: string | null
   creada_por: string | null
   completada: boolean
   completada_por: string | null

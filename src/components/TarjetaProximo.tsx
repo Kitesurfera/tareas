@@ -9,6 +9,7 @@ import { useNombres } from '../lib/useNombres'
 import { avisoError } from './estilos'
 import { AvisoRecienHecha, ListaTareas } from './ListaTareas'
 import { Etiqueta, TituloSeccion, Vacio } from './Piezas'
+import { BotonHoyNoPuedo } from './HoyNoPuedo'
 
 type Props = {
   miUserId: string
@@ -25,6 +26,13 @@ export function TarjetaProximo({ miUserId }: Props) {
   const [recarga, setRecarga] = useState(0)
   const [errorCarga, setErrorCarga] = useState<string | null>(null)
   const acciones = useAccionesTarea(() => setRecarga((n) => n + 1))
+
+  // Al aceptar o pedir ayuda («🙋 Hoy no puedo»), las tareas cambian de manos.
+  useEffect(() => {
+    const alCambiar = () => setRecarga((n) => n + 1)
+    window.addEventListener('ayuda-cambiada', alCambiar)
+    return () => window.removeEventListener('ayuda-cambiada', alCambiar)
+  }, [])
 
   useEffect(() => {
     if (!supabase) return
@@ -57,7 +65,7 @@ export function TarjetaProximo({ miUserId }: Props) {
 
   return (
     <section className="tarjeta">
-      <TituloSeccion dibujo="⏰" titulo="Próximo" subtitulo={`Los próximos ${DIAS} días`} color="inicio" />
+      <TituloSeccion dibujo="⏰" titulo="Próximo" subtitulo={`Los próximos ${DIAS} días`} color="inicio" derecha={<BotonHoyNoPuedo miUserId={miUserId} />} />
       {proximas.length > 0 && (
         <p className="mt-3 flex flex-wrap gap-1.5">
           <Etiqueta className="bg-inicio text-inicio-tinta">

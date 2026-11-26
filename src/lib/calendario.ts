@@ -190,5 +190,12 @@ export function useDatosCalendario() {
     }
   }, [recarga])
 
+  // Al aceptar ayuda («🙋 Hoy no puedo»), las tareas cambian de color.
+  useEffect(() => {
+    const alCambiar = () => setRecarga((n) => n + 1)
+    window.addEventListener('ayuda-cambiada', alCambiar)
+    return () => window.removeEventListener('ayuda-cambiada', alCambiar)
+  }, [])
+
   return { datos, error, recargar: () => setRecarga((n) => n + 1) }
 }
