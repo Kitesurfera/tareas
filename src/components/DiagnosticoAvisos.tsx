@@ -1,10 +1,11 @@
 import { useState } from 'react'
+import { AJUSTES_POR_DEFECTO, DIAS_SEMANA, enPausa, textoHora } from '../lib/ajustesAvisos'
 import { estadoDelAvisoDiario, type EstadoAvisoDiario } from '../lib/avisos'
 import { diasHasta, fechaCorta } from '../lib/fechas'
 import { avisoError } from './estilos'
 
-// «🩺 Comprobar el aviso de las 8:00»: explica por qué te llega (o no) el
-// aviso de cada mañana, sin tener que mirar nada en Vercel.
+// «🩺 Comprobar el aviso diario»: explica por qué te llega (o no) el aviso
+// de cada día, sin tener que mirar nada en Vercel.
 export function DiagnosticoAvisos() {
   const [estado, setEstado] = useState<EstadoAvisoDiario | null>(null)
   const [comprobando, setComprobando] = useState(false)
@@ -29,7 +30,7 @@ export function DiagnosticoAvisos() {
         disabled={comprobando}
         className="w-full rounded-full px-3 py-2.5 text-sm font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50 disabled:opacity-60"
       >
-        {comprobando ? 'Comprobando…' : '🩺 Comprobar el aviso de las 8:00'}
+        {comprobando ? 'Comprobando…' : '🩺 Comprobar el aviso diario'}
       </button>
       {error && <p role="alert" className={`mt-3 ${avisoError}`}>{error}</p>}
       {estado && <Resultado estado={estado} />}
@@ -46,7 +47,13 @@ function cuandoFue(fecha: string): string {
 
 function Resultado({ estado }: { estado: EstadoAvisoDiario }) {
   const yaHoy = estado.ultimoAviso === estado.hoy
-  const pasadoLaHora = estado.horaEnEspana >= 10
+  const ajustes = estado.ajustes ?? AJUSTES_POR_DEFECTO
+  const hora = textoHora(ajustes.hora)
+  // Con la segunda oportunidad, el aviso puede salir hasta una hora después.
+  const pasadoLaHora = estado.horaEnEspana >= ajustes.hora + 2
+  const diaIso = ((new Date(`${estado.hoy}T12:00:00Z`).getUTCDay() + 6) % 7) + 1
+  const hoyLibre = ajustes.dias_libres.includes(diaIso)
+  const pausado = enPausa(ajustes, estado.hoy)
   const lineas: { icono: string; texto: string; aviso?: boolean }[] = []
 
   if (!estado.claveDelServidor) {
@@ -55,12 +62,12 @@ function Resultado({ estado }: { estado: EstadoAvisoDiario }) {
         ? {
             icono: '❌',
             texto:
-              'Falta la clave CRON_SECRET en Vercel. Sin ella, el aviso de las 8:00 no sale nunca (el de prueba sí). Añádela en Vercel → Settings → Environment Variables (marcando Production) y vuelve a publicar la app.',
+              'Falta la clave CRON_SECRET en Vercel. Sin ella, el aviso diario no sale nunca (el de prueba sí). Añádela en Vercel → Settings → Environment Variables (marcando Production) y vuelve a publicar la app.',
             aviso: true,
           }
         : {
             icono: 'ℹ️',
-            texto: 'Esta es una versión de prueba: el aviso de las 8:00 solo sale desde la app de verdad. Compruébalo allí.',
+            texto: 'Esta es una versión de prueba: el aviso diario solo sale desde la app de verdad. Compruébalo allí.',
           },
     )
   } else {
@@ -73,12 +80,17 @@ function Resultado({ estado }: { estado: EstadoAvisoDiario }) {
     lineas.push({
       icono: '📬',
       texto: estado.ultimoAviso
-        ? `Tu último aviso de las 8:00 se mandó ${cuandoFue(estado.ultimoAviso)}.`
-        : 'Todavía no se te ha mandado ningún aviso de las 8:00.',
+        ? `Tu último aviso diario se mandó ${cuandoFue(estado.ultimoAviso)}.`
+        : 'Todavía no se te ha mandado ningún aviso diario.',
     })
   }
 
-  if (yaHoy) {
+  if (pausado) {
+    lineas.push({ icono: '⏸️', texto: `Tienes los avisos en pausa hasta el ${fechaCorta(ajustes.pausa_hasta!)}: hasta entonces no te llega ninguno.` })
+  } else if (hoyLibre) {
+    const dia = DIAS_SEMANA.find((d) => d.n === diaIso)?.largo ?? 'hoy'
+    lineas.push({ icono: '📵', texto: `Los ${dia === 'sábado' || dia === 'domingo' ? `${dia}s` : dia} no tienes aviso diario (lo elegiste tú).` })
+  } else if (yaHoy) {
     lineas.push({ icono: '👍', texto: 'Hoy ya se te mandó. Si no lo viste, mira el centro de notificaciones del móvil.' })
   } else if (estado.pendientesHoy === 0) {
     lineas.push({
@@ -91,10 +103,10 @@ function Resultado({ estado }: { estado: EstadoAvisoDiario }) {
       pasadoLaHora && estado.claveDelServidor && estado.entorno === 'production'
         ? {
             icono: '⚠️',
-            texto: `Hoy tienes ${cosas} y el aviso no ha salido. Puede que Vercel no haya llamado esta mañana (no siempre es puntual y no reintenta): mira Vercel → Schedules → Cron Jobs → View Logs.`,
+            texto: `Hoy tienes ${cosas} y el aviso no ha salido. Puede que Vercel no haya llamado a tu hora (no siempre es puntual y no reintenta): mira Vercel → Schedules → Cron Jobs → View Logs.`,
             aviso: true,
           }
-        : { icono: '⏰', texto: `Hoy tienes ${cosas}: el aviso sale entre las 8 y las 9 de la mañana.` },
+        : { icono: '⏰', texto: `Hoy tienes ${cosas}: tu aviso sale ${ajustes.hora === 23 ? 'sobre las 23:00' : `entre las ${hora} y las ${textoHora(ajustes.hora + 1)}`}.` },
     )
   }
 

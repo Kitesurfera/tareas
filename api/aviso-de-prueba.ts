@@ -2,6 +2,7 @@
 // (y solo a los suyos). Con { tipo: 'semana' }, le manda su resumen de la
 // semana de verdad (el del domingo), aunque no haya nada o ya lo recibiera.
 import { ahoraEnEspana, enviar, supabaseServidor, type Aviso, type Movil } from './_lib/avisos.js'
+import { ajustesDe } from './_lib/horarios.js'
 import { avisoDeLaSemana, lunesDe, sumarDias, type CuentasSemana } from './_lib/semana.js'
 
 export async function POST(request: Request): Promise<Response> {
@@ -24,11 +25,13 @@ export async function POST(request: Request): Promise<Response> {
     .eq('user_id', usuario.user.id)
   if (error) return Response.json({ error: 'No se pudieron leer tus móviles.' }, { status: 500 })
 
+  // «a las 9:00», la hora que eligió (⏰ Avisos a tu medida).
+  const { hora } = await ajustesDe(supabase, usuario.user.id)
   let enviados = 0
   for (const movil of (moviles ?? []) as Movil[]) {
     if (await enviarYLimpiar(supabase, movil, {
       title: '¡Los avisos funcionan! 🎉',
-      body: 'Cada mañana a las 8:00 te diremos lo que te toca.',
+      body: `Cada día a las ${hora}:00 te diremos lo que te toca.`,
       url: '/',
       tag: 'prueba',
     })) enviados++

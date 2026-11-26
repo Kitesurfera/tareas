@@ -1,3 +1,4 @@
+import type { AjustesAvisos } from './ajustesAvisos'
 import { ir } from './ruta'
 import { supabase } from './supabase'
 
@@ -100,10 +101,12 @@ export type EstadoAvisoDiario = {
   hoy: string
   horaEnEspana: number
   ultimoAviso: string | null
+  // Lo que has elegido (⏰ Avisos a tu medida). Puede faltar si el servidor es antiguo.
+  ajustes?: AjustesAvisos
   pendientesHoy: number | null
 }
 
-// «🩺 Comprobar el aviso de las 8:00»: pregunta al servidor si está listo,
+// «🩺 Comprobar el aviso diario»: pregunta al servidor si está listo,
 // cuándo te llegó el último aviso diario y si hoy tienes algo pendiente.
 export async function estadoDelAvisoDiario(): Promise<EstadoAvisoDiario> {
   const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }

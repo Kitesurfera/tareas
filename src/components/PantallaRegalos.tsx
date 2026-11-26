@@ -112,7 +112,7 @@ function Fechas({
 
   return (
     <section className="tarjeta flex flex-col gap-3">
-      <TituloSeccion dibujo="📅" titulo="Fechas especiales" subtitulo="Os las recordamos ese día a las 8:00" color="tareas" />
+      <TituloSeccion dibujo="📅" titulo="Fechas especiales" subtitulo="Os las recordamos ese día, en el aviso diario" color="tareas" />
       {lista.length === 0 && !editando && (
         <Vacio dibujo="🎂" color="tareas">
           Apuntad cumpleaños, aniversarios y fechas señaladas. Salen en el calendario y os las recordamos el mismo día.
