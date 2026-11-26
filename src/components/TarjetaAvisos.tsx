@@ -8,6 +8,7 @@ import {
   probarAviso,
 } from '../lib/avisos'
 import { abiertaComoApp, esIOS } from '../lib/instalar'
+import { AjustesAvisos } from './AjustesAvisos'
 import { DiagnosticoAvisos } from './DiagnosticoAvisos'
 import { avisoError } from './estilos'
 import { TituloSeccion } from './Piezas'
@@ -96,8 +97,8 @@ export function TarjetaAvisos() {
       {estado === 'apagados' && (
         <>
           <p className="mt-1 text-sm text-stone-600">
-            Cada mañana a las 8:00, un aviso con lo que te toca hoy y lo que va
-            atrasado.
+            Cada día, un aviso con lo que te toca hoy y lo que va atrasado (a la
+            hora que tú elijas).
           </p>
           <button
             type="button"
@@ -113,9 +114,9 @@ export function TarjetaAvisos() {
       {estado === 'activados' && (
         <>
           <p className="mt-1 text-sm text-stone-600">
-            Activados en este móvil. Cada mañana sobre las 8:00 te diremos lo que te toca hoy o va atrasado (si no
-            tienes nada pendiente, no hay aviso). Y los domingos a las 20:00, el resumen de la semana.
+            Activados en este móvil. Lo que elijas aquí vale para todos tus móviles.
           </p>
+          <AjustesAvisos />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
