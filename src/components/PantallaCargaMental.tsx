@@ -15,6 +15,7 @@ const TEXTOS_PENSAR: Record<Origen, [string, string]> = {
   plan: ['plan organizado', 'planes organizados'],
   documento: ['documento guardado', 'documentos guardados'],
   fecha: ['fecha especial apuntada', 'fechas especiales apuntadas'],
+  preparativo: ['plantilla usada', 'plantillas usadas'],
 }
 const TEXTOS_HACER: Partial<Record<Origen, [string, string]>> = {
   tarea: ['tarea hecha', 'tareas hechas'],

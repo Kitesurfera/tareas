@@ -30,6 +30,10 @@ export type Plan = {
   duracion: Duracion | null
   notas: string | null
   favorito: boolean
+  // 📋 Su plantilla de preparativos (una vuestra o una sugerida) y «no preguntar más».
+  plantilla_id?: string | null
+  plantilla_sugerida?: string | null
+  sin_preparativos?: boolean
 }
 
 export type EntradaAgenda = {
@@ -214,9 +218,19 @@ async function hacer(consulta: PromiseLike<{ error: { message?: string; code?: s
   return mensajeDeError(error)
 }
 
-export function programar(plan: Plan, fecha: string): Promise<string | null> {
-  if (!supabase) return Promise.resolve('Sin conexión.')
-  return hacer(supabase.from('agenda_planes').insert({ hogar_id: plan.hogar_id, plan_id: plan.id, fecha }))
+export type PlanProgramado = { plan: Plan; agendaId: string; fecha: string }
+
+// Pone un plan en el calendario. Después avisa al resto de la app (con el
+// evento «plan-programado»), por si hay que preguntar por los preparativos.
+export async function programar(plan: Plan, fecha: string): Promise<string | null> {
+  if (!supabase) return 'Sin conexión.'
+  const { data, error } = await supabase.from('agenda_planes').insert({ hogar_id: plan.hogar_id, plan_id: plan.id, fecha }).select('id').single()
+  const fallo = await hacer(Promise.resolve({ error }))
+  if (!fallo && data) {
+    const detalle: PlanProgramado = { plan, agendaId: (data as { id: string }).id, fecha }
+    window.dispatchEvent(new CustomEvent('plan-programado', { detail: detalle }))
+  }
+  return fallo
 }
 
 // «Lo hicimos» hoy: si ya estaba en el calendario hoy, se marca; si no, se apunta.
