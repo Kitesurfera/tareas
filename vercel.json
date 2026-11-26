@@ -126,6 +126,9 @@
     },
     "api/plantilla-ia.ts": {
       "maxDuration": 60
+    },
+    "api/asistente.ts": {
+      "maxDuration": 60
     }
   }
 }
