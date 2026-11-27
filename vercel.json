@@ -129,6 +129,9 @@
     },
     "api/asistente.ts": {
       "maxDuration": 60
+    },
+    "api/transcribir.ts": {
+      "maxDuration": 60
     }
   }
 }
