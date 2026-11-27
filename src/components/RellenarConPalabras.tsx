@@ -96,7 +96,7 @@ export function RellenarConPalabras({ personas, mascotas, onEntendida }: Props) 
 
       {dictado.escuchando && (
         <p role="status" className="text-sm font-medium text-coral-tinta">
-          🎙️ Te escucho… habla y, al callarte, se para solo.
+          🎙️ {dictado.abriendo ? 'Abriendo el micrófono…' : 'Te escucho… habla y, al callarte, se para solo.'}
         </p>
       )}
       {dictado.error && <p role="alert" className={avisoError}>{dictado.error}</p>}

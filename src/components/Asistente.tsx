@@ -154,7 +154,8 @@ export function Asistente({ hogarId, miUserId, nombre, enBandeja, onCerrar }: { 
 
       {dictado.escuchando && (
         <p role="status" className="flex items-center gap-2 rounded-2xl bg-coral-suave p-3 text-sm font-semibold text-coral-tinta">
-          <span aria-hidden="true" className="text-xl motion-safe:animate-pulse">🎙️</span> Te escucho… habla y, al callarte, lo preparo.
+          <span aria-hidden="true" className="text-xl motion-safe:animate-pulse">🎙️</span>
+          {dictado.abriendo ? 'Abriendo el micrófono…' : 'Te escucho… habla y, al callarte, lo preparo.'}
         </p>
       )}
 
