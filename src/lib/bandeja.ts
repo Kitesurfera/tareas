@@ -8,7 +8,7 @@ import type { Categoria, TipoTratamiento } from './tipos'
 import type { TipoDocumento } from './documentos'
 
 // «🧠 Vaciar la cabeza»: tu bandeja privada (tabla bandeja) y el reparto
-// con la IA (api/vaciar-cabeza). La IA solo propone: aquí se guarda cada
+// con la IA (api/asistente, con modo «repartir»). La IA solo propone: aquí se guarda cada
 // cosa en su sitio, con las reglas de siempre de la base de datos.
 
 export type NotaBandeja = { id: string; texto: string; creado_en: string }
@@ -195,10 +195,10 @@ export async function repartir(notas: NotaBandeja[], contexto: ContextoHogar): P
   if (!token) throw new Error('Tienes que entrar con tu cuenta.')
   let respuesta: Response
   try {
-    respuesta = await fetch('/api/vaciar-cabeza', {
+    respuesta = await fetch('/api/asistente', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notas: notas.map((n) => ({ id: n.id, texto: n.texto })), contexto }),
+      body: JSON.stringify({ modo: 'repartir', notas: notas.map((n) => ({ id: n.id, texto: n.texto })), contexto }),
     })
   } catch {
     throw new Error('Sin conexión. Prueba otra vez.')

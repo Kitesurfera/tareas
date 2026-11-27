@@ -6,7 +6,7 @@ import { hoyComoTexto, saludoDelMomento } from '../lib/fechas'
 import { mensajeDeError } from '../lib/errores'
 import { ir } from '../lib/ruta'
 import { supabase } from '../lib/supabase'
-import { useDictado } from '../lib/useDictado'
+import { textoBotonDictar, useDictado } from '../lib/useDictado'
 import { avisoError, botonPrincipal, botonSecundario, campo } from './estilos'
 import { TarjetaAccion } from './TarjetaAccion'
 
@@ -154,8 +154,11 @@ export function Asistente({ hogarId, miUserId, nombre, enBandeja, onCerrar }: { 
 
       {dictado.escuchando && (
         <p role="status" className="flex items-center gap-2 rounded-2xl bg-coral-suave p-3 text-sm font-semibold text-coral-tinta">
-          <span aria-hidden="true" className="text-xl motion-safe:animate-pulse">🎙️</span>
-          {dictado.abriendo ? 'Abriendo el micrófono…' : 'Te escucho… habla y, al callarte, lo preparo.'}
+          <span aria-hidden="true" className="text-xl motion-safe:animate-pulse">{dictado.pasando ? '✍️' : '🎙️'}</span>
+          <span className="flex-1">
+            {dictado.pasando ? 'Pasando a texto lo que has dicho…' : dictado.abriendo ? 'Abriendo el micrófono…' : 'Te escucho… habla y, al callarte, lo preparo.'}
+          </span>
+          {dictado.nivel !== null && !dictado.abriendo && <Volumen nivel={dictado.nivel} />}
         </p>
       )}
 
@@ -188,12 +191,13 @@ export function Asistente({ hogarId, miUserId, nombre, enBandeja, onCerrar }: { 
               dictado.empezar()
             }}
             aria-pressed={dictado.escuchando}
+            disabled={dictado.pasando}
             className={`${botonSecundario.replace('w-full ', '')} shrink-0 px-4 ${dictado.escuchando ? 'bg-coral-suave text-coral-tinta ring-coral/30' : ''}`}
           >
-            {dictado.escuchando ? '⏹️ Parar' : '🎤 Hablar'}
+            {textoBotonDictar(dictado, '🎤 Hablar')}
           </button>
         )}
-        <button type="button" onClick={() => hacer()} disabled={pensando || texto.trim().length < 2} className={`${botonPrincipal} flex-1`}>
+        <button type="button" onClick={() => hacer()} disabled={pensando || dictado.pasando || texto.trim().length < 2} className={`${botonPrincipal} flex-1`}>
           {pensando ? 'Pensando…' : '✨ Hazlo'}
         </button>
       </div>
@@ -315,5 +319,16 @@ export function Asistente({ hogarId, miUserId, nombre, enBandeja, onCerrar }: { 
         )}
       </div>
     </div>
+  )
+}
+
+// Unas barritas que se mueven con tu voz (al grabar): así se ve que te oye.
+function Volumen({ nivel }: { nivel: number }) {
+  return (
+    <span aria-hidden="true" className="flex h-5 items-end gap-0.5">
+      {[1, 2, 3, 4].map((n) => (
+        <span key={n} className={`w-1 rounded-full transition-all duration-100 ${nivel >= n ? 'bg-coral' : 'bg-coral/25'}`} style={{ height: `${25 + n * 18}%` }} />
+      ))}
+    </span>
   )
 }
