@@ -16,7 +16,7 @@ import {
 } from '../lib/paraVer'
 import { volver } from '../lib/ruta'
 import type { Miembro } from '../lib/tipos'
-import { useDictado } from '../lib/useDictado'
+import { textoBotonDictar, useDictado } from '../lib/useDictado'
 import { useMiembros } from '../lib/useMiembros'
 import { avisoError, botonPrincipal, botonSecundario, campo, estiloChip } from './estilos'
 import { TituloSeccion } from './Piezas'
@@ -230,9 +230,10 @@ function Ideas({
                   dictado.empezar()
                 }}
                 aria-pressed={dictado.escuchando}
+                disabled={dictado.pasando}
                 className={`${botonSecundario.replace('w-full ', '')} shrink-0 px-4 ${dictado.escuchando ? 'animate-pulse bg-coral-suave text-coral-tinta ring-coral/30' : ''}`}
               >
-                {dictado.escuchando ? '⏹️ Parar' : '🎤 Dictar'}
+                {textoBotonDictar(dictado, '🎤 Dictar')}
               </button>
             )}
             <button type="button" onClick={() => pedir('palabras')} disabled={cargando !== null || frase.trim().length < 3} className={botonPrincipal}>

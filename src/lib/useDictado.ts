@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { esApple, grabar, pasarATexto, sePuedeGrabar, type Grabacion } from './grabarVoz'
 
 // Dictar con la voz usando el reconocimiento del propio navegador (Chrome
 // en Android, Safari en iPhone…). No instala nada: si el navegador no lo
@@ -6,10 +7,15 @@ import { useEffect, useRef, useState } from 'react'
 // Ojo: el navegador manda el audio a su servicio (Google o Apple) para
 // pasarlo a texto; la app nunca recibe ni guarda el audio.
 //
-// Los móviles fallan a veces sin avisar (sobre todo el iPhone, a partir de
-// la segunda vez): el micrófono no llega a arrancar, o se queda escuchando
-// para siempre aunque te hayas callado. Por eso la app vigila con relojes y,
-// si el navegador no dice nada, lo corta ella y deja volver a intentarlo.
+// Los móviles fallan a veces sin avisar: el micrófono no llega a arrancar, o
+// se queda escuchando para siempre aunque te hayas callado. Por eso la app
+// vigila con relojes y, si el navegador no dice nada, lo corta ella y deja
+// volver a intentarlo.
+//
+// En el iPhone (y en Safari) el dictado del navegador deja de funcionar a
+// partir de la segunda vez, así que allí se usa otro motor: la app graba y
+// el servidor lo pasa a texto con la IA gratuita (src/lib/grabarVoz.ts).
+// También se usa si el navegador no sabe dictar (Firefox).
 
 type Resultado = { isFinal: boolean; 0: { transcript: string } }
 type EventoResultado = { results: ArrayLike<Resultado> }
@@ -70,6 +76,19 @@ async function permisoPorContestar(): Promise<boolean> {
   }
 }
 
+type Motor = 'navegador' | 'grabar' | null
+function elegirMotor(): Motor {
+  if (sePuedeGrabar() && (esApple() || !claseDelNavegador())) return 'grabar'
+  return claseDelNavegador() ? 'navegador' : null
+}
+
+// Para los botones: «⏹️ Parar» mientras escucha, «✍️ Un momento…» mientras
+// lo pasa a texto y, si no, el texto de siempre («🎤 Dictar»).
+export function textoBotonDictar(d: { escuchando: boolean; pasando: boolean }, enReposo: string): string {
+  if (d.pasando) return '✍️ Un momento…'
+  return d.escuchando ? '⏹️ Parar' : enReposo
+}
+
 // Solo un dictado a la vez en toda la app: si queda uno a medias (de esta
 // pantalla o de otra), se corta antes de empezar el nuevo.
 let elDeAhora: { reconocedor: Reconocedor; cerrar: () => void } | null = null
@@ -78,12 +97,17 @@ type Sesion = { reconocedor: Reconocedor; reloj: ReturnType<typeof setTimeout> |
 
 // alTexto recibe lo que se va entendiendo.
 export function useDictado(alTexto: (texto: string) => void) {
-  const [soportado] = useState(() => Boolean(claseDelNavegador()))
+  const [motor] = useState(elegirMotor)
+  const soportado = motor !== null
   const [escuchando, setEscuchando] = useState(false)
   // true mientras se espera a que el micrófono arranque de verdad.
   const [abriendo, setAbriendo] = useState(false)
+  // Grabando: true mientras el servidor lo pasa a texto; y el volumen (0-4).
+  const [pasando, setPasando] = useState(false)
+  const [nivel, setNivel] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const sesion = useRef<Sesion | null>(null)
+  const grabacion = useRef<{ g: Grabacion; vigente: boolean } | null>(null)
   const avisar = useRef(alTexto)
   useEffect(() => {
     avisar.current = alTexto
@@ -126,6 +150,11 @@ export function useDictado(alTexto: (texto: string) => void) {
   // Si se sale de la pantalla mientras escucha, se corta.
   useEffect(
     () => () => {
+      if (grabacion.current) {
+        grabacion.current.vigente = false
+        grabacion.current.g.cancelar()
+        grabacion.current = null
+      }
       const s = sesion.current
       if (!s) return
       if (s.reloj) clearTimeout(s.reloj)
@@ -136,7 +165,49 @@ export function useDictado(alTexto: (texto: string) => void) {
     [],
   )
 
+  // Grabando (iPhone): la app graba, nota cuándo te callas y el servidor lo
+  // pasa a texto. Tiene que empezar justo al tocar el botón.
+  function empezarAGrabar() {
+    if (grabacion.current || pasando) return
+    setError(null)
+    setEscuchando(true)
+    setAbriendo(true)
+    setNivel(0)
+    const esta = { g: null as unknown as Grabacion, vigente: true }
+    const terminarYa = (mensaje?: string) => {
+      if (!esta.vigente) return
+      esta.vigente = false
+      if (grabacion.current === esta) grabacion.current = null
+      setEscuchando(false)
+      setAbriendo(false)
+      setPasando(false)
+      setNivel(null)
+      if (mensaje) setError(mensaje)
+    }
+    esta.g = grabar({
+      alArrancar: () => esta.vigente && setAbriendo(false),
+      alOir: (n) => esta.vigente && setNivel(Math.round(n * 4)),
+      alTerminar: (fin) => {
+        if (!esta.vigente) return
+        if ('error' in fin) return terminarYa(fin.error)
+        if ('nada' in fin) return terminarYa(fin.porTiempo ? MENSAJES['no-speech'] : undefined)
+        setPasando(true)
+        setNivel(null)
+        pasarATexto(fin.wav).then(
+          (texto) => {
+            if (!esta.vigente) return
+            if (texto.trim()) avisar.current(texto.trim())
+            terminarYa(texto.trim() ? undefined : 'No te he entendido. Prueba otra vez, o escríbelo.')
+          },
+          (e: unknown) => terminarYa(e instanceof Error ? e.message : 'No se ha podido pasar a texto. Prueba otra vez.'),
+        )
+      },
+    })
+    grabacion.current = esta
+  }
+
   function empezar() {
+    if (motor === 'grabar') return empezarAGrabar()
     const Clase = claseDelNavegador()
     if (!Clase) return
     if (elDeAhora) {
@@ -213,9 +284,10 @@ export function useDictado(alTexto: (texto: string) => void) {
   }
 
   function parar() {
+    if (grabacion.current) return grabacion.current.g.parar()
     const s = sesion.current
     if (s) pedirQuePare(s)
   }
 
-  return { soportado, escuchando, abriendo, error, empezar, parar }
+  return { soportado, escuchando, abriendo, pasando, nivel, error, empezar, parar }
 }

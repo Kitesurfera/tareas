@@ -12,7 +12,7 @@ import {
 } from '../lib/plantillas'
 import { reemplazar, volver } from '../lib/ruta'
 import { CATEGORIAS, type Categoria } from '../lib/tipos'
-import { useDictado } from '../lib/useDictado'
+import { textoBotonDictar, useDictado } from '../lib/useDictado'
 import { avisoError, botonPrincipal, botonSecundario, campo, campoBase } from './estilos'
 
 export type ModoEditor = 'nueva' | 'editar' | 'copiar' | 'ia'
@@ -279,9 +279,10 @@ function PedirALaIA({ textoInicial, hayPropuesta, onPropuesta }: { textoInicial:
               dictado.empezar()
             }}
             aria-pressed={dictado.escuchando}
+            disabled={dictado.pasando}
             className={`${botonSecundario.replace('w-full ', '')} shrink-0 px-4 ${dictado.escuchando ? 'animate-pulse bg-coral-suave text-coral-tinta ring-coral/30' : ''}`}
           >
-            {dictado.escuchando ? '⏹️ Parar' : '🎤 Dictar'}
+            {textoBotonDictar(dictado, '🎤 Dictar')}
           </button>
         )}
         <button type="button" onClick={pedir} disabled={texto.trim().length < 3 || pensando} className={`${botonPrincipal} flex-1`}>

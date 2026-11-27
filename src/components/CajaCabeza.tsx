@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
 import { cuantasEnLaBandeja, soltar } from '../lib/bandeja'
 import { Asistente } from './Asistente'
-import { useDictado } from '../lib/useDictado'
+import { textoBotonDictar, useDictado } from '../lib/useDictado'
 import { avisoError, botonPrincipal, botonSecundario, campo } from './estilos'
 
 const MAX_LETRAS = 2000
@@ -55,9 +55,10 @@ export function CajaCabeza({ hogarId, onGuardado, autoFocus }: { hogarId: string
               dictado.empezar()
             }}
             aria-pressed={dictado.escuchando}
+            disabled={dictado.pasando}
             className={`${botonSecundario.replace('w-full ', '')} shrink-0 px-4 ${dictado.escuchando ? 'animate-pulse bg-coral-suave text-coral-tinta ring-coral/30' : ''}`}
           >
-            {dictado.escuchando ? '⏹️ Parar' : '🎤 Dictar'}
+            {textoBotonDictar(dictado, '🎤 Dictar')}
           </button>
         )}
         <button type="button" onClick={guardar} disabled={guardando || !texto.trim()} className={botonPrincipal}>
@@ -109,7 +110,9 @@ export function BotonCabeza({ hogarId, miUserId, nombre }: { hogarId: string; mi
       <button
         ref={boton}
         type="button"
-        onClick={() => setAbierta(true)}
+        // flushSync: el asistente se pinta (y empieza a escuchar) dentro del
+        // propio toque; si no, el iPhone no deja usar el micrófono.
+        onClick={() => flushSync(() => setAbierta(true))}
         aria-label={cuantas ? `Asistente (${cuantas} en tu bandeja)` : 'Asistente'}
         title="Asistente: pídeme, pregúntame o suéltalo"
         className="fixed right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-20 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-b from-marca to-[#0b5f58] text-2xl text-white shadow-[0_10px_24px_-8px_rgb(15_118_110/0.7)] transition hover:brightness-110 active:scale-95 md:right-6 md:bottom-6"

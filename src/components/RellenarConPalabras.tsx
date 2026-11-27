@@ -1,7 +1,7 @@
 import { useState, type KeyboardEvent } from 'react'
 import { fechaLarga } from '../lib/fechas'
 import { entenderTarea, MAX_LETRAS, type TareaEntendida } from '../lib/tareaNatural'
-import { useDictado } from '../lib/useDictado'
+import { textoBotonDictar, useDictado } from '../lib/useDictado'
 import { avisoError, botonPrincipal, botonSecundario, campo } from './estilos'
 import { TituloSeccion } from './Piezas'
 
@@ -83,10 +83,11 @@ export function RellenarConPalabras({ personas, mascotas, onEntendida }: Props) 
               dictado.empezar()
             }}
             aria-pressed={dictado.escuchando}
+            disabled={dictado.pasando}
             // (Sin «w-full» del botón secundario: este va a su tamaño, al lado de «Rellenar».)
             className={`${botonSecundario.replace('w-full ', '')} shrink-0 px-4 ${dictado.escuchando ? 'animate-pulse bg-coral-suave text-coral-tinta ring-coral/30' : ''}`}
           >
-            {dictado.escuchando ? '⏹️ Parar' : '🎤 Dictar'}
+            {textoBotonDictar(dictado, '🎤 Dictar')}
           </button>
         )}
         <button type="button" onClick={rellenar} disabled={!puedeRellenar} className={`${botonPrincipal} flex-1`}>
@@ -96,7 +97,7 @@ export function RellenarConPalabras({ personas, mascotas, onEntendida }: Props) 
 
       {dictado.escuchando && (
         <p role="status" className="text-sm font-medium text-coral-tinta">
-          🎙️ {dictado.abriendo ? 'Abriendo el micrófono…' : 'Te escucho… habla y, al callarte, se para solo.'}
+          {dictado.pasando ? '✍️ Pasando a texto lo que has dicho…' : dictado.abriendo ? '🎙️ Abriendo el micrófono…' : '🎙️ Te escucho… habla y, al callarte, se para solo.'}
         </p>
       )}
       {dictado.error && <p role="alert" className={avisoError}>{dictado.error}</p>}
